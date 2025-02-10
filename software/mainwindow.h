@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSystemTrayIcon>
+#include <QMenu>
+#include <QCloseEvent>
 #include <QMessageBox>
 
 #ifdef _WIN32
@@ -25,8 +28,19 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+protected:
+    void closeEvent(QCloseEvent *event) override;  // Override close event to minimize to tray
+
+private slots:
+    void showWindow();  // Restore window from system tray
+    void exitApplication();  // Quit application
+
 private:
     void registerGlobalHotkey();
+    void createTrayIcon();  // System tray setup
+
+QSystemTrayIcon *trayIcon;
+QMenu *trayMenu;
 
 #ifdef _WIN32
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
