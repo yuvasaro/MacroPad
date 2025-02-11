@@ -1,5 +1,5 @@
-C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/mainwindow.h \
-  C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/moc_predefs.h \
+C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/Users/dakot/MacroPad/software/mainwindow.h \
+  C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/moc_predefs.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QList \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QObject \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QRect \

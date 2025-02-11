@@ -67,7 +67,18 @@ void MainWindow::exitApplication() {
 #ifdef _WIN32
 #include <thread>
 
-std::string path = "C:\\Users\\aarav\\OneDrive\\Desktop\\Arduino IDE.lnk";
+int Release(WORD K, int I, INPUT inputs[]) {
+    //if (I >= inputs.size()) return I; // Ensure valid index
+
+    inputs[I].type = INPUT_KEYBOARD;
+    inputs[I].ki.wVk = K;
+    inputs[I].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    return I + 1;
+}
+
+
+std::string path = "spotify";
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
 LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
@@ -79,78 +90,78 @@ LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPAR
                 // MessageBox(NULL, L"Hotkey F5 Pressed!", L"Notification", MB_OK | MB_SYSTEMMODAL);
 
                 // Simulate Alt + Spacebar
-                INPUT inputs[4] = {};
+                //INPUT inputs[4] = {};
 
                 // Press ALT
-                inputs[0].type = INPUT_KEYBOARD;
-                inputs[0].ki.wVk = VK_MENU;
+                //inputs[0].type = INPUT_KEYBOARD;
+                //inputs[0].ki.wVk = VK_MENU;
 
                 // Press SPACE
-                inputs[1].type = INPUT_KEYBOARD;
-                inputs[1].ki.wVk = VK_SPACE;
+                //inputs[1].type = INPUT_KEYBOARD;
+                //inputs[1].ki.wVk = VK_SPACE;
 
                 // Release SPACE
-                inputs[2].type = INPUT_KEYBOARD;
-                inputs[2].ki.wVk = VK_SPACE;
-                inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+                //inputs[2].type = INPUT_KEYBOARD;
+                //inputs[2].ki.wVk = VK_SPACE;
+                //inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
 
                 // Release ALT
+                //inputs[3].type = INPUT_KEYBOARD;
+                //inputs[3].ki.wVk = VK_MENU;
+                //inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+                //SendInput(4, inputs, sizeof(INPUT));
+
+                // Simulate pressing Win + R
+
+                INPUT inputs[4] = {};
+
+                // Press Win
+                inputs[0].type = INPUT_KEYBOARD;
+                inputs[0].ki.wVk = VK_LWIN;
+
+                // Press R
+                inputs[1].type = INPUT_KEYBOARD;
+                inputs[1].ki.wVk = 'R';
+
+                // Release R
+                inputs[2].type = INPUT_KEYBOARD;
+                inputs[2].ki.wVk = 'R';
+                inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+                // Release Win
                 inputs[3].type = INPUT_KEYBOARD;
-                inputs[3].ki.wVk = VK_MENU;
+                inputs[3].ki.wVk = VK_LWIN;
                 inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
 
                 SendInput(4, inputs, sizeof(INPUT));
 
-                // // Simulate pressing Win + R
-
-                // INPUT inputs[4] = {};
-
-                // // Press Win
-                // inputs[0].type = INPUT_KEYBOARD;
-                // inputs[0].ki.wVk = VK_LWIN;
-
-                // // Press R
-                // inputs[1].type = INPUT_KEYBOARD;
-                // inputs[1].ki.wVk = 'R';
-
-                // // Release R
-                // inputs[2].type = INPUT_KEYBOARD;
-                // inputs[2].ki.wVk = 'R';
-                // inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-
-                // // Release Win
-                // inputs[3].type = INPUT_KEYBOARD;
-                // inputs[3].ki.wVk = VK_LWIN;
-                // inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-                // SendInput(4, inputs, sizeof(INPUT));
-
                 // // Wait for the Run dialog to appear
-                // Sleep(500);
+                Sleep(500);
 
-                // // Type the stored path
-                // for (wchar_t ch : path) {
-                //     INPUT keyInput = {};
-                //     keyInput.type = INPUT_KEYBOARD;
-                //     keyInput.ki.wVk = 0;  // Set to 0 for Unicode input
-                //     keyInput.ki.wScan = ch;
-                //     keyInput.ki.dwFlags = KEYEVENTF_UNICODE;
-                //     SendInput(1, &keyInput, sizeof(INPUT));
+                // Type the stored path
+                for (wchar_t ch : path) {
+                     INPUT keyInput = {};
+                     keyInput.type = INPUT_KEYBOARD;
+                     keyInput.ki.wVk = 0;  // Set to 0 for Unicode input
+                     keyInput.ki.wScan = ch;
+                     keyInput.ki.dwFlags = KEYEVENTF_UNICODE;
+                     SendInput(1, &keyInput, sizeof(INPUT));
 
-                //     // Release key
-                //     keyInput.ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
-                //     SendInput(1, &keyInput, sizeof(INPUT));
-                // }
+                     // Release key
+                     keyInput.ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
+                     SendInput(1, &keyInput, sizeof(INPUT));
+                 }
 
-                // // Press Enter
-                // INPUT enterInput = {};
-                // enterInput.type = INPUT_KEYBOARD;
-                // enterInput.ki.wVk = VK_RETURN;
-                // SendInput(1, &enterInput, sizeof(INPUT));
+                // Press Enter
+                 INPUT enterInput = {};
+                 enterInput.type = INPUT_KEYBOARD;
+                 enterInput.ki.wVk = VK_RETURN;
+                 SendInput(1, &enterInput, sizeof(INPUT));
 
-                // // Release Enter
-                // enterInput.ki.dwFlags = KEYEVENTF_KEYUP;
-                // SendInput(1, &enterInput, sizeof(INPUT));
+                 // Release Enter
+                 enterInput.ki.dwFlags = KEYEVENTF_KEYUP;
+                 SendInput(1, &enterInput, sizeof(INPUT));
 
 
             }).detach();
@@ -161,6 +172,66 @@ LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPAR
                 ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
             }).detach();
         }
+        if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F9) {
+            INPUT inputs[14] = {};
+
+            // // Press CTRL
+            inputs[0].type = INPUT_KEYBOARD;
+            inputs[0].ki.wVk = VK_LCONTROL;
+
+            // // Press C
+            inputs[1].type = INPUT_KEYBOARD;
+            inputs[1].ki.wVk = 'C';
+
+            // Release C
+            Release('C',2,inputs);
+
+
+            // Release CTRL
+            Release(VK_LCONTROL,3,inputs);
+
+            // // Press CTRL
+            inputs[4].type = INPUT_KEYBOARD;
+            inputs[4].ki.wVk = VK_LCONTROL;
+
+            // // Press T
+            inputs[5].type = INPUT_KEYBOARD;
+            inputs[5].ki.wVk = 'T';
+
+            // Release T
+            Release('T',6,inputs);
+
+            // Release CTRL
+            Release(VK_LCONTROL,7,inputs);
+
+            // // Press CTRL
+            inputs[8].type = INPUT_KEYBOARD;
+            inputs[8].ki.wVk = VK_LCONTROL;
+
+            // // Press V
+            inputs[9].type = INPUT_KEYBOARD;
+            inputs[9].ki.wVk = 'V';
+
+            // Release V
+            Release('V',10,inputs);
+
+
+            // Release CTRL
+            Release(VK_LCONTROL,11,inputs);
+
+
+            // // Press Enter
+            inputs[12].type = INPUT_KEYBOARD;
+            inputs[12].ki.wVk = VK_RETURN;
+
+            // Release Enter
+            Release(VK_RETURN,13,inputs);
+
+
+            SendInput(14, inputs, sizeof(INPUT));
+        }
+
+
     }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
