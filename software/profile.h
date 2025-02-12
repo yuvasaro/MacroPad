@@ -1,7 +1,7 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 
-#include "Macro.h"
+#include "macro.h"
 #include <string>
 #include <unordered_map>
 
@@ -21,7 +21,7 @@ public:
     void runMacro(int keyNum);
 
     void saveProfile(string& filePath);
-    static Profile loadProfile(string& );
+    static Profile loadProfile(string&);
 };
 
 #endif // PROFILE_H

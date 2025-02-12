@@ -21,6 +21,11 @@ public:
 
     void setType(const string& newType);
     void setContent(const string& newContent);
+
+    string getType();
+    string getContent();
+
+    void runCallback();
 };
 
 #endif // MACRO_H

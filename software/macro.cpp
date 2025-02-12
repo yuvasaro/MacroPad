@@ -81,5 +81,21 @@ void Macro::setContent(const string& newContent) {
 
 }
 
+string Macro::getType() {
+    return type;
+}
+
+string Macro::getContent() {
+    return content;
+}
+
+void Macro::runCallback() {
+    if (callback) {
+        callback();  // Execute the callback function
+    } else {
+        cout << "No callback set!" << endl;
+    }
+}
+
 
 
