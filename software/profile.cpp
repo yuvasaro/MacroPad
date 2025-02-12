@@ -26,4 +26,6 @@ class Profile:
     // TODO: load profile from file
  */
 
-profile::profile() {}
+Profile::Profile(const std::string& userName) {
+
+}

@@ -4,21 +4,23 @@
 #include <string>
 #include <functional>
 
+using namespace std;
+
 class Macro {
 private:
-    std::string type;
-    std::string content;
-    std::function<void()> callback;
+    string type;
+    string content;
+    function<void()> callback;
 
 public:
-    Macro(const std::string& userType, const std::string& userContent);
+    Macro(const string& userType, const string& userContent);
     ~Macro();
 
     void keystrokeCallback();
     void programCallback();
 
-    std::string getType() const;
-    std::string getContent() const;
+    void setType(const string& newType);
+    void setContent(const string& newContent);
 };
 
 #endif // MACRO_H

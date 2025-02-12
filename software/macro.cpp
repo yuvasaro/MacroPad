@@ -1,4 +1,6 @@
 #include "macro.h"
+#include <iostream>
+#include <cstdlib>
 
 /* class Macro:
   type: String
@@ -26,16 +28,17 @@
   void setContent()
 */
 
+using namespace std;
 
-Macro::Macro(const std::string& userType, const std::string& userContent) : type(userType), content(userContent) {
+Macro::Macro(const string& userType, const string& userContent) : type(userType), content(userContent) {
 
     if (type == "keystroke") {
 
-        callback = std::bind(&Macro::keystrokeCallback, this);
+        callback = bind(&Macro::keystrokeCallback, this);
 
     } else if (type == "program") {
 
-        callback = std::bind(&Macro::programCallback, this);
+        callback = bind(&Macro::programCallback, this);
 
     } else {
 
@@ -49,19 +52,32 @@ Macro::~Macro() {
 
 }
 
-void keystrokeCallback() {
+void Macro::keystrokeCallback() {
 
 }
 
-void programCallback() {
+void Macro::programCallback() {
+    cout << "Executing program: " << content << endl;
+    system(content.c_str());
+}
+
+void Macro::setType(const string& newType)  {
+
+    type = newType;
+    // Reassign callback based on new type
+    if (type == "keystroke") {
+        callback = bind(&Macro::keystrokeCallback, this);
+    } else if (type == "program") {
+        callback = bind(&Macro::programCallback, this);
+    } else {
+        callback = nullptr;
+    }
 
 }
 
-void setType() {
+void Macro::setContent(const string& newContent) {
 
-}
-
-void setContent() {
+    content = newContent;
 
 }
 
