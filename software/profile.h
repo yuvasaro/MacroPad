@@ -10,13 +10,13 @@ class Profile {
 private:
 
     string name;
-    unordered_map<int, unique_ptr<Macro>> macros;
+    unordered_map<int, Macro> macros;
 
 public:
     Profile(const string& userName);
-    ~Profile();
+    ~Profile() = default;
 
-    void setMacro(int keyNum, string& type, string& content);
+    void setMacro(int keyNum, const string& type, const string& content);
     void deleteMacro(int keyNum);
     void runMacro(int keyNum);
 

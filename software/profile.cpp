@@ -29,12 +29,10 @@ class Profile:
     // TODO: load profile from file
  */
 
-Profile::Profile(const string& userName) {
+Profile::Profile(const string& userName): name(userName) {}
 
-}
-
-void Profile::setMacro(int keyNum, string& type, string& content) {
-    macros[keyNum] = new Macro(type, content);
+void Profile::setMacro(int keyNum, const string& type, const string& content) {
+    macros[keyNum] = Macro(type, content);
 }
 
 void Profile::deleteMacro(int keyNum) {
@@ -43,7 +41,7 @@ void Profile::deleteMacro(int keyNum) {
 
 void Profile::runMacro(int keyNum) {
     if (macros.find(keyNum) != macros.end()) {
-        macros[keyNum]->runCallback();
+        macros[keyNum].runCallback();
     } else {
         std::cout << "Macro not found!\n";
     }
@@ -56,8 +54,8 @@ void Profile::saveProfile(string& filePath) {
         outFile << "Name: " << name << "\n";
         for (auto& macro : macros) {
             outFile << macro.first << ":\n";
-            outFile << "  type: " << macro.second->getType() << "\n";
-            outFile << "  content: " << macro.second->getContent() << "\n";
+            outFile << "  type: " << macro.second.getType() << "\n";
+            outFile << "  content: " << macro.second.getContent() << "\n";
         }
         outFile.close();
     } else {
