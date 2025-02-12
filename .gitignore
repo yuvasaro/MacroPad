@@ -79,5 +79,4 @@ CMakeLists.txt.user*
 .pch/
 .rcc/
 .uic/
-/build*/
-software/build/
+build*/
