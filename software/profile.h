@@ -20,8 +20,8 @@ public:
     void deleteMacro(int keyNum);
     void runMacro(int keyNum);
 
-    void saveProfile(string& filePath);
-    static Profile loadProfile(string&);
+    void saveProfile(const string& filePath);
+    static Profile loadProfile(const string& filePath);
 };
 
 #endif // PROFILE_H
