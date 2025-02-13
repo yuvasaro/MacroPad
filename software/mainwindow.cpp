@@ -4,12 +4,18 @@
 #include <QAction>
 #include <QMenu>
 #include "string"
+
 #include "shellapi.h"
 #include <QMainWindow>
 #include <windows.h>
 #include <functional>
 #include <unordered_map>
 #include <vector>
+
+#ifdef _WIN32
+#include "shellapi.h"
+HHOOK MainWindow::keyboardHook = nullptr;
+#endif
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
@@ -73,117 +79,98 @@ void MainWindow::exitApplication() {
 #ifdef _WIN32
 #include <thread>
 
+unsigned long int customVkCode = VK_F6; // Default hotkey (changeable)
+std::vector<INPUT> inputs;
+
+
 //std::string path = "C:\\Users\\aarav\\OneDrive\\Desktop\\Arduino IDE.lnk";
-std::string path = "matlab";
+std::string path = "notepad";
 
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
-HHOOK MainWindow::keyboardHook = nullptr;
 
-LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode == HC_ACTION) {
-        KBDLLHOOKSTRUCT *kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
-        if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F5) {
-            // Run the notification in a separate thread to prevent blocking
-            std::thread([] {
-                // Simulate Alt + Space
-                INPUT inputs[4] = {};
 
-                // Press ALT
-                inputs[0].type = INPUT_KEYBOARD;
-                inputs[0].ki.wVk = VK_MENU;
+// LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+//     if (nCode == HC_ACTION) {
+//         KBDLLHOOKSTRUCT *kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
+//         if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F5) {
+//             // Run the notification in a separate thread to prevent blocking
+//             std::thread([] {
+//                 // Simulate Alt + Space
+//                 INPUT inputs[4] = {};
 
-                // Press SPACE
-                inputs[1].type = INPUT_KEYBOARD;
-                inputs[1].ki.wVk = VK_SPACE;
+//                 // Press ALT
+//                 inputs[0].type = INPUT_KEYBOARD;
+//                 inputs[0].ki.wVk = VK_MENU;
 
-                // Release SPACE
-                inputs[2].type = INPUT_KEYBOARD;
-                inputs[2].ki.wVk = VK_SPACE;
-                inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+//                 // Press SPACE
+//                 inputs[1].type = INPUT_KEYBOARD;
+//                 inputs[1].ki.wVk = VK_SPACE;
 
-                // Release ALT
-                inputs[3].type = INPUT_KEYBOARD;
-                inputs[3].ki.wVk = VK_MENU;
-                inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+//                 // Release SPACE
+//                 inputs[2].type = INPUT_KEYBOARD;
+//                 inputs[2].ki.wVk = VK_SPACE;
+//                 inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
 
-                SendInput(4, inputs, sizeof(INPUT));
-            }).detach();
-        }
-        if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F6) {  // Trigger hotkey
-            std::thread([] {
-                // Use ShellExecuteW to open the application instantly
-                ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            }).detach();
-        }
-    }
-    return CallNextHookEx(NULL, nCode, wParam, lParam);
+//                 // Release ALT
+//                 inputs[3].type = INPUT_KEYBOARD;
+//                 inputs[3].ki.wVk = VK_MENU;
+//                 inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+//                 SendInput(4, inputs, sizeof(INPUT));
+//             }).detach();
+//         }
+//         if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F6) {  // Trigger hotkey
+//             std::thread([] {
+//                 // Use ShellExecuteW to open the application instantly
+//                 ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+//             }).detach();
+//         }
+//     }
+//     return CallNextHookEx(NULL, nCode, wParam, lParam);
+// }
+
+// Register a hotkey and associate it with an action
+void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
+    hotkeyActions[vkCode] = action;
 }
 
-void MainWindow::OpenMatlab() {
-    std::vector<INPUT> inputs;
+// Simulates keypress sequence (e.g., Alt + Space)
+void MainWindow::doTasks(std::vector<INPUT>& inputs) {
+    inputs.resize(4);
 
-    // Simulate Win + R to open the Run dialog
-    inputs.push_back({ INPUT_KEYBOARD, { 0, VK_LWIN, 0, 0, 0, 0 } });
-    inputs.push_back({ INPUT_KEYBOARD, { 0, 0, 0, KEYEVENTF_KEYUP, 0, 0 } });
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_MENU;  // Press ALT
 
-    inputs.push_back({ INPUT_KEYBOARD, { 0, 'R', 0, 0, 0, 0 } });
-    inputs.push_back({ INPUT_KEYBOARD, { 0, 0, 0, KEYEVENTF_KEYUP, 0, 0 } });
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_SPACE;  // Press SPACE
 
-    // Release Win key
-    inputs.push_back({ INPUT_KEYBOARD, { 0, VK_LWIN, KEYEVENTF_KEYUP, 0, 0, 0 } });
+    inputs[2].type = INPUT_KEYBOARD;
+    inputs[2].ki.wVk = VK_SPACE;
+    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;  // Release SPACE
 
-    // Type 'matlab'
-    const std::wstring matlab = L"matlab";
-    for (wchar_t c : matlab) {
-        inputs.push_back({ INPUT_KEYBOARD, { 0, c, 0, 0, 0, 0 } });
-        inputs.push_back({ INPUT_KEYBOARD, { 0, 0, 0, KEYEVENTF_KEYUP, 0, 0 } });
-    }
-
-    // Press Enter
-    inputs.push_back({ INPUT_KEYBOARD, { 0, VK_RETURN, 0, 0, 0, 0 } });
-    inputs.push_back({ INPUT_KEYBOARD, { 0, 0, 0, KEYEVENTF_KEYUP, 0, 0 } });
-
-    // Send the simulated keystrokes
-    SimulateKeystrokes(inputs);
+    inputs[3].type = INPUT_KEYBOARD;
+    inputs[3].ki.wVk = VK_MENU;
+    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;  // Release ALT
 }
 
-
+// Hook to detect global hotkeys
 LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
 
         if (wParam == WM_KEYDOWN) {
-            // Check if the key pressed matches a registered hotkey
             auto it = hotkeyActions.find(kbdStruct->vkCode);
             if (it != hotkeyActions.end()) {
-                // Trigger the registered action
-                std::thread([action = it->second] {
-                    action();
-                }).detach();
+                std::thread(it->second).detach();  // Run action in separate thread
             }
         }
     }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
-    hotkeyActions[vkCode] = action;
-}
-
-void MainWindow::SimulateKeystrokes(std::vector<INPUT>& inputs) {
-    SendInput(inputs.size(), inputs.data(), sizeof(INPUT));
-}
-
-void MainWindow::OpenPath(const std::wstring& path) {
-    ShellExecuteW(NULL, L"open", path.c_str(), NULL, NULL, SW_SHOWNORMAL);
-}
-
+// Registers the global keyboard hook
 void MainWindow::registerGlobalHotkey() {
-    // Register F6 hotkey to perform MATLAB launch
-    RegisterHotkey(VK_F6, std::bind(&MainWindow::OpenMatlab, this));
-
-    // Set up the keyboard hook
-    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
+    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyCustomization, GetModuleHandle(NULL), 0);
 }
 #endif
 
