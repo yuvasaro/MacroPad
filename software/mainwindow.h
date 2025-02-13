@@ -55,6 +55,7 @@ QMenu *trayMenu;
     void SimulateKeystrokes(std::vector<INPUT>& inputs);
     static void OpenPath(const std::wstring& path);
     static HHOOK keyboardHook;
+    static void simulateAltSpace();
 
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
