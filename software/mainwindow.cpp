@@ -77,6 +77,13 @@ int Release(WORD K, int I, INPUT inputs[]) {
     return I + 1;
 }
 
+int Press(WORD K, int I, INPUT inputs[]){
+    inputs[I].type = INPUT_KEYBOARD;
+    inputs[I].ki.wVk = K;
+
+    return I+1;
+}
+
 
 std::string path = "spotify";
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
@@ -174,6 +181,7 @@ LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPAR
         }
         if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F9) {
             INPUT inputs[14] = {};
+            std::map<WORD, char> my_map = {{VK_LCONTROL,'p'},{'C','p'},{'C','r'}};
 
             // // Press CTRL
             inputs[0].type = INPUT_KEYBOARD;

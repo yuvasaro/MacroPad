@@ -635,5 +635,5 @@ C:/Users/dakot/MacroPad/software/mainwindow.h
  mdp:C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypesbase.h
  mdp:C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/moc_predefs.h
  mdp:C:/Users/dakot/MacroPad/software/mainwindow.h
-C:/Users/dakot/MacroPad/software/main.cpp
 C:/Users/dakot/MacroPad/software/mainwindow.cpp
+C:/Users/dakot/MacroPad/software/main.cpp
