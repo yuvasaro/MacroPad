@@ -8,8 +8,8 @@ Macro::Macro() : type("defaultType"), content("defaultContent"), callback(nullpt
 
 
 Macro::Macro(const string& userType, const string& userContent) : type(userType), content(userContent) {
-cout << "In Macro constructor: type='" << type << "', content='" << content << "'" << endl;
-   cout << "in constructor: Memory address of this Macro object: " << this << endl;
+// cout << "In Macro constructor: type='" << type << "', content='" << content << "'" << endl;
+   // cout << "in constructor: Memory address of this Macro object: " << this << endl;
     if (type == "keystroke") {
         callback = bind(&Macro::keystrokeCallback, this);
     } else if (type == "program") {
@@ -44,7 +44,7 @@ void Macro::programCallback() {
 }
 
 void Macro::setType(const string& newType)  {
-    cout << "in Macro::newType type='" << type << "', content='" << content << "'" << endl;
+    // cout << "in Macro::newType type='" << type << "', content='" << content << "'" << endl;
     type = newType;
 
     if (type == "keystroke") {
@@ -69,14 +69,6 @@ string Macro::getContent() {
     return content;
 }
 
-void Macro::runCallback() {
-    cout << "in Macro::runCallback: type='" << type << "', content='" << content << "'" << endl;
-    if (callback) {
-        this->callback();
-    } else {
-        cout << "No callback set!" << endl;
-    }
-}
 
 
 

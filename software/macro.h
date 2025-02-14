@@ -11,9 +11,10 @@ class Macro {
 private:
     string type;
     string content;
-    function<void()> callback;
 
 public:
+
+    function<void()> callback;
     Macro();
     Macro(const string& userType, const string& userContent);
     ~Macro();

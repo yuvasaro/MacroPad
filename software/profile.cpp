@@ -31,8 +31,8 @@ class Profile:
 Profile::Profile(const string& userName): name(userName) {}
 
 void Profile::setMacro(int keyNum, const string& type, const string& content) {
-    macros[keyNum] = Macro(type, content);
-    cout << "Macro set for keyNum=" << keyNum << ", content=" << macros[keyNum].getContent() << endl;
+    macros[keyNum] = std::move(make_unique<Macro>(type, content));
+    // cout << "Macro set for keyNum=" << keyNum << ", content=" << macros[keyNum].getContent() << endl;
 }
 
 void Profile::deleteMacro(int keyNum) {
@@ -40,10 +40,9 @@ void Profile::deleteMacro(int keyNum) {
 }
 
 void Profile::runMacro(int keyNum) {
-    cout << "In Profile::runMacro type='" << macros[keyNum].getType() << "', content='" << macros[keyNum].getContent() << "'" << endl;
-    auto it = macros.find(keyNum);
-    if (it != macros.end()) {
-        macros[keyNum].runCallback();
+    cout << "In Profile::runMacro type='" << macros[keyNum]->getType() << "', content='" << macros[keyNum]->getContent() << "'" << endl;
+    if (macros.find(keyNum) != macros.end()) {
+        macros[keyNum]->callback();
     } else {
         cout << "Macro not found!\n";
     }
@@ -56,8 +55,8 @@ void Profile::saveProfile(const string& filePath) {
         outFile << "Name: " << name << "\n";
         for (auto& macro : macros) {
             outFile << macro.first << ":\n";
-            outFile << "type: " << macro.second.getType() << "\n";
-            outFile << "content: " << macro.second.getContent() << "\n";
+            outFile << "type: " << macro.second->getType() << "\n";
+            outFile << "content: " << macro.second->getContent() << "\n";
         }
 
         outFile.close();
@@ -108,3 +107,4 @@ Profile Profile::loadProfile(const string& filePath) {
         return Profile("");
     }
 }
+
