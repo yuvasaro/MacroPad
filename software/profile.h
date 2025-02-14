@@ -3,14 +3,14 @@
 
 #include "macro.h"
 #include <string>
-#include <unordered_map>
+#include <map>
 
 using namespace std;
 class Profile {
 private:
 
     string name;
-    unordered_map<int, Macro> macros;
+    map<int, Macro> macros;
 
 public:
     Profile(const string& userName);

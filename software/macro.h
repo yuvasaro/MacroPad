@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 
+
 using namespace std;
 
 class Macro {
@@ -13,6 +14,7 @@ private:
     function<void()> callback;
 
 public:
+    Macro();
     Macro(const string& userType, const string& userContent);
     ~Macro();
 

@@ -32,6 +32,7 @@ Profile::Profile(const string& userName): name(userName) {}
 
 void Profile::setMacro(int keyNum, const string& type, const string& content) {
     macros[keyNum] = Macro(type, content);
+    cout << "Macro set for keyNum=" << keyNum << ", content=" << macros[keyNum].getContent() << endl;
 }
 
 void Profile::deleteMacro(int keyNum) {
@@ -39,7 +40,9 @@ void Profile::deleteMacro(int keyNum) {
 }
 
 void Profile::runMacro(int keyNum) {
-    if (macros.find(keyNum) != macros.end()) {
+    cout << "In Profile::runMacro type='" << macros[keyNum].getType() << "', content='" << macros[keyNum].getContent() << "'" << endl;
+    auto it = macros.find(keyNum);
+    if (it != macros.end()) {
         macros[keyNum].runCallback();
     } else {
         cout << "Macro not found!\n";
@@ -56,6 +59,7 @@ void Profile::saveProfile(const string& filePath) {
             outFile << "type: " << macro.second.getType() << "\n";
             outFile << "content: " << macro.second.getContent() << "\n";
         }
+
         outFile.close();
     } else {
         cerr << "Unable to open file for writing.\n";
@@ -86,18 +90,16 @@ Profile Profile::loadProfile(const string& filePath) {
         while (getline(inFile, line)) {
             if (isdigit(line[0])) {
                 keyNum = stoi(line);
-            } else if (line.rfind("type: ", 0) == 0) {
+            } else if (line.rfind("type: ") == 0) {
                 macroType = line.substr(6);
-            } else if (line.rfind("content: ", 0) == 0) {
+            } else if (line.rfind("content: ") == 0) {
                 macroContent = line.substr(9);
-
                 if(keyNum != -1) {
                     userProfile.setMacro(keyNum, macroType, macroContent);
                     keyNum = -1;
                 }
             }
         }
-
         inFile.close();
         return userProfile;
 
