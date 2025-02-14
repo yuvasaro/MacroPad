@@ -4,9 +4,9 @@
 #include <QAction>
 #include <QMenu>
 #include "string"
-#include "shellapi.h"
 
 #ifdef _WIN32
+#include "shellapi.h"
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
