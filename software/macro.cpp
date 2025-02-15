@@ -8,8 +8,7 @@ Macro::Macro() : type("defaultType"), content("defaultContent"), callback(nullpt
 
 
 Macro::Macro(const string& userType, const string& userContent) : type(userType), content(userContent) {
-// cout << "In Macro constructor: type='" << type << "', content='" << content << "'" << endl;
-   // cout << "in constructor: Memory address of this Macro object: " << this << endl;
+
     if (type == "keystroke") {
         callback = bind(&Macro::keystrokeCallback, this);
     } else if (type == "program") {
@@ -20,19 +19,15 @@ Macro::Macro(const string& userType, const string& userContent) : type(userType)
 
 }
 
-Macro::~Macro() {
-
-}
+Macro::~Macro() {}
 
 void Macro::keystrokeCallback() {
 
 }
 
 void Macro::programCallback() {
-    cout << "in Macro::programCallback: type='" << type << "', content='" << content << "'" << endl;
-    cout << "Memory address of this Macro object: " << this << endl;
+
     if (content.empty()) {
-        cout << "Content length: " << content.length() << endl;
         cerr << "Content is empty!" << endl;
     }
 
@@ -44,7 +39,6 @@ void Macro::programCallback() {
 }
 
 void Macro::setType(const string& newType)  {
-    // cout << "in Macro::newType type='" << type << "', content='" << content << "'" << endl;
     type = newType;
 
     if (type == "keystroke") {
@@ -58,7 +52,6 @@ void Macro::setType(const string& newType)  {
 
 void Macro::setContent(const string& newContent) {
     content = newContent;
-    cout << "In Macro::newType type='" << type << "', content='" << content << "'" << endl;
 }
 
 string Macro::getType() {

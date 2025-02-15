@@ -21,9 +21,10 @@ public:
     Profile() = default;
     Profile(Profile&&) = default;
     Profile& operator=(Profile&&) = default;
+    // ----------------------------------------
+
     Profile(const string& userName);
     ~Profile() = default;
-    // ----------------------------------------
 
     void setMacro(int keyNum, const string& type, const string& content);
     void deleteMacro(int keyNum);
