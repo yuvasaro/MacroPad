@@ -152,11 +152,12 @@ void MainWindow::registerGlobalHotkey() {
 #include <Carbon/Carbon.h>
 #include <QDebug>
 #include <QProcess>
+#include <QFileInfo>
 
-static EventHotKeyRef hotKeyRef_Ins;
-static EventHotKeyRef hotKeyRef_Home;
-static EventHotKeyID hotKeyID_Ins;
-static EventHotKeyID hotKeyID_Home;
+static EventHotKeyRef hotKeyRef_Tilde;
+static EventHotKeyRef hotKeyRef_Backslash;
+static EventHotKeyID hotKeyID_Tilde;
+static EventHotKeyID hotKeyID_Backslash;
 static EventHandlerUPP eventHandlerUPP;
 
 // Placeholder path to the executable
@@ -167,12 +168,24 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
 
     if (hotKeyID.id == 1) {
-        qDebug() << "Insert (Ins) key pressed! Opening Discord...";
+        qDebug() << "Tilde (~) key pressed! Opening Discord...";
         system("open -a 'Discord'");
     }
     else if (hotKeyID.id == 2) {
-        qDebug() << "Home key pressed! Running executable at:" << EXECUTABLE_PATH;
-        if (!QProcess::startDetached(EXECUTABLE_PATH)) {
+        qDebug() << "Backslash (\\) key pressed! Running executable at:" << EXECUTABLE_PATH;
+
+        QProcess process;
+
+        // Extract and set the working directory
+        QFileInfo exeInfo(EXECUTABLE_PATH);
+        QString workingDir = exeInfo.absolutePath();
+        process.setWorkingDirectory(workingDir);
+
+        // Print working directory for debugging
+        qDebug() << "Setting working directory to:" << workingDir;
+
+        // Launch the executable
+        if (!process.startDetached(EXECUTABLE_PATH)) {
             qDebug() << "Failed to launch executable!";
         }
     }
@@ -181,37 +194,37 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
 }
 
 void MainWindow::registerGlobalHotkey() {
-    qDebug() << "Registering Insert (Ins) and Home keys as global hotkeys...";
+    qDebug() << "Registering Tilde (~) and Backslash (\\) as global hotkeys...";
 
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
 
-    hotKeyID_Ins.signature = 'htk1';
-    hotKeyID_Ins.id = 1;
-    hotKeyID_Home.signature = 'htk2';
-    hotKeyID_Home.id = 2;
+    hotKeyID_Tilde.signature = 'htk1';
+    hotKeyID_Tilde.id = 1;
+    hotKeyID_Backslash.signature = 'htk2';
+    hotKeyID_Backslash.id = 2;
 
     // Create the event handler
     eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
     InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
 
-    // Register "Insert" key (kVK_Help is the closest macOS equivalent to Ins)
-    OSStatus status_Ins = RegisterEventHotKey(kVK_Help, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
+    // Register "Tilde" key (kVK_ANSI_Grave corresponds to `~`)
+    OSStatus status_Tilde = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID_Tilde, GetApplicationEventTarget(), 0, &hotKeyRef_Tilde);
 
-    // Register "Home" key
-    OSStatus status_Home = RegisterEventHotKey(kVK_Home, 0, hotKeyID_Home, GetApplicationEventTarget(), 0, &hotKeyRef_Home);
+    // Register "Backslash" key (kVK_ANSI_Backslash corresponds to `\`)
+    OSStatus status_Backslash = RegisterEventHotKey(kVK_ANSI_Backslash, 0, hotKeyID_Backslash, GetApplicationEventTarget(), 0, &hotKeyRef_Backslash);
 
-    if (status_Ins != noErr) {
-        qDebug() << "Failed to register Insert hotkey. Error code:" << status_Ins;
+    if (status_Tilde != noErr) {
+        qDebug() << "Failed to register Tilde hotkey. Error code:" << status_Tilde;
     } else {
-        qDebug() << "Insert (Ins) hotkey registered successfully!";
+        qDebug() << "Tilde (~) hotkey registered successfully!";
     }
 
-    if (status_Home != noErr) {
-        qDebug() << "Failed to register Home hotkey. Error code:" << status_Home;
+    if (status_Backslash != noErr) {
+        qDebug() << "Failed to register Backslash hotkey. Error code:" << status_Backslash;
     } else {
-        qDebug() << "Home hotkey registered successfully! Press Home to run the executable.";
+        qDebug() << "Backslash (\\) hotkey registered successfully! Press \\ to run the executable.";
     }
 }
 #endif
