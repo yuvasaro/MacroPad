@@ -1,8 +1,6 @@
 #include "mainwindow.h"
-#include <QApplication>
-#include <windows.h>
 
-std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {
