@@ -13,13 +13,18 @@ HHOOK MainWindow::keyboardHook = nullptr;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
-    registerGlobalHotkey();
+    registerGlobalHotkey();  // This will set the keyboard hook properly
     createTrayIcon();
 
     setWindowTitle("Configuration Software");
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+    if (keyboardHook) {
+        UnhookWindowsHookEx(keyboardHook);
+        keyboardHook = nullptr;
+    }
+}
 
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
@@ -64,109 +69,80 @@ void MainWindow::exitApplication() {
     QApplication::quit();
 }
 // ===== WINDOWS IMPLEMENTATION =====
+
 #ifdef _WIN32
 #include <thread>
 
-std::string path = "C:\\Users\\aarav\\OneDrive\\Desktop\\Arduino IDE.lnk";
+//std::string path = "C:\\Users\\aarav\\OneDrive\\Desktop\\Arduino IDE.lnk";
+std::string path = "Notepad";
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
-LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+
+//Registers a hotkey and associates it with an action (in this case, a lambda function that performs an action).
+void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
+    hotkeyActions[vkCode] = action;
+}
+
+/*Customized arbitrary set of keystrokes
+This is an example: Simulates pressing the Alt + Space keys, shoudl open up the system menu in Windows.
+*/
+void MainWindow::simulateAltSpace() {
+    std::vector<INPUT> inputs(4);
+
+    // Press ALT
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_MENU;
+
+    // Press Space
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_SPACE;
+
+    // Release Space
+    inputs[2].type = INPUT_KEYBOARD;
+    inputs[2].ki.wVk = VK_SPACE;
+    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // Release ALT
+    inputs[3].type = INPUT_KEYBOARD;
+    inputs[3].ki.wVk = VK_MENU;
+    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(inputs.size(), inputs.data(), sizeof(INPUT));
+}
+
+
+// KeyCustomization function: This callback function processes keyboard input for the global hotkeys
+LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
-        KBDLLHOOKSTRUCT *kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
-        if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F5) {
-            // Run the notification in a separate thread to prevent blocking
-            std::thread([] {
-
-                // MessageBox(NULL, L"Hotkey F5 Pressed!", L"Notification", MB_OK | MB_SYSTEMMODAL);
-
-                // Simulate Alt + Spacebar
-                INPUT inputs[4] = {};
-
-                // Press ALT
-                inputs[0].type = INPUT_KEYBOARD;
-                inputs[0].ki.wVk = VK_MENU;
-
-                // Press SPACE
-                inputs[1].type = INPUT_KEYBOARD;
-                inputs[1].ki.wVk = VK_SPACE;
-
-                // Release SPACE
-                inputs[2].type = INPUT_KEYBOARD;
-                inputs[2].ki.wVk = VK_SPACE;
-                inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-
-                // Release ALT
-                inputs[3].type = INPUT_KEYBOARD;
-                inputs[3].ki.wVk = VK_MENU;
-                inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-                SendInput(4, inputs, sizeof(INPUT));
-
-                // // Simulate pressing Win + R
-
-                // INPUT inputs[4] = {};
-
-                // // Press Win
-                // inputs[0].type = INPUT_KEYBOARD;
-                // inputs[0].ki.wVk = VK_LWIN;
-
-                // // Press R
-                // inputs[1].type = INPUT_KEYBOARD;
-                // inputs[1].ki.wVk = 'R';
-
-                // // Release R
-                // inputs[2].type = INPUT_KEYBOARD;
-                // inputs[2].ki.wVk = 'R';
-                // inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-
-                // // Release Win
-                // inputs[3].type = INPUT_KEYBOARD;
-                // inputs[3].ki.wVk = VK_LWIN;
-                // inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-                // SendInput(4, inputs, sizeof(INPUT));
-
-                // // Wait for the Run dialog to appear
-                // Sleep(500);
-
-                // // Type the stored path
-                // for (wchar_t ch : path) {
-                //     INPUT keyInput = {};
-                //     keyInput.type = INPUT_KEYBOARD;
-                //     keyInput.ki.wVk = 0;  // Set to 0 for Unicode input
-                //     keyInput.ki.wScan = ch;
-                //     keyInput.ki.dwFlags = KEYEVENTF_UNICODE;
-                //     SendInput(1, &keyInput, sizeof(INPUT));
-
-                //     // Release key
-                //     keyInput.ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
-                //     SendInput(1, &keyInput, sizeof(INPUT));
-                // }
-
-                // // Press Enter
-                // INPUT enterInput = {};
-                // enterInput.type = INPUT_KEYBOARD;
-                // enterInput.ki.wVk = VK_RETURN;
-                // SendInput(1, &enterInput, sizeof(INPUT));
-
-                // // Release Enter
-                // enterInput.ki.dwFlags = KEYEVENTF_KEYUP;
-                // SendInput(1, &enterInput, sizeof(INPUT));
-
-
-            }).detach();
-        }
-        if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F6) {  // Trigger hotkey
-            std::thread([] {
-                // Use ShellExecuteW to open the application instantly
-                ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            }).detach();
+        KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
+        if (wParam == WM_KEYDOWN) {
+            auto it = hotkeyActions.find(kbdStruct->vkCode);
+            if (it != hotkeyActions.end()) {
+                std::thread(it->second).detach();  // Run the registered action in a separate thread
+            }
         }
     }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
+
+// registerGlobalHotkey function: This function registers the global hotkeys (F6, F7)
 void MainWindow::registerGlobalHotkey() {
-    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
+
+    // Register F6 to open Notepad (or any executable defined in 'path')
+    RegisterHotkey(VK_F6, []() {
+        ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    });
+
+    // Register F7 to simulate Ctrl+Alt
+    RegisterHotkey(VK_F7, []() {
+        std::thread([]() {
+            // Simulate Control + Alt
+            simulateAltSpace();
+        }).detach();
+    });
+
+    // Set the keyboard hook to listen for key events globally (so the app runs)
+    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyCustomization, GetModuleHandle(NULL), 0);
 }
 #endif
 

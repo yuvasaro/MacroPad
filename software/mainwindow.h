@@ -28,6 +28,11 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+#ifdef _WIN32
+    void RegisterHotkey(UINT vkCode, std::function<void()> action);
+    void doTasks(std::vector<INPUT>& inputs);
+#endif
+
 protected:
     void closeEvent(QCloseEvent *event) override;  // Override close event to minimize to tray
 
@@ -38,13 +43,20 @@ private slots:
 private:
     void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
+    static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+
 
 QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;
 
 #ifdef _WIN32
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam);
+    void SimulateKeystrokes(std::vector<INPUT>& inputs);
+    static void OpenPath(const std::wstring& path);
     static HHOOK keyboardHook;
+    static void simulateAltSpace();
+
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
 #elif __linux__
