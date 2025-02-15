@@ -148,55 +148,71 @@ void MainWindow::registerGlobalHotkey() {
 
 // ===== MACOS IMPLEMENTATION =====
 #ifdef __APPLE__
-#include <CoreServices/CoreServices.h>
 #include <ApplicationServices/ApplicationServices.h>
-#include <iostream>
+#include <Carbon/Carbon.h>
+#include <QDebug>
+#include <QProcess>
+
+static EventHotKeyRef hotKeyRef_Ins;
+static EventHotKeyRef hotKeyRef_Home;
+static EventHotKeyID hotKeyID_Ins;
+static EventHotKeyID hotKeyID_Home;
+static EventHandlerUPP eventHandlerUPP;
+
+// Placeholder path to the executable
+const QString EXECUTABLE_PATH = "/Users/yuvasaro/Developer/C/experiments/bits/swap/inplace_swap";  // Replace this!
 
 OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
-    std::cout << "Tilde (~) key pressed! Triggering Cmd+Space..." << std::endl;
+    EventHotKeyID hotKeyID;
+    GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
 
-    // Simulate Cmd+Space keystroke
-    // CGEventRef cmdDown = CGEventCreateKeyboardEvent(NULL, kVK_Command, true);
-    // CGEventRef spaceDown = CGEventCreateKeyboardEvent(NULL, kVK_Space, true);
-    // CGEventRef spaceUp = CGEventCreateKeyboardEvent(NULL, kVK_Space, false);
-    // CGEventRef cmdUp = CGEventCreateKeyboardEvent(NULL, kVK_Command, false);
-
-    // CGEventPost(kCGHIDEventTap, cmdDown);
-    // CGEventPost(kCGHIDEventTap, spaceDown);
-    // CGEventPost(kCGHIDEventTap, spaceUp);
-    // CGEventPost(kCGHIDEventTap, cmdUp);
-
-    // CFRelease(cmdDown);
-    // CFRelease(spaceDown);
-    // CFRelease(spaceUp);
-    // CFRelease(cmdUp);
-
-    system("osascript -e 'tell application \"System Events\" to key code 49 using command down'"); // 49 = Space key
+    if (hotKeyID.id == 1) {
+        qDebug() << "Insert (Ins) key pressed! Opening Discord...";
+        system("open -a 'Discord'");
+    }
+    else if (hotKeyID.id == 2) {
+        qDebug() << "Home key pressed! Running executable at:" << EXECUTABLE_PATH;
+        if (!QProcess::startDetached(EXECUTABLE_PATH)) {
+            qDebug() << "Failed to launch executable!";
+        }
+    }
 
     return noErr;
 }
 
 void MainWindow::registerGlobalHotkey() {
-    std::cout << "Registering tilde (~) as a global hotkey..." << std::endl;
+    qDebug() << "Registering Insert (Ins) and Home keys as global hotkeys...";
 
-    EventHotKeyRef hotKeyRef;
-    EventHotKeyID hotKeyID;
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
 
-    hotKeyID.signature = 'htk1';
-    hotKeyID.id = 1;
+    hotKeyID_Ins.signature = 'htk1';
+    hotKeyID_Ins.id = 1;
+    hotKeyID_Home.signature = 'htk2';
+    hotKeyID_Home.id = 2;
 
-    // Register `~` as the hotkey
-    OSStatus status = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef);
-    if (status != noErr) {
-        std::cerr << "Failed to register hotkey. Error code: " << status << std::endl;
+    // Create the event handler
+    eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
+    InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
+
+    // Register "Insert" key (kVK_Help is the closest macOS equivalent to Ins)
+    OSStatus status_Ins = RegisterEventHotKey(kVK_Help, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
+
+    // Register "Home" key
+    OSStatus status_Home = RegisterEventHotKey(kVK_Home, 0, hotKeyID_Home, GetApplicationEventTarget(), 0, &hotKeyRef_Home);
+
+    if (status_Ins != noErr) {
+        qDebug() << "Failed to register Insert hotkey. Error code:" << status_Ins;
     } else {
-        std::cout << "Hotkey registered successfully! Press ~ to trigger Cmd+Space." << std::endl;
+        qDebug() << "Insert (Ins) hotkey registered successfully!";
     }
 
-    InstallApplicationEventHandler(&hotkeyCallback, 1, &eventType, nullptr, nullptr);
+    if (status_Home != noErr) {
+        qDebug() << "Failed to register Home hotkey. Error code:" << status_Home;
+    } else {
+        qDebug() << "Home hotkey registered successfully! Press Home to run the executable.";
+    }
 }
 #endif
 
