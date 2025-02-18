@@ -77,6 +77,10 @@ void MainWindow::exitApplication() {
 std::string path = "Notepad";
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
 
+
+std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
+
+
 //Registers a hotkey and associates it with an action (in this case, a lambda function that performs an action).
 void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
     hotkeyActions[vkCode] = action;

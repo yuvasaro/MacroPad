@@ -31,6 +31,7 @@ public:
 #ifdef _WIN32
     void RegisterHotkey(UINT vkCode, std::function<void()> action);
     void doTasks(std::vector<INPUT>& inputs);
+    static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
 #endif
 
 protected:
@@ -43,7 +44,7 @@ private slots:
 private:
     void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
-    static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+
 
 
 QSystemTrayIcon *trayIcon;

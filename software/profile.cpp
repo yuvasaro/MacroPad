@@ -7,7 +7,7 @@ using namespace std;
 Profile::Profile(const string& userName): name(userName) {}
 
 void Profile::setMacro(int keyNum, const string& type, const string& content) {
-    macros[keyNum] = std::move(make_unique<Macro>(type, content));
+    macros[keyNum] = std::move(std::make_unique<Macro>(type, content));
 }
 
 void Profile::deleteMacro(int keyNum) {
@@ -15,7 +15,7 @@ void Profile::deleteMacro(int keyNum) {
 }
 
 void Profile::runMacro(int keyNum) {
-    cout << "In Profile::runMacro type='" << macros[keyNum]->getType() << "', content='" << macros[keyNum]->getContent() << "'" << endl;
+//   std::cout << "In Profile::runMacro type='" << macros[keyNum]->getType() << "', content='" << macros[keyNum]->getContent() << "'" << endl;
     if (macros.find(keyNum) != macros.end()) {
         macros[keyNum]->callback();
     } else {

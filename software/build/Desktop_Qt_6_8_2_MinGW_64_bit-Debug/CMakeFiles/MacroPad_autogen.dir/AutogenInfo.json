@@ -369,9 +369,21 @@
 	"HEADERS" : 
 	[
 		[
+			"C:/Users/zhulu/MacroPad/software/macro.h",
+			"MU",
+			"EWIEGA46WW/moc_macro.cpp",
+			null
+		],
+		[
 			"C:/Users/zhulu/MacroPad/software/mainwindow.h",
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",
+			null
+		],
+		[
+			"C:/Users/zhulu/MacroPad/software/profile.h",
+			"MU",
+			"EWIEGA46WW/moc_profile.cpp",
 			null
 		]
 	],
@@ -446,8 +458,10 @@
 	"SETTINGS_FILE" : "C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/MacroPad_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
+		[ "C:/Users/zhulu/MacroPad/software/macro.cpp", "MU", null ],
 		[ "C:/Users/zhulu/MacroPad/software/main.cpp", "MU", null ],
-		[ "C:/Users/zhulu/MacroPad/software/mainwindow.cpp", "MU", null ]
+		[ "C:/Users/zhulu/MacroPad/software/mainwindow.cpp", "MU", null ],
+		[ "C:/Users/zhulu/MacroPad/software/profile.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],
