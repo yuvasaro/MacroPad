@@ -32,6 +32,8 @@ public:
     void RegisterHotkey(UINT vkCode, std::function<void()> action);
     void doTasks(std::vector<INPUT>& inputs);
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+    static void hotkeyCallback(int keyNum);
+
 #endif
 
 protected:
@@ -57,6 +59,7 @@ QMenu *trayMenu;
     static void OpenPath(const std::wstring& path);
     static HHOOK keyboardHook;
     static void simulateAltSpace();
+
 
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
