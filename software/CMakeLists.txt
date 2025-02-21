@@ -26,6 +26,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         macro.h macro.cpp
         profile.h profile.cpp
+        config.h config.cpp
     )
 else()
     if(ANDROID)

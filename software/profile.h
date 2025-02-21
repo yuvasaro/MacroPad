@@ -30,7 +30,7 @@ public:
     void deleteMacro(int keyNum);
     void runMacro(int keyNum);
 
-    void saveProfile(const string& filePath);
+    void saveProfile();
     static Profile loadProfile(const string& filePath);
 
     Macro getMacro(int keyNum);

@@ -1,6 +1,7 @@
 #include "profile.h"
 #include <iostream>
 #include <fstream>
+#include "config.h"
 
 using namespace std;
 
@@ -24,7 +25,10 @@ void Profile::runMacro(int keyNum) {
 }
 
 // save profile to file
-void Profile::saveProfile(const string& filePath) {
+void Profile::saveProfile() {
+    filesystem::path configDir = Config::getConfigDir();
+    filesystem::path filePath = configDir / (name + ".txt");
+
     ofstream outFile(filePath);
     if (outFile.is_open()) {
         outFile << "Name: " << name << "\n";
@@ -41,7 +45,8 @@ void Profile::saveProfile(const string& filePath) {
 }
 
 // Load profile from file
-Profile Profile::loadProfile(const string& filePath) {
+Profile Profile::loadProfile(const string& nameLookUp) {
+    filesystem::path filePath = Config::getConfigDir() / (nameLookUp + ".txt");
     ifstream inFile(filePath);
 
     if(inFile.is_open()) {
