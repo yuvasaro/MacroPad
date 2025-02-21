@@ -879,7 +879,11 @@ MacroPad_autogen/timestamp: \
 	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/3.29.3/CMakeRCCompiler.cmake \
 	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/3.29.3/CMakeSystem.cmake \
 	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/moc_predefs.h \
+	C:/Users/dakot/MacroPad/software/macro.cpp \
+	C:/Users/dakot/MacroPad/software/macro.h \
 	C:/Users/dakot/MacroPad/software/main.cpp \
 	C:/Users/dakot/MacroPad/software/mainwindow.cpp \
 	C:/Users/dakot/MacroPad/software/mainwindow.h \
+	C:/Users/dakot/MacroPad/software/profile.cpp \
+	C:/Users/dakot/MacroPad/software/profile.h \
 	C:/Qt/Tools/CMake_64/bin/cmake.exe
