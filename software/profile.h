@@ -2,6 +2,7 @@
 #define PROFILE_H
 
 #include "macro.h"
+#include <memory>
 #include <string>
 #include <map>
 
@@ -10,7 +11,7 @@ class Profile {
 private:
 
     string name;
-    map<int, unique_ptr<Macro>> macros;
+    std::map<int, std::unique_ptr<Macro>> macros;
 
 public:
 
