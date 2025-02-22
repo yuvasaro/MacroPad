@@ -22,11 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Configuration Software");
 }
 
+
 MainWindow::~MainWindow() {
-    if (keyboardHook) {
+    /* if (keyboardHook) {
         UnhookWindowsHookEx(keyboardHook);
         keyboardHook = nullptr;
-    }
+    } */
 }
 
 void MainWindow::createTrayIcon() {

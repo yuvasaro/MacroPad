@@ -46,7 +46,7 @@ private slots:
 private:
     void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
-
+   // static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
 
 
 QSystemTrayIcon *trayIcon;
