@@ -3,7 +3,10 @@
 #include "QIcon"
 #include <QAction>
 #include <QMenu>
+#include <iostream>
+#include "profile.h"
 #include "string"
+#include <shlobj.h>
 
 #ifdef _WIN32
 #include "shellapi.h"
@@ -19,11 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Configuration Software");
 }
 
+
 MainWindow::~MainWindow() {
-    if (keyboardHook) {
+    /* if (keyboardHook) {
         UnhookWindowsHookEx(keyboardHook);
         keyboardHook = nullptr;
-    }
+    } */
 }
 
 void MainWindow::createTrayIcon() {
@@ -77,6 +81,29 @@ void MainWindow::exitApplication() {
 std::string path = "Notepad";
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
 
+
+std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
+std::unique_ptr<Profile> currentProfile = std::make_unique<Profile>("DefaultProfile");
+
+
+std::unordered_map<UINT, int> keyToMacroNumber = {
+    {VK_NUMPAD1, 1}, {VK_NUMPAD2, 2}, {VK_NUMPAD3, 3},
+    {VK_NUMPAD4, 4}, {VK_NUMPAD5, 5}, {VK_NUMPAD6, 6},
+    {VK_NUMPAD7, 7}, {VK_NUMPAD8, 8}, {VK_NUMPAD9, 9}
+};
+
+//Week 6: created
+// Function to get the config directory path
+std::string getConfigDir() {
+    PWSTR path = NULL;
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path))) {
+        std::wstring wPath(path);
+        CoTaskMemFree(path);  // Free memory allocated by SHGetKnownFolderPath
+        return std::string(wPath.begin(), wPath.end()) + "\\YourAppName\\";
+    }
+    return "";
+}
+
 //Registers a hotkey and associates it with an action (in this case, a lambda function that performs an action).
 void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
     hotkeyActions[vkCode] = action;
@@ -110,6 +137,16 @@ void MainWindow::simulateAltSpace() {
 }
 
 
+//Week 6: created
+void MainWindow::hotkeyCallback(int keyNum) {
+    if (currentProfile) {
+        currentProfile->runMacro(keyNum);
+    } else {
+        std::cerr << "No active profile found!\n";
+    }
+}
+
+//Week 6: modified
 // KeyCustomization function: This callback function processes keyboard input for the global hotkeys
 LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
@@ -117,7 +154,14 @@ LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM l
         if (wParam == WM_KEYDOWN) {
             auto it = hotkeyActions.find(kbdStruct->vkCode);
             if (it != hotkeyActions.end()) {
-                std::thread(it->second).detach();  // Run the registered action in a separate thread
+                std::thread(it->second).detach();
+            } else {
+                // If key is mapped to a macro number, execute it
+                auto macroIt = keyToMacroNumber.find(kbdStruct->vkCode);
+                if (macroIt != keyToMacroNumber.end()) {
+                    int macroNum = macroIt->second;
+                    hotkeyCallback(macroNum);
+                }
             }
         }
     }
@@ -144,6 +188,7 @@ void MainWindow::registerGlobalHotkey() {
     // Set the keyboard hook to listen for key events globally (so the app runs)
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyCustomization, GetModuleHandle(NULL), 0);
 }
+
 #endif
 
 // ===== MACOS IMPLEMENTATION =====

@@ -1,13 +1,14 @@
 #include "profile.h"
 #include <iostream>
 #include <fstream>
+#include "config.h"
 
 using namespace std;
 
 Profile::Profile(const string& userName): name(userName) {}
 
 void Profile::setMacro(int keyNum, const string& type, const string& content) {
-    macros[keyNum] = std::move(make_unique<Macro>(type, content));
+    macros[keyNum] = std::move(std::make_unique<Macro>(type, content));
 }
 
 void Profile::deleteMacro(int keyNum) {
@@ -15,7 +16,6 @@ void Profile::deleteMacro(int keyNum) {
 }
 
 void Profile::runMacro(int keyNum) {
-    cout << "In Profile::runMacro type='" << macros[keyNum]->getType() << "', content='" << macros[keyNum]->getContent() << "'" << endl;
     if (macros.find(keyNum) != macros.end()) {
         macros[keyNum]->callback();
     } else {
@@ -24,7 +24,10 @@ void Profile::runMacro(int keyNum) {
 }
 
 // save profile to file
-void Profile::saveProfile(const string& filePath) {
+void Profile::saveProfile() {
+    filesystem::path configDir = Config::getConfigDir();
+    filesystem::path filePath = configDir / (name + ".txt");
+
     ofstream outFile(filePath);
     if (outFile.is_open()) {
         outFile << "Name: " << name << "\n";
@@ -41,7 +44,8 @@ void Profile::saveProfile(const string& filePath) {
 }
 
 // Load profile from file
-Profile Profile::loadProfile(const string& filePath) {
+Profile Profile::loadProfile(const string& nameLookUp) {
+    filesystem::path filePath = Config::getConfigDir() / (nameLookUp + ".txt");
     ifstream inFile(filePath);
 
     if(inFile.is_open()) {
