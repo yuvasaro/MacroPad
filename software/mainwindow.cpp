@@ -129,6 +129,7 @@ void MainWindow::simulateAltSpace() {
 }
 
 
+
 // KeyCustomization function: This callback function processes keyboard input for the global hotkeys
 LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {    
