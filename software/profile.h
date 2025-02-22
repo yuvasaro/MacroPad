@@ -14,14 +14,12 @@ private:
 
 public:
 
-    // a bunch of chat gpt code that helped me debug the pointer issue somehow???
     Profile(const Profile&) = delete;
     Profile& operator=(const Profile&) = delete;
 
     Profile() = default;
     Profile(Profile&&) = default;
     Profile& operator=(Profile&&) = default;
-    // ----------------------------------------
 
     Profile(const string& userName);
     ~Profile() = default;

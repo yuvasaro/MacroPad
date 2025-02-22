@@ -5,12 +5,12 @@
 std::filesystem::path Config::getConfigDir() {
     std::filesystem::path configPath;
 
-#ifdef _WIN32
+#ifdef _WIN32 // C:\Users\username\AppData\Local\YourAppName\
     char path[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path))) {
         configPath = std::filesystem::path(path) / "MacroPad";
     }
-#elif __APPLE__
+#elif __APPLE__ // /Users/username/Library/Application Support/YourAppName/
     const char* home = getenv("HOME");
     if (!home) {
         struct passwd* pw = getpwuid(getuid());
@@ -18,7 +18,7 @@ std::filesystem::path Config::getConfigDir() {
     }
 
     configPath = std::filesystem::path(home) / "Library/Application Support/MacroPad";
-#elif __linux__
+#elif __linux__ // /home/username/.config/YourAppName/
     const char* home = getenv("HOME");
     if (!home) {
         struct passwd* pw = getpwuid(getuid());

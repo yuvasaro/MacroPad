@@ -16,7 +16,6 @@ void Profile::deleteMacro(int keyNum) {
 }
 
 void Profile::runMacro(int keyNum) {
-    cout << "In Profile::runMacro type='" << macros[keyNum]->getType() << "', content='" << macros[keyNum]->getContent() << "'" << endl;
     if (macros.find(keyNum) != macros.end()) {
         macros[keyNum]->callback();
     } else {
