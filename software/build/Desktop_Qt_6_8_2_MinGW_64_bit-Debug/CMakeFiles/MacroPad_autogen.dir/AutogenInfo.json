@@ -269,6 +269,11 @@
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QTuioTouchPluginTargets.cmake",
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QTuioTouchPluginTargets-relwithdebinfo.cmake",
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QTuioTouchPluginAdditionalTargetInfo.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginConfig.cmake",
+		"C:/Qt/Tools/CMake_64/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginTargets.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginTargets-relwithdebinfo.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginAdditionalTargetInfo.cmake",
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QWindowsDirect2DIntegrationPluginConfig.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake",
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QWindowsDirect2DIntegrationPluginTargets.cmake",
@@ -291,6 +296,15 @@
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginTargets-relwithdebinfo.cmake",
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginAdditionalTargetInfo.cmake",
 		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Widgets/Qt6WidgetsVersionlessAliasTargets.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersion.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersionImpl.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfig.cmake",
+		"C:/Qt/Tools/CMake_64/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortDependencies.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets-relwithdebinfo.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortAdditionalTargetInfo.cmake",
+		"C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortVersionlessAliasTargets.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.29/Modules/GNUInstallDirs.cmake"
 	],
 	"CMAKE_SOURCE_DIR" : "C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software",
@@ -304,6 +318,12 @@
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",
 			null
+		],
+		[
+			"C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/serialhandler.h",
+			"MU",
+			"EWIEGA46WW/moc_serialhandler.cpp",
+			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
@@ -315,6 +335,7 @@
 		"QT_CORE_LIB",
 		"QT_GUI_LIB",
 		"QT_NEEDS_QMAIN",
+		"QT_SERIALPORT_LIB",
 		"QT_WIDGETS_LIB",
 		"UNICODE",
 		"WIN32",
@@ -337,6 +358,7 @@
 		"C:/Qt/6.8.2/mingw_64/mkspecs/win32-g++",
 		"C:/Qt/6.8.2/mingw_64/include/QtWidgets",
 		"C:/Qt/6.8.2/mingw_64/include/QtGui",
+		"C:/Qt/6.8.2/mingw_64/include/QtSerialPort",
 		"C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++",
 		"C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32",
 		"C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward",
@@ -384,6 +406,11 @@
 		],
 		[
 			"C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/mainwindow.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/serialhandler.cpp",
 			"MU",
 			null
 		]

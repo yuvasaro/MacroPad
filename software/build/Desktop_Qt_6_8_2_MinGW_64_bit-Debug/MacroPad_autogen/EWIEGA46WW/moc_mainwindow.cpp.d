@@ -83,6 +83,8 @@ C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/build/Desktop_Qt_6_8_
   C:/Qt/6.8.2/mingw_64/include/QtCore/qpair.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/qpoint.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/qprocessordetection.h \
+  C:/Qt/6.8.2/mingw_64/include/QtCore/qproperty.h \
+  C:/Qt/6.8.2/mingw_64/include/QtCore/qpropertyprivate.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/qrect.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/qrefcount.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/qscopedpointer.h \
@@ -173,6 +175,10 @@ C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/build/Desktop_Qt_6_8_
   C:/Qt/6.8.2/mingw_64/include/QtGui/qvectornd.h \
   C:/Qt/6.8.2/mingw_64/include/QtGui/qwindowdefs.h \
   C:/Qt/6.8.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+  C:/Qt/6.8.2/mingw_64/include/QtSerialPort/QSerialPort \
+  C:/Qt/6.8.2/mingw_64/include/QtSerialPort/qserialport.h \
+  C:/Qt/6.8.2/mingw_64/include/QtSerialPort/qserialportglobal.h \
+  C:/Qt/6.8.2/mingw_64/include/QtSerialPort/qtserialportexports.h \
   C:/Qt/6.8.2/mingw_64/include/QtWidgets/QMainWindow \
   C:/Qt/6.8.2/mingw_64/include/QtWidgets/QMenu \
   C:/Qt/6.8.2/mingw_64/include/QtWidgets/QMessageBox \
@@ -631,4 +637,5 @@ C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/build/Desktop_Qt_6_8_
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wnnc.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wow64apiset.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypes.h \
-  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypesbase.h
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypesbase.h \
+  C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/serialhandler.h

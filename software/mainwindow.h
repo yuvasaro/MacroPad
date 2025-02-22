@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include "serialhandler.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -34,10 +35,12 @@ protected:
 private slots:
     void showWindow();  // Restore window from system tray
     void exitApplication();  // Quit application
+    void handleButtonPress(int button);
 
 private:
     void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
+    SerialHandler *m_serialHandler;
 
 QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;

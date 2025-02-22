@@ -82,6 +82,8 @@ MacroPad_autogen/timestamp: \
 	C:/Qt/6.8.2/mingw_64/include/QtCore/qpair.h \
 	C:/Qt/6.8.2/mingw_64/include/QtCore/qpoint.h \
 	C:/Qt/6.8.2/mingw_64/include/QtCore/qprocessordetection.h \
+	C:/Qt/6.8.2/mingw_64/include/QtCore/qproperty.h \
+	C:/Qt/6.8.2/mingw_64/include/QtCore/qpropertyprivate.h \
 	C:/Qt/6.8.2/mingw_64/include/QtCore/qrect.h \
 	C:/Qt/6.8.2/mingw_64/include/QtCore/qrefcount.h \
 	C:/Qt/6.8.2/mingw_64/include/QtCore/qscopedpointer.h \
@@ -172,6 +174,10 @@ MacroPad_autogen/timestamp: \
 	C:/Qt/6.8.2/mingw_64/include/QtGui/qvectornd.h \
 	C:/Qt/6.8.2/mingw_64/include/QtGui/qwindowdefs.h \
 	C:/Qt/6.8.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+	C:/Qt/6.8.2/mingw_64/include/QtSerialPort/QSerialPort \
+	C:/Qt/6.8.2/mingw_64/include/QtSerialPort/qserialport.h \
+	C:/Qt/6.8.2/mingw_64/include/QtSerialPort/qserialportglobal.h \
+	C:/Qt/6.8.2/mingw_64/include/QtSerialPort/qtserialportexports.h \
 	C:/Qt/6.8.2/mingw_64/include/QtWidgets/QMainWindow \
 	C:/Qt/6.8.2/mingw_64/include/QtWidgets/QMenu \
 	C:/Qt/6.8.2/mingw_64/include/QtWidgets/QMessageBox \
@@ -291,6 +297,10 @@ MacroPad_autogen/timestamp: \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QTuioTouchPluginConfig.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QTuioTouchPluginTargets-relwithdebinfo.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QTuioTouchPluginTargets.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginAdditionalTargetInfo.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginConfig.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginTargets-relwithdebinfo.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QVirtualKeyboardPluginTargets.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QWindowsDirect2DIntegrationPluginAdditionalTargetInfo.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QWindowsDirect2DIntegrationPluginConfig.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Gui/Qt6QWindowsDirect2DIntegrationPluginTargets-relwithdebinfo.cmake \
@@ -307,6 +317,14 @@ MacroPad_autogen/timestamp: \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6GuiTools/Qt6GuiToolsTargets-relwithdebinfo.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6GuiTools/Qt6GuiToolsTargets.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6GuiTools/Qt6GuiToolsVersionlessTargets.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortAdditionalTargetInfo.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfig.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersion.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersionImpl.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortDependencies.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets-relwithdebinfo.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets.cmake \
+	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6SerialPort/Qt6SerialPortVersionlessAliasTargets.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginAdditionalTargetInfo.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginConfig.cmake \
 	C:/Qt/6.8.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginTargets-relwithdebinfo.cmake \
@@ -819,4 +837,6 @@ MacroPad_autogen/timestamp: \
 	C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/main.cpp \
 	C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/mainwindow.cpp \
 	C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/mainwindow.h \
+	C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/serialhandler.cpp \
+	C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/serialhandler.h \
 	C:/Qt/Tools/CMake_64/bin/cmake.exe
