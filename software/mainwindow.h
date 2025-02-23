@@ -9,6 +9,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shlobj.h>
+#include "shellapi.h"
 #elif __APPLE__
 #include <Carbon/Carbon.h>
 #elif __linux__
