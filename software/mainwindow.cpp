@@ -16,8 +16,14 @@ HHOOK MainWindow::keyboardHook = nullptr;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
-    registerGlobalHotkey();  // This will set the keyboard hook properly
+    std::unique_ptr<Profile> profile = std::make_unique<Profile>();
+
+    registerGlobalHotkey(profile, 1, "execute", "C:\\Windows\\System32\\notepad.exe");
+
+    registerGlobalHotkey(profile, 2, "simulate", "");
+
     createTrayIcon();
+
 
     setWindowTitle("Configuration Software");
 }
@@ -72,6 +78,8 @@ void MainWindow::exitApplication() {
     trayIcon->hide();  // Hide tray icon before quitting
     QApplication::quit();
 }
+
+
 // ===== WINDOWS IMPLEMENTATION =====
 
 #ifdef _WIN32
@@ -168,26 +176,71 @@ LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM l
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
+//week7
+void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const string& type, const string& content){
+    UINT vkCode = 0;
+
+    // Map keyNum to virtual key code (adjust mapping as needed)
+    switch (keyNum) {
+    case 1: vkCode = VK_NUMPAD1; break;
+    case 2: vkCode = VK_NUMPAD2; break;
+    case 3: vkCode = VK_NUMPAD3; break;
+    case 4: vkCode = VK_NUMPAD4; break;
+    case 5: vkCode = VK_NUMPAD5; break;
+    case 6: vkCode = VK_NUMPAD6; break;
+    case 7: vkCode = VK_NUMPAD7; break;
+    case 8: vkCode = VK_NUMPAD8; break;
+    case 9: vkCode = VK_NUMPAD9; break;
+    default:
+        std::cerr << "Invalid key number specified.\n";
+        return;
+    }
+
+    // Register the hotkey based on the type
+    if (type == "execute") {
+        std::wstring wcontent(content.begin(), content.end());
+        RegisterHotkey(vkCode, [wcontent]() {
+            ShellExecuteW(NULL, L"open", wcontent.c_str(), NULL, NULL, SW_SHOWNORMAL);
+        });
+    } else if (type == "simulate") {
+        RegisterHotkey(vkCode, []() {
+            std::thread([]() {
+                simulateAltSpace();  // Example simulation, customize as needed
+            }).detach();
+        });
+    } else if (type == "macro" && profile) {
+        RegisterHotkey(vkCode, [profile, keyNum]() {
+            profile->runMacro(keyNum);
+        });
+    } else {
+        std::cerr << "Unsupported action type.\n";
+    }
+
+    // Ensure the keyboard hook is set
+    if (!keyboardHook) {
+        keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyCustomization, GetModuleHandle(NULL), 0);
+    }
+}
 
 // registerGlobalHotkey function: This function registers the global hotkeys (F6, F7)
-void MainWindow::registerGlobalHotkey() {
+//void MainWindow::registerGlobalHotkey() {
 
-    // Register F6 to open Notepad (or any executable defined in 'path')
-    RegisterHotkey(VK_F6, []() {
-        ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
-    });
+//     // Register F6 to open Notepad (or any executable defined in 'path')
+//     RegisterHotkey(VK_F6, []() {
+//         ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+//     });
 
-    // Register F7 to simulate Ctrl+Alt
-    RegisterHotkey(VK_F7, []() {
-        std::thread([]() {
-            // Simulate Control + Alt
-            simulateAltSpace();
-        }).detach();
-    });
+//     // Register F7 to simulate Ctrl+Alt
+//     RegisterHotkey(VK_F7, []() {
+//         std::thread([]() {
+//             // Simulate Control + Alt
+//             simulateAltSpace();
+//         }).detach();
+//     });
 
-    // Set the keyboard hook to listen for key events globally (so the app runs)
-    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyCustomization, GetModuleHandle(NULL), 0);
-}
+//     // Set the keyboard hook to listen for key events globally (so the app runs)
+//     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyCustomization, GetModuleHandle(NULL), 0);
+// }
 
 #endif
 

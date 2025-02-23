@@ -648,4 +648,6 @@ C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wnnc.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wow64apiset.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypes.h \
-  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypesbase.h
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypesbase.h \
+  C:/Users/zhulu/MacroPad/software/macro.h \
+  C:/Users/zhulu/MacroPad/software/profile.h

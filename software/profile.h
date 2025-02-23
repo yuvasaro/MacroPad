@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 
-using namespace std;
+//using namespace std;
 class Profile {
 private:
 

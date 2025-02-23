@@ -653,7 +653,9 @@ C:/Users/zhulu/MacroPad/software/mainwindow.h
  mdp:C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypes.h
  mdp:C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wtypesbase.h
  mdp:C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/moc_predefs.h
+ mdp:C:/Users/zhulu/MacroPad/software/macro.h
  mdp:C:/Users/zhulu/MacroPad/software/mainwindow.h
+ mdp:C:/Users/zhulu/MacroPad/software/profile.h
 C:/Users/zhulu/MacroPad/software/profile.h
 C:/Users/zhulu/MacroPad/software/config.cpp
 C:/Users/zhulu/MacroPad/software/macro.cpp

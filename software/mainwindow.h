@@ -1,11 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QCloseEvent>
 #include <QMessageBox>
+
 
 #ifdef _WIN32
 #include <windows.h>
@@ -18,6 +20,8 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 #endif
+
+#include "profile.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -46,9 +50,9 @@ private slots:
     void exitApplication();  // Quit application
 
 private:
-    void registerGlobalHotkey();
+    void registerGlobalHotkey(Profile* profile, int keyNum, const std::string& type, const std::string& content);
+
     void createTrayIcon();  // System tray setup
-   //static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
 
 
 
