@@ -9,6 +9,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shlobj.h>
+#include "shellapi.h"
 #elif __APPLE__
 #include <Carbon/Carbon.h>
 #elif __linux__
@@ -46,7 +48,7 @@ private slots:
 private:
     void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
-   static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+   //static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
 
 
 

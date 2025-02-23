@@ -6,10 +6,10 @@
 #include <iostream>
 #include "profile.h"
 #include "string"
-#include <shlobj.h>
+
 
 #ifdef _WIN32
-#include "shellapi.h"
+
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
@@ -82,7 +82,7 @@ std::string path = "Notepad";
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
 
 
-//std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
+std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
 std::unique_ptr<Profile> currentProfile = std::make_unique<Profile>("DefaultProfile");
 
 
