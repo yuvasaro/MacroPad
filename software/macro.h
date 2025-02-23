@@ -13,8 +13,6 @@ private:
     string content;
 
 public:
-
-    function<void()> callback;
     Macro();
     Macro(const string& userType, const string& userContent);
     ~Macro();
