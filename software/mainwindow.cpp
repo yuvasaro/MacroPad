@@ -6,10 +6,10 @@
 #include <iostream>
 #include "profile.h"
 #include "string"
-#include <shlobj.h>
+
 
 #ifdef _WIN32
-#include "shellapi.h"
+
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 

@@ -476,6 +476,8 @@ C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/cderr.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/cguid.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/combaseapi.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/comcat.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/commctrl.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/commdlg.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/concurrencysal.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/corecrt.h \
@@ -489,11 +491,13 @@ C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/ddeml.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/debugapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/dlgs.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/docobj.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/dpapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/driverspecs.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/errhandlingapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/errno.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/excpt.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/exdisp.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/fibersapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/fileapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/fltwinerror.h \
@@ -504,8 +508,10 @@ C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/inaddr.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/interlockedapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/ioapiset.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/isguids.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/jobapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/joystickapi.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/knownfolders.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/ktmtypes.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/libloaderapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/locale.h \
@@ -527,8 +533,10 @@ C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/ncrypt.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/oaidl.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/objbase.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/objectarray.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/objidl.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/objidlbase.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/ocidl.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/ole2.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/oleauto.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/oleidl.h \
@@ -540,6 +548,8 @@ C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/processtopologyapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/profileapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/propidl.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/propkeydef.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/propsys.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/prsht.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/psdk_inc/_fd_types.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/psdk_inc/_ip_mreq1.h \
@@ -581,12 +591,19 @@ C:/Users/zhulu/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/securitybaseapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/servprov.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/shellapi.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/sherrors.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/shldisp.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/shlguid.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/shlobj.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/shobjidl.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/shtypes.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/signal.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/specstrings.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/stdio.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/stralign.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/string.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/stringapiset.h \
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/structuredquerycondition.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/swprintf.inl \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/synchapi.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/sys/timeb.h \
