@@ -242,7 +242,7 @@ void MainWindow::registerGlobalHotkey() {
     InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
 
     // Register "Insert" key (kVK_Help is the closest macOS equivalent to Ins)
-    OSStatus status_Ins = RegisterEventHotKey(kVK_Help, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
+    OSStatus status_Ins = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
 
     // Register "Home" key
     OSStatus status_Home = RegisterEventHotKey(kVK_Home, 0, hotKeyID_Home, GetApplicationEventTarget(), 0, &hotKeyRef_Home);
