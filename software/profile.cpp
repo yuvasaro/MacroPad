@@ -15,13 +15,13 @@ void Profile::deleteMacro(int keyNum) {
     macros.erase(keyNum);
 }
 
-void Profile::runMacro(int keyNum) {
-    if (macros.find(keyNum) != macros.end()) {
-        macros[keyNum]->callback();
-    } else {
-        cout << "Macro not found!\n";
-    }
-}
+// void Profile::runMacro(int keyNum) {
+//     if (macros.find(keyNum) != macros.end()) {
+//         macros[keyNum]->callback();
+//     } else {
+//         cout << "Macro not found!\n";
+//     }
+// }
 
 // save profile to file
 void Profile::saveProfile() {
