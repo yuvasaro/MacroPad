@@ -15,14 +15,12 @@ private:
 
 public:
 
-    // a bunch of chat gpt code that helped me debug the pointer issue somehow???
     Profile(const Profile&) = delete;
     Profile& operator=(const Profile&) = delete;
 
     Profile() = default;
     Profile(Profile&&) = default;
     Profile& operator=(Profile&&) = default;
-    // ----------------------------------------
 
     Profile(const string& userName);
     ~Profile() = default;
@@ -31,7 +29,7 @@ public:
     void deleteMacro(int keyNum);
     void runMacro(int keyNum);
 
-    void saveProfile(const string& filePath);
+    void saveProfile();
     static Profile loadProfile(const string& filePath);
 
     Macro getMacro(int keyNum);
