@@ -16,7 +16,7 @@ HHOOK MainWindow::keyboardHook = nullptr;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
-    registerGlobalHotkey();  // This will set the keyboard hook properly
+    registerGlobalHotkey(&profile);  // This will set the keyboard hook properly
     createTrayIcon();
 
     setWindowTitle("Configuration Software");
@@ -24,10 +24,17 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 MainWindow::~MainWindow() {
+<<<<<<< Updated upstream
     /* if (keyboardHook) {
         UnhookWindowsHookEx(keyboardHook);
         keyboardHook = nullptr;
     } */
+=======
+    // if (keyboardHook) {
+    //     UnhookWindowsHookEx(keyboardHook);
+    //     keyboardHook = nullptr;
+    // }
+>>>>>>> Stashed changes
 }
 
 void MainWindow::createTrayIcon() {
@@ -212,64 +219,39 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
 
-    if (hotKeyID.id == 1) {
-        qDebug() << "Tilde (~) key pressed! Opening Discord...";
-        system("open -a 'Discord'");
-    }
-    else if (hotKeyID.id == 2) {
-        qDebug() << "Backslash (\\) key pressed! Running executable at:" << EXECUTABLE_PATH;
+    Profile* profile = static_cast<Profile*>(userData); // Retrieve the Profile object
 
-        QProcess process;
-
-        // Extract and set the working directory
-        QFileInfo exeInfo(EXECUTABLE_PATH);
-        QString workingDir = exeInfo.absolutePath();
-        process.setWorkingDirectory(workingDir);
-
-        // Print working directory for debugging
-        qDebug() << "Setting working directory to:" << workingDir;
-
-        // Launch the executable
-        if (!process.startDetached(EXECUTABLE_PATH)) {
-            qDebug() << "Failed to launch executable!";
-        }
+    if (hotKeyID.id >= 1 && hotKeyID.id <= 9) {
+        qDebug() << "Hotkey for number" << hotKeyID.id << "pressed! Running macro...";
+        profile->runMacro(hotKeyID.id);
     }
 
     return noErr;
 }
 
-void MainWindow::registerGlobalHotkey() {
-    qDebug() << "Registering Tilde (~) and Backslash (\\) as global hotkeys...";
+void MainWindow::registerGlobalHotkey(Profile* profile) {
+    qDebug() << "Registering number keys (1-9) as global hotkeys...";
 
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
 
-    hotKeyID_Tilde.signature = 'htk1';
-    hotKeyID_Tilde.id = 1;
-    hotKeyID_Backslash.signature = 'htk2';
-    hotKeyID_Backslash.id = 2;
-
-    // Create the event handler
     eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
-    InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
+    InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, (void*) profile, nullptr);
 
-    // Register "Tilde" key (kVK_ANSI_Grave corresponds to `~`)
-    OSStatus status_Tilde = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID_Tilde, GetApplicationEventTarget(), 0, &hotKeyRef_Tilde);
+    for (int i = 1; i <= 9; ++i) {
+        EventHotKeyID hotKeyID;
+        hotKeyID.signature = 'htk0' + i;
+        hotKeyID.id = i;
 
-    // Register "Backslash" key (kVK_ANSI_Backslash corresponds to `\`)
-    OSStatus status_Backslash = RegisterEventHotKey(kVK_ANSI_Backslash, 0, hotKeyID_Backslash, GetApplicationEventTarget(), 0, &hotKeyRef_Backslash);
+        EventHotKeyRef hotKeyRef;
+        OSStatus status = RegisterEventHotKey(kVK_ANSI_1 + (i - 1), 0, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef);
 
-    if (status_Tilde != noErr) {
-        qDebug() << "Failed to register Tilde hotkey. Error code:" << status_Tilde;
-    } else {
-        qDebug() << "Tilde (~) hotkey registered successfully!";
-    }
-
-    if (status_Backslash != noErr) {
-        qDebug() << "Failed to register Backslash hotkey. Error code:" << status_Backslash;
-    } else {
-        qDebug() << "Backslash (\\) hotkey registered successfully! Press \\ to run the executable.";
+        if (status != noErr) {
+            qDebug() << "Failed to register hotkey for number" << i << ". Error code:" << status;
+        } else {
+            qDebug() << "Hotkey for number" << i << "registered successfully!";
+        }
     }
 }
 #endif
