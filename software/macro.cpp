@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Macro::Macro() : type("defaultType"), content("defaultContent"), callback(nullptr) {}
+Macro::Macro() : type("defaultType"), content("defaultContent") {}
 
 
 Macro::Macro(const string& userType, const string& userContent) : type(userType), content(userContent) {}
