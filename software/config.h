@@ -1,12 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <iostream>
 #include <filesystem>
 
 #ifdef _WIN32
-#include <windows.h>
-#include <shlobj.h>
+//#include <windows.h>
+
 #elif __APPLE__
 #include <unistd.h>
 #include <sys/types.h>

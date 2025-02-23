@@ -82,7 +82,7 @@ std::string path = "Notepad";
 std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
 
 
-std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
+//std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
 std::unique_ptr<Profile> currentProfile = std::make_unique<Profile>("DefaultProfile");
 
 
@@ -94,15 +94,15 @@ std::unordered_map<UINT, int> keyToMacroNumber = {
 
 //Week 6: created
 // Function to get the config directory path
-std::string getConfigDir() {
-    PWSTR path = NULL;
-    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path))) {
-        std::wstring wPath(path);
-        CoTaskMemFree(path);  // Free memory allocated by SHGetKnownFolderPath
-        return std::string(wPath.begin(), wPath.end()) + "\\YourAppName\\";
-    }
-    return "";
-}
+// std::string getConfigDir() {
+//     PWSTR path = NULL;
+//     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path))) {
+//         std::wstring wPath(path);
+//         CoTaskMemFree(path);  // Free memory allocated by SHGetKnownFolderPath
+//         return std::string(wPath.begin(), wPath.end()) + "\\YourAppName\\";
+//     }
+//     return "";
+// }
 
 //Registers a hotkey and associates it with an action (in this case, a lambda function that performs an action).
 void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
