@@ -24,17 +24,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 MainWindow::~MainWindow() {
-<<<<<<< Updated upstream
     /* if (keyboardHook) {
         UnhookWindowsHookEx(keyboardHook);
         keyboardHook = nullptr;
     } */
-=======
-    // if (keyboardHook) {
-    //     UnhookWindowsHookEx(keyboardHook);
-    //     keyboardHook = nullptr;
-    // }
->>>>>>> Stashed changes
 }
 
 void MainWindow::createTrayIcon() {
