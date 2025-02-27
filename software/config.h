@@ -15,10 +15,12 @@
 #include <pwd.h>
 #endif
 
+#include <QString>
+
 class Config
 {
 public:
-    static std::filesystem::path getConfigDir();
+    static QString getConfigDir();
 };
 
 #endif // CONFIG_H

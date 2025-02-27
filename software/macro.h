@@ -1,27 +1,23 @@
 #ifndef MACRO_H
 #define MACRO_H
 
-#include <string>
-#include <functional>
-
-
-using namespace std;
+#include <QString>
 
 class Macro {
 private:
-    string type;
-    string content;
+    QString type;
+    QString content;
 
 public:
     Macro();
-    Macro(const string& userType, const string& userContent);
+    Macro(const QString& userType, const QString& userContent);
     ~Macro();
 
-    void setType(const string& newType);
-    void setContent(const string& newContent);
+    void setType(const QString& newType);
+    void setContent(const QString& newContent);
 
-    string getType();
-    string getContent();
+    QString getType();
+    QString getContent();
 
     void runCallback();
 };

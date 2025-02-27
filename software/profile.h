@@ -3,14 +3,13 @@
 
 #include "macro.h"
 #include <memory>
-#include <string>
 #include <map>
+#include <QString>
 
-using namespace std;
 class Profile {
 private:
 
-    string name;
+    QString name;
     std::map<int, std::unique_ptr<Macro>> macros;
 
 public:
@@ -22,17 +21,15 @@ public:
     Profile(Profile&&) = default;
     Profile& operator=(Profile&&) = default;
 
-    Profile(const string& userName);
+    Profile(const QString& userName);
     ~Profile() = default;
 
-    void setMacro(int keyNum, const string& type, const string& content);
+    void setMacro(int keyNum, const QString& type, const QString& content);
     void deleteMacro(int keyNum);
-    // void runMacro(int keyNum);
+    std::unique_ptr<Macro>& getMacro(int keyNum);
 
     void saveProfile();
-    static Profile loadProfile(const string& filePath);
-
-    Macro getMacro(int keyNum);
+    static Profile loadProfile(const QString& filePath);
 };
 
 #endif // PROFILE_H
