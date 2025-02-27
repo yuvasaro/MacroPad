@@ -244,17 +244,16 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
     if (macro != nullptr) {
         qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
 
-        const std::string& type = macro->getType();
-        const std::string& content = macro->getContent();
-        QString contentQstr = QString::fromStdString(content);
+        const QString& type = macro->getType();
+        const QString& content = macro->getContent();
 
         if (macro->getType() == "keystroke") {
 
         } else if (macro->getType() == "program") {
-            if (isAppBundle(contentQstr)) {
-                QProcess::startDetached("open", {"-a", contentQstr});
+            if (isAppBundle(content)) {
+                QProcess::startDetached("open", {"-a", content});
             } else {
-                QProcess::startDetached(QString::fromStdString(content));
+                QProcess::startDetached(content);
             }
         }
     }
@@ -262,7 +261,7 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
     return noErr;
 }
 
-void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const string& type, const string& content) {
+void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
@@ -275,19 +274,7 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const string
     eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
     InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-    for (int i = 1; i <= 9; ++i) {
-        EventHotKeyID hotKeyID;
-        hotKeyID.signature = 'htk0' + i;
-        hotKeyID.id = i;
-=======
-    // Register "Insert" key (kVK_Help is the closest macOS equivalent to Ins)
-    OSStatus status_Ins = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
->>>>>>> 18b46333f0ff24c14be0f2ccfa01b087e87728c9
-=======
     OSStatus status = RegisterEventHotKey(keyMap.at(keyNum), 0, hotkeyID, GetApplicationEventTarget(), 0, &hotkeyRef);
->>>>>>> Stashed changes
 
     if (status != noErr) {
         qDebug() << "Failed to register hotkey. Error code:" << status;

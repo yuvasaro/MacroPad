@@ -66,7 +66,7 @@ QMenu *trayMenu;
 
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
-    void registerGlobalHotkey(Profile* profile, int keyNum, const string& type, const string& content);
+    void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
 #elif __linux__
     static void listenForHotkeys();
     Display *display;

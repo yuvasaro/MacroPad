@@ -17,23 +17,10 @@ void Profile::deleteMacro(int keyNum) {
     macros.erase(keyNum);
 }
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-// void Profile::runMacro(int keyNum) {
-//     if (macros.find(keyNum) != macros.end()) {
-//         macros[keyNum]->callback();
-//     } else {
-//         cout << "Macro not found!\n";
-//     }
-// }
-=======
 std::unique_ptr<Macro>& Profile::getMacro(int keyNum) {
     return macros[keyNum];
 }
->>>>>>> Stashed changes
 
-=======
->>>>>>> 000f604976be3bf924fb15d8f296ad0b4b42935e
 // save profile to file
 void Profile::saveProfile() {
     QString configDir = Config::getConfigDir(); // Assuming this method returns a QString
