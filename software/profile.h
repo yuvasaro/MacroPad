@@ -32,7 +32,7 @@ public:
     void saveProfile();
     static Profile loadProfile(const string& filePath);
 
-    Macro getMacro(int keyNum);
+    std::unique_ptr<Macro>& getMacro(int keyNum);
 };
 
 #endif // PROFILE_H

@@ -15,6 +15,7 @@ void Profile::deleteMacro(int keyNum) {
     macros.erase(keyNum);
 }
 
+<<<<<<< Updated upstream
 // void Profile::runMacro(int keyNum) {
 //     if (macros.find(keyNum) != macros.end()) {
 //         macros[keyNum]->callback();
@@ -22,6 +23,11 @@ void Profile::deleteMacro(int keyNum) {
 //         cout << "Macro not found!\n";
 //     }
 // }
+=======
+std::unique_ptr<Macro>& Profile::getMacro(int keyNum) {
+    return macros[keyNum];
+}
+>>>>>>> Stashed changes
 
 // save profile to file
 void Profile::saveProfile() {

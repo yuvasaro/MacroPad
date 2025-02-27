@@ -50,7 +50,6 @@ private:
     // void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
     // static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
-    Profile profile;
 
 
 QSystemTrayIcon *trayIcon;
@@ -67,7 +66,7 @@ QMenu *trayMenu;
 
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
-    void registerGlobalHotkey(Profile* profile);
+    void registerGlobalHotkey(Profile* profile, int keyNum, const string& type, const string& content);
 #elif __linux__
     static void listenForHotkeys();
     Display *display;

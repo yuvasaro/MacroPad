@@ -13,10 +13,12 @@
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
+static Profile profile;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
-    registerGlobalHotkey(&profile);  // This will set the keyboard hook properly
+    registerGlobalHotkey(&profile, 1, "program", "/Applications/Discord.app");  // This will set the keyboard hook properly
     createTrayIcon();
 
     setWindowTitle("Configuration Software");
@@ -198,40 +200,82 @@ void MainWindow::registerGlobalHotkey() {
 #include <QDebug>
 #include <QProcess>
 #include <QFileInfo>
+#include <QDir>
 
-static EventHotKeyRef hotKeyRef_Tilde;
-static EventHotKeyRef hotKeyRef_Backslash;
-static EventHotKeyID hotKeyID_Tilde;
-static EventHotKeyID hotKeyID_Backslash;
 static EventHandlerUPP eventHandlerUPP;
 
-// Placeholder path to the executable
-const QString EXECUTABLE_PATH = "/Users/yuvasaro/Developer/C/experiments/bits/swap/inplace_swap";  // Replace this!
+static const std::map<int, int> keyMap = {
+    {1, kVK_ANSI_1},
+    {2, kVK_ANSI_2},
+    {3, kVK_ANSI_3},
+    {4, kVK_ANSI_4},
+    {5, kVK_ANSI_5},
+    {6, kVK_ANSI_6},
+    {7, kVK_ANSI_7},
+    {8, kVK_ANSI_8},
+    {9, kVK_ANSI_9}
+};
+
+bool isAppBundle(const QString &path) {
+    QFileInfo appInfo(path);
+
+    // 1. Check if path exists and is a directory
+    if (!appInfo.exists() || !appInfo.isDir()) {
+        return false;
+    }
+
+    // 2. Verify if it ends with ".app"
+    if (!path.endsWith(".app", Qt::CaseInsensitive)) {
+        return false;
+    }
+
+    // 3. Check if it contains an executable inside "Contents/MacOS/"
+    QDir macOSDir(path + "/Contents/MacOS");
+    QFileInfoList files = macOSDir.entryInfoList(QDir::Files | QDir::Executable);
+
+    return !files.isEmpty();  // Returns true if there is at least one executable file
+}
 
 OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
+    std::unique_ptr<Macro>& macro = profile.getMacro(hotKeyID.id);
 
-    Profile* profile = static_cast<Profile*>(userData); // Retrieve the Profile object
+    if (macro != nullptr) {
+        qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
 
-    if (hotKeyID.id >= 1 && hotKeyID.id <= 9) {
-        qDebug() << "Hotkey for number" << hotKeyID.id << "pressed! Running macro...";
-        profile->runMacro(hotKeyID.id);
+        const std::string& type = macro->getType();
+        const std::string& content = macro->getContent();
+        QString contentQstr = QString::fromStdString(content);
+
+        if (macro->getType() == "keystroke") {
+
+        } else if (macro->getType() == "program") {
+            if (isAppBundle(contentQstr)) {
+                QProcess::startDetached("open", {"-a", contentQstr});
+            } else {
+                QProcess::startDetached(QString::fromStdString(content));
+            }
+        }
     }
 
     return noErr;
 }
 
-void MainWindow::registerGlobalHotkey(Profile* profile) {
-    qDebug() << "Registering number keys (1-9) as global hotkeys...";
-
+void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const string& type, const string& content) {
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
 
-    eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
-    InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, (void*) profile, nullptr);
+    EventHotKeyRef hotkeyRef;
+    EventHotKeyID hotkeyID;
+    hotkeyID.id = keyNum;
 
+    // Create the event handler
+    eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
+    InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
+
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     for (int i = 1; i <= 9; ++i) {
         EventHotKeyID hotKeyID;
@@ -241,16 +285,17 @@ void MainWindow::registerGlobalHotkey(Profile* profile) {
     // Register "Insert" key (kVK_Help is the closest macOS equivalent to Ins)
     OSStatus status_Ins = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
 >>>>>>> 18b46333f0ff24c14be0f2ccfa01b087e87728c9
+=======
+    OSStatus status = RegisterEventHotKey(keyMap.at(keyNum), 0, hotkeyID, GetApplicationEventTarget(), 0, &hotkeyRef);
+>>>>>>> Stashed changes
 
-        EventHotKeyRef hotKeyRef;
-        OSStatus status = RegisterEventHotKey(kVK_ANSI_1 + (i - 1), 0, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef);
-
-        if (status != noErr) {
-            qDebug() << "Failed to register hotkey for number" << i << ". Error code:" << status;
-        } else {
-            qDebug() << "Hotkey for number" << i << "registered successfully!";
-        }
+    if (status != noErr) {
+        qDebug() << "Failed to register hotkey. Error code:" << status;
+    } else {
+        qDebug() << "Hotkey registered successfully!";
     }
+
+    profile->setMacro(keyNum, type, content);
 }
 #endif
 
