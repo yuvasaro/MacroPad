@@ -13,14 +13,9 @@ private:
     string content;
 
 public:
-
-    function<void()> callback;
     Macro();
     Macro(const string& userType, const string& userContent);
     ~Macro();
-
-    void keystrokeCallback();
-    void programCallback();
 
     void setType(const string& newType);
     void setContent(const string& newContent);

@@ -6,10 +6,10 @@
 #include <iostream>
 #include "profile.h"
 #include "string"
-#include <shlobj.h>
+
 
 #ifdef _WIN32
-#include "shellapi.h"
+
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
@@ -232,10 +232,15 @@ void MainWindow::registerGlobalHotkey(Profile* profile) {
     eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
     InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, (void*) profile, nullptr);
 
+<<<<<<< HEAD
     for (int i = 1; i <= 9; ++i) {
         EventHotKeyID hotKeyID;
         hotKeyID.signature = 'htk0' + i;
         hotKeyID.id = i;
+=======
+    // Register "Insert" key (kVK_Help is the closest macOS equivalent to Ins)
+    OSStatus status_Ins = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
+>>>>>>> 18b46333f0ff24c14be0f2ccfa01b087e87728c9
 
         EventHotKeyRef hotKeyRef;
         OSStatus status = RegisterEventHotKey(kVK_ANSI_1 + (i - 1), 0, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef);

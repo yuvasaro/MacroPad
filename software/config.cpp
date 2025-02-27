@@ -1,11 +1,16 @@
 #include "config.h"
 #include <iostream>
 
+#ifdef _WIN32
+#include <shlobj.h>
+#endif
 
 std::filesystem::path Config::getConfigDir() {
     std::filesystem::path configPath;
 
 #ifdef _WIN32 // C:\Users\username\AppData\Local\YourAppName\
+
+    #include <minwindef.h>
     char path[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path))) {
         configPath = std::filesystem::path(path) / "MacroPad";

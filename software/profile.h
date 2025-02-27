@@ -27,7 +27,7 @@ public:
 
     void setMacro(int keyNum, const string& type, const string& content);
     void deleteMacro(int keyNum);
-    void runMacro(int keyNum);
+    // void runMacro(int keyNum);
 
     void saveProfile();
     static Profile loadProfile(const string& filePath);
