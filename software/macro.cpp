@@ -2,28 +2,26 @@
 #include <iostream>
 #include <cstdlib>
 
-using namespace std;
 
 Macro::Macro() : type("defaultType"), content("defaultContent") {}
 
-
-Macro::Macro(const string& userType, const string& userContent) : type(userType), content(userContent) {}
+Macro::Macro(const QString& userType, const QString& userContent) : type(userType), content(userContent) {}
 
 Macro::~Macro() {}
 
-void Macro::setType(const string& newType)  {
+void Macro::setType(const QString& newType)  {
     type = newType;
 }
 
-void Macro::setContent(const string& newContent) {
+void Macro::setContent(const QString& newContent) {
     content = newContent;
 }
 
-string Macro::getType() {
+QString Macro::getType() {
     return type;
 }
 
-string Macro::getContent() {
+QString Macro::getContent() {
     return content;
 }
 
