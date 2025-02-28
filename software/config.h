@@ -16,11 +16,16 @@
 #endif
 
 #include <QString>
+#include <QObject>
 
-class Config
-{
+class Config : public QObject {
+    Q_OBJECT
+
 public:
-    static QString getConfigDir();
+    Config() = delete;  // Prevent instantiation
+    ~Config() {};
+
+    static Q_INVOKABLE QString getConfigDir();  // Static method accessible from QML
 };
 
 #endif // CONFIG_H
