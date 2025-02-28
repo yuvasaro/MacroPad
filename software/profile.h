@@ -5,31 +5,40 @@
 #include <memory>
 #include <map>
 #include <QString>
+#include <QObject>
 
-class Profile {
+class Profile : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
+
 private:
 
     QString name;
     std::map<int, std::unique_ptr<Macro>> macros;
 
 public:
+    explicit Profile(QObject* parent = nullptr);
+    Profile(const QString& userName, QObject* parent = nullptr);
+    ~Profile() = default;
 
     Profile(const Profile&) = delete;
     Profile& operator=(const Profile&) = delete;
 
     Profile() = default;
-    Profile(Profile&&) = default;
-    Profile& operator=(Profile&&) = default;
+    Profile(Profile&&) = delete;
+    Profile& operator=(Profile&&) = delete;
 
-    Profile(const QString& userName);
-    ~Profile() = default;
+    Q_INVOKABLE QString getName() const;
+    Q_INVOKABLE void setName(const QString& newName);
+    Q_INVOKABLE void setMacro(int keyNum, const QString& type, const QString& content);
+    Q_INVOKABLE void deleteMacro(int keyNum);
+    Q_INVOKABLE std::unique_ptr<Macro>& getMacro(int keyNum);
+    Q_INVOKABLE void saveProfile();
+    Q_INVOKABLE static Profile* loadProfile(const QString& nameLookUp);
 
-    void setMacro(int keyNum, const QString& type, const QString& content);
-    void deleteMacro(int keyNum);
-    std::unique_ptr<Macro>& getMacro(int keyNum);
+signals:
+    void nameChanged();
 
-    void saveProfile();
-    static Profile loadProfile(const QString& filePath);
 };
 
 #endif // PROFILE_H

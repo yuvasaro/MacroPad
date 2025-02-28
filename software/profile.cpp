@@ -5,9 +5,21 @@
 #include <QTextStream>
 #include <QDir>
 
-using namespace std;
 
-Profile::Profile(const QString& userName): name(userName) {}
+Profile::Profile(QObject* parent) : QObject(parent) {}
+
+Profile::Profile(const QString& userName, QObject* parent) : QObject(parent), name(userName) {}
+
+QString Profile::getName() const {
+    return name;
+}
+
+void Profile::setName(const QString& newName) {
+    if (name != newName) {
+        name = newName;
+        emit nameChanged();
+    }
+}
 
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
     macros[keyNum] = std::move(std::make_unique<Macro>(type, content));
@@ -15,6 +27,10 @@ void Profile::setMacro(int keyNum, const QString& type, const QString& content) 
 
 void Profile::deleteMacro(int keyNum) {
     macros.erase(keyNum);
+}
+
+std::unique_ptr<Macro>& Profile::getMacro(int keyNum) {
+    return macros[keyNum];
 }
 
 // save profile to file
@@ -40,7 +56,7 @@ void Profile::saveProfile() {
 }
 
 // Load profile from file
-Profile Profile::loadProfile(const QString& nameLookUp) {
+Profile* Profile::loadProfile(const QString& nameLookUp) {
     QString filePath = Config::getConfigDir() + "/" + nameLookUp + ".txt";
     QFile inFile(filePath);
 
@@ -58,10 +74,10 @@ Profile Profile::loadProfile(const QString& nameLookUp) {
             profileName = line.mid(6); // Skip "Name: "
         } else {
             qWarning() << "Missing profile name!";
-            return Profile(""); // Return empty profile if name is missing
+            return new Profile(""); // Return empty profile if name is missing
         }
 
-        Profile userProfile(profileName);
+        Profile* userProfile = new Profile(profileName);
 
         // Read the rest of the file
         while (!in.atEnd()) {
@@ -79,7 +95,7 @@ Profile Profile::loadProfile(const QString& nameLookUp) {
             else if (line.startsWith("content: ")) {
                 macroContent = line.mid(9); // Skip "content: "
                 if (keyNum != -1) {
-                    userProfile.setMacro(keyNum, macroType, macroContent);
+                    userProfile->setMacro(keyNum, macroType, macroContent);
                     keyNum = -1; // Reset keyNum after setting macro
                 }
             }
@@ -90,7 +106,7 @@ Profile Profile::loadProfile(const QString& nameLookUp) {
 
     } else {
         qWarning() << "Unable to open file for reading:" << filePath;
-        return Profile(""); // Return empty profile if file cannot be opened
+        return new Profile(""); // Return empty profile if file cannot be opened
     }
 }
 
