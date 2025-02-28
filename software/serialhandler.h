@@ -1,8 +1,12 @@
 #ifndef SERIALHANDLER_H
 #define SERIALHANDLER_H
 
+#include <QMainWindow>
 #include <QObject>
 #include <QSerialPort>
+#include <QMessageBox>
+#include <QString>
+#include <QDebug>
 
 class SerialHandler : public QObject
 {
@@ -12,13 +16,14 @@ public:
     ~SerialHandler();
 
 signals:
-    void buttonPressed(int button);
+    //void buttonPressed(int button);
+    void dataReceived(const int number);
 
 private slots:
     void readSerialData();
 
 private:
-    QSerialPort *serial;
+    QSerialPort* COMPORT;
     QByteArray buffer;
 };
 

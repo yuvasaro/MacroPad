@@ -4,57 +4,67 @@
 
 SerialHandler::SerialHandler(QObject *parent)
     : QObject(parent),
-    serial(new QSerialPort(this))
+    buffer(nullptr)
 {
     // Example configuration; adjust port name & baud rate as needed
-    serial->setPortName("COM3");          // or "/dev/ttyACM0" etc.
-    serial->setBaudRate(QSerialPort::Baud9600);
-    serial->setDataBits(QSerialPort::Data8);
-    serial->setParity(QSerialPort::NoParity);
-    serial->setStopBits(QSerialPort::OneStop);
-    serial->setFlowControl(QSerialPort::NoFlowControl);
+    COMPORT = new QSerialPort();
+    COMPORT->setPortName("COM7");          // or "/dev/ttyACM0" etc.
+    COMPORT->setBaudRate(QSerialPort::BaudRate::Baud19200);
+    COMPORT->setParity(QSerialPort::Parity::NoParity);
+    COMPORT->setDataBits(QSerialPort::DataBits::Data8);
+    COMPORT->setStopBits(QSerialPort::StopBits::OneStop);
+    COMPORT->setFlowControl(QSerialPort::FlowControl::NoFlowControl);
+    COMPORT->open(QIODevice::ReadWrite);
 
     // Try to open the port
-    if (serial->open(QIODevice::ReadOnly)) {
-        qDebug() << "Serial port opened successfully on" << serial->portName();
-        connect(serial, &QSerialPort::readyRead, this, &SerialHandler::readSerialData);
+        if (!COMPORT->isOpen()) {
+        qDebug() << "Error opening serial port:" << COMPORT->error();
     } else {
-        qDebug() << "Error opening serial port:" << serial->errorString();
+        qDebug() << "Serial port opened successfully on" << COMPORT->portName();
     }
+
+    connect(COMPORT, &QSerialPort::readyRead, this, &SerialHandler::readSerialData);
+
+    qDebug() << "Available ports:";
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+        qDebug() << "  Name:" << info.portName()
+        << "  Description:" << info.description()
+        << "  System Location:" << info.systemLocation();
+    }
+
+    // // Read all available bytes
+    // QByteArray data = COMPORT->readAll();
+
+    // // For debugging or logging, you can display it in the console
+    // qDebug() << "Received data:" << data;
 }
 
 SerialHandler::~SerialHandler()
 {
     // Clean up
-    if (serial->isOpen()) {
-        serial->close();
+    if (COMPORT->isOpen()) {
+        COMPORT->close();
     }
 }
 
 void SerialHandler::readSerialData()
 {
-    // Read any available data
-    QByteArray data = serial->readAll();
-    qDebug() << "Received raw data:" << data;
+    QByteArray data = COMPORT->readAll();
+    qDebug() << "Received data (raw bytes):" << data;
 
-    // Append to buffer for line-based parsing
-    buffer.append(data);
+    // Convert raw bytes to QString and trim off \r, \n, or other whitespace
+    QString trimmedText = QString::fromUtf8(data).trimmed();
 
-    // Check for newline-terminated messages
-    int index;
-    while ((index = buffer.indexOf('\n')) != -1) {
-        QByteArray line = buffer.left(index).trimmed();
-        buffer.remove(0, index + 1);
 
-        if (!line.isEmpty()) {
-            bool ok;
-            int buttonNum = line.toInt(&ok);
-            if (ok) {
-                qDebug() << "Parsed button number:" << buttonNum;
-                emit buttonPressed(buttonNum);
-            } else {
-                qDebug() << "Failed to parse integer from line:" << line;
-            }
-        }
-    }
+    // If you want it back in a QByteArray named 'butt'
+    QByteArray butt = trimmedText.toUtf8();
+    qDebug() << "Number only:" << butt;
+
+    int number = trimmedText.toInt();
+    qDebug() << "Integer:" << number;
+
+    // Or emit the trimmed string
+    emit dataReceived(number);
 }
+
+

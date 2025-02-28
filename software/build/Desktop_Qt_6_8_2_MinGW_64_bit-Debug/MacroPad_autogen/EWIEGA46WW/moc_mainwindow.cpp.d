@@ -1,10 +1,12 @@
 C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/mainwindow.h \
   C:/Users/aarav/OneDrive/Documents/GitHub/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/moc_predefs.h \
+  C:/Qt/6.8.2/mingw_64/include/QtCore/QDebug \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QList \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QObject \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QRect \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QSize \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QSizeF \
+  C:/Qt/6.8.2/mingw_64/include/QtCore/QString \
   C:/Qt/6.8.2/mingw_64/include/QtCore/q20functional.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/q20iterator.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/q20memory.h \
