@@ -1,12 +1,13 @@
 #include "config.h"
 #include <iostream>
-#include <shlobj.h>
+#include <QString>
+
 
 #ifdef _WIN32
 #include <shlobj.h>
 #endif
 
-std::filesystem::path Config::getConfigDir() {
+QString Config::getConfigDir() {
     std::filesystem::path configPath;
 
 #ifdef _WIN32 // C:\Users\username\AppData\Local\YourAppName\
@@ -44,6 +45,6 @@ std::filesystem::path Config::getConfigDir() {
         }
     }
 
-    return configPath;
+    return QString::fromStdString(configPath.string());
 
 }

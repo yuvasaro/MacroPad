@@ -50,8 +50,7 @@ private slots:
     void exitApplication();  // Quit application
 
 private:
-    void registerGlobalHotkey(Profile* profile, int keyNum, const std::string& type, const std::string& content);
-
+    void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
     void createTrayIcon();  // System tray setup
 
 
