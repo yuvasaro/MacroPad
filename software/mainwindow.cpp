@@ -203,6 +203,63 @@ static void skipTrack()
     SendInput(2, inputs, sizeof(INPUT));
 }
 
+// Simulates pressing and releasing the "Volume Up" multimedia key.
+static void volumeUp()
+{
+    qDebug() << "volumeUp called";
+    INPUT inputs[2] = {};
+
+    // Press the VK_VOLUME_UP key
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_UP;
+
+    // Release the VK_VOLUME_UP key
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_UP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // Send the key events
+    SendInput(2, inputs, sizeof(INPUT));
+}
+
+// Simulates pressing and releasing the "Volume Down" multimedia key.
+static void volumeDown()
+{
+    qDebug() << "volumeDown called";
+    INPUT inputs[2] = {};
+
+    // Press the VK_VOLUME_DOWN key
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_DOWN;
+
+    // Release the VK_VOLUME_DOWN key
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // Send the key events
+    SendInput(2, inputs, sizeof(INPUT));
+}
+
+// Simulates pressing and releasing the "Mute" multimedia key.
+static void mute()
+{
+    qDebug() << "mute called";
+    INPUT inputs[2] = {};
+
+    // Press the VK_VOLUME_MUTE key
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_MUTE;
+
+    // Release the VK_VOLUME_MUTE key
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // Send the key events
+    SendInput(2, inputs, sizeof(INPUT));
+}
+
 LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT *kbdStruct = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
@@ -263,6 +320,16 @@ void MainWindow::onDataReceived(int number)
     {
         profile = number-10;
         qDebug() << "Profile switched to " << profile;
+    }
+
+    if(number>70 && number <80)
+    {
+        if(number == 71)
+            volumeUp();
+        else if(number == 72)
+            volumeDown();
+        else if(number == 73)
+            mute();
     }
 
     switch(profile)
