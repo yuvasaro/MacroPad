@@ -85,5 +85,17 @@ Profile Profile::loadProfile(const string& nameLookUp) {
         cerr << "Unable to open file for reading.\n";
         return Profile("");
     }
+
+}
+
+//week 8
+Macro Profile::getMacro(int keyNum) {
+    auto it = macros.find(keyNum);
+    if (it != macros.end()) {
+        return *(it->second);  // Return a copy of the Macro object
+    } else {
+        cerr << "Macro not found for key " << keyNum << "!\n";
+        return Macro();  // Return a default Macro object
+    }
 }
 

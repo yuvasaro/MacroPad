@@ -7,7 +7,6 @@
 #include "profile.h"
 #include "string"
 
-
 #ifdef _WIN32
 
 HHOOK MainWindow::keyboardHook = nullptr;
@@ -16,10 +15,9 @@ HHOOK MainWindow::keyboardHook = nullptr;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
-    std::unique_ptr<Profile> profile = std::make_unique<Profile>();
+    Profile* profile = new Profile();
 
     registerGlobalHotkey(profile, 1, "execute", "C:\\Windows\\System32\\notepad.exe");
-
     registerGlobalHotkey(profile, 2, "simulate", "");
 
     createTrayIcon();
@@ -100,18 +98,6 @@ std::unordered_map<UINT, int> keyToMacroNumber = {
     {VK_NUMPAD7, 7}, {VK_NUMPAD8, 8}, {VK_NUMPAD9, 9}
 };
 
-//Week 6: created
-// Function to get the config directory path
-// std::string getConfigDir() {
-//     PWSTR path = NULL;
-//     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path))) {
-//         std::wstring wPath(path);
-//         CoTaskMemFree(path);  // Free memory allocated by SHGetKnownFolderPath
-//         return std::string(wPath.begin(), wPath.end()) + "\\YourAppName\\";
-//     }
-//     return "";
-// }
-
 //Registers a hotkey and associates it with an action (in this case, a lambda function that performs an action).
 void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
     hotkeyActions[vkCode] = action;
@@ -146,51 +132,53 @@ void MainWindow::simulateAltSpace() {
 
 
 //Week 6: created
-void MainWindow::hotkeyCallback(int keyNum) {
-    if (currentProfile) {
-        currentProfile->runMacro(keyNum);
-    } else {
-        std::cerr << "No active profile found!\n";
-    }
-}
+// void MainWindow::hotkeyCallback(int keyNum) {
+//     if (currentProfile) {
+//         currentProfile->runMacro(keyNum);
+//     } else {
+//         std::cerr << "No active profile found!\n";
+//     }
+// }
+
+
 
 //Week 6: modified
 // KeyCustomization function: This callback function processes keyboard input for the global hotkeys
-LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
         if (wParam == WM_KEYDOWN) {
             auto it = hotkeyActions.find(kbdStruct->vkCode);
             if (it != hotkeyActions.end()) {
                 std::thread(it->second).detach();
-            } else {
-                // If key is mapped to a macro number, execute it
-                auto macroIt = keyToMacroNumber.find(kbdStruct->vkCode);
-                if (macroIt != keyToMacroNumber.end()) {
-                    int macroNum = macroIt->second;
-                    hotkeyCallback(macroNum);
-                }
+            // } else {
+            //     // If key is mapped to a macro number, execute it
+            //     auto macroIt = keyToMacroNumber.find(kbdStruct->vkCode);
+            //     if (macroIt != keyToMacroNumber.end()) {
+            //         int macroNum = macroIt->second;
+            //         hotkeyCallback(macroNum);
+            //     }
             }
         }
     }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-//week7
+//week 8
 void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const string& type, const string& content){
     UINT vkCode = 0;
 
     // Map keyNum to virtual key code (adjust mapping as needed)
     switch (keyNum) {
-    case 1: vkCode = VK_NUMPAD1; break;
-    case 2: vkCode = VK_NUMPAD2; break;
-    case 3: vkCode = VK_NUMPAD3; break;
-    case 4: vkCode = VK_NUMPAD4; break;
-    case 5: vkCode = VK_NUMPAD5; break;
-    case 6: vkCode = VK_NUMPAD6; break;
-    case 7: vkCode = VK_NUMPAD7; break;
-    case 8: vkCode = VK_NUMPAD8; break;
-    case 9: vkCode = VK_NUMPAD9; break;
+    case 1: vkCode = 0x31; break; //should be changed to macro keys after profile is loaded
+    case 2: vkCode = 0x32; break;
+    case 3: vkCode = 0x33; break;
+    case 4: vkCode = 0x34; break;
+    case 5: vkCode = 0x35; break;
+    case 6: vkCode = 0x36; break;
+    case 7: vkCode = 0x37; break;
+    case 8: vkCode = 0x38; break;
+    case 9: vkCode = 0x39; break;
     default:
         std::cerr << "Invalid key number specified.\n";
         return;
@@ -208,17 +196,13 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const string
                 simulateAltSpace();  // Example simulation, customize as needed
             }).detach();
         });
-    } else if (type == "macro" && profile) {
-        RegisterHotkey(vkCode, [profile, keyNum]() {
-            profile->runMacro(keyNum);
-        });
     } else {
         std::cerr << "Unsupported action type.\n";
     }
 
     // Ensure the keyboard hook is set
     if (!keyboardHook) {
-        keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyCustomization, GetModuleHandle(NULL), 0);
+        keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, hotkeyCallback, GetModuleHandle(NULL), 0);
     }
 }
 

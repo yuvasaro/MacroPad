@@ -60,10 +60,8 @@ QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;
 
 #ifdef _WIN32
-    static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-    static LRESULT CALLBACK KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
     void SimulateKeystrokes(std::vector<INPUT>& inputs);
-    static void OpenPath(const std::wstring& path);
     static HHOOK keyboardHook;
     static void simulateAltSpace();
 
