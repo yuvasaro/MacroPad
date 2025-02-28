@@ -15,14 +15,28 @@ HHOOK MainWindow::keyboardHook = nullptr;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
+
+#ifdef _WIN32 //windows testing
     Profile* testProfile = new Profile("TestProfile");
 
     // Register the global hotkeys
     registerGlobalHotkey(testProfile, 1, "execute", QString::fromUtf8("C:\\Windows\\System32\\notepad.exe"));
-    registerGlobalHotkey(testProfile, 2, "simulate", "Alt+Space");
+    registerGlobalHotkey(testProfile, 2, "simulate", "Cmd Shift 4");
 
     qDebug() << "Profile 'TestProfile' created and saved.";
 
+    // Print out the macros in the profile for debugging
+    qDebug() << "Assigned macros for 'TestProfile':";
+    for (int i = 1; i <= 5; ++i) { // assuming you only have up to 5 macro keys
+        std::unique_ptr<Macro>& macro = testProfile->getMacro(i);  // Assuming getMacro returns a pointer for key i
+        if (macro) {
+            qDebug() << "Key " << i << " -> Type:" << macro->getType() << ", Content:" << macro->getContent();
+        } else {
+            qDebug() << "Key " << i << " is not assigned a macro.";
+        }
+    }
+
+#endif
     createTrayIcon();
 
 
@@ -94,41 +108,6 @@ std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
 std::unique_ptr<Profile> currentProfile = std::make_unique<Profile>("DefaultProfile");
 HHOOK keyboardHook = NULL;
 
-
-//Registers a hotkey and associates it with an action (in this case, a lambda function that performs an action).
-void MainWindow::RegisterHotkey(UINT vkCode, std::function<void()> action) {
-    hotkeyActions[vkCode] = action;
-}
-
-/*Customized arbitrary set of keystrokes
-This is an example: Simulates pressing the Alt + Space keys, shoudl open up the system menu in Windows.
-*/
-void MainWindow::simulateAltSpace() {
-    std::vector<INPUT> inputs(4);
-
-    // Press ALT
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_MENU;
-
-    // Press Space
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_SPACE;
-
-    // Release Space
-    inputs[2].type = INPUT_KEYBOARD;
-    inputs[2].ki.wVk = VK_SPACE;
-    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Release ALT
-    inputs[3].type = INPUT_KEYBOARD;
-    inputs[3].ki.wVk = VK_MENU;
-    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    SendInput(inputs.size(), inputs.data(), sizeof(INPUT));
-}
-
-
-
 //Week 6: modified
 // KeyCustomization function: This callback function processes keyboard input for the global hotkeys
 // LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
@@ -151,6 +130,7 @@ void MainWindow::simulateAltSpace() {
 //     return CallNextHookEx(NULL, nCode, wParam, lParam);
 // }
 
+//week 8: new
 LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
@@ -170,7 +150,47 @@ LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lPa
                         std::wstring wcontent = content.toStdWString();
                         ShellExecuteW(NULL, L"open", wcontent.c_str(), NULL, NULL, SW_SHOWNORMAL);
                     } else if (type == "simulate") {
-                        //work in progress, dont know about string yet.
+                        QStringList keySequence = content.split(" ");
+
+                        // Map string keys to virtual key codes
+                        QMap<QString, int> keyMap = {
+                            {"Cmd", VK_LWIN},   // Left Windows key
+                            {"Shift", VK_SHIFT}, // Shift key
+                            {"Ctrl", VK_CONTROL}, // Ctrl key
+                            {"Alt", VK_MENU},    // Alt key
+                            {"Space", VK_SPACE}, // Spacebar
+                            {"Enter", VK_RETURN}, // Enter key
+                            {"Backspace", VK_BACK}, // Backspace key
+                            {"Tab", VK_TAB},      // Tab key
+                            {"Esc", VK_ESCAPE},   // Escape key
+                            {"1", '1'},           // Number key 1
+                            {"2", '2'},           // Number key 2
+                            {"3", '3'},           // Number key 3
+                            {"4", '4'},           // Number key 4
+                            {"5", '5'},           // Number key 5
+                            // Add other necessary mappings here
+                        };
+
+                        // Simulate the key presses
+                        Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+
+                        for (const QString& key : keySequence) {
+                            if (keyMap.contains(key)) {
+                                int vk = keyMap[key];
+
+                                // Check for modifier keys like Shift, Cmd, etc.
+                                if (vk == VK_SHIFT || vk == VK_LWIN || vk == VK_CONTROL || vk == VK_MENU) {
+                                    modifiers |= Qt::KeyboardModifier(vk);
+                                } else {
+                                    // Send key event with modifier (if any)
+                                    QKeyEvent keyPress(QEvent::KeyPress, vk, modifiers);
+                                    QKeyEvent keyRelease(QEvent::KeyRelease, vk, modifiers);
+
+                                    QApplication::postEvent(QApplication::focusWidget(), &keyPress);
+                                    QApplication::postEvent(QApplication::focusWidget(), &keyRelease);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -180,7 +200,7 @@ LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lPa
 }
 
 
-//week 8
+//week 8 keyboard version
 // void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content){
 //     UINT vkCode = 0;
 
@@ -222,6 +242,7 @@ LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lPa
 //     }
 // }
 
+//week 8: mapped to macros
 void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
     if (!profile) {
         std::cerr << "Invalid profile.\n";

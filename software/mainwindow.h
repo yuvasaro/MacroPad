@@ -35,10 +35,8 @@ public:
     ~MainWindow();
 
 #ifdef _WIN32
-    void RegisterHotkey(UINT vkCode, std::function<void()> action);
     void doTasks(std::vector<INPUT>& inputs);
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
-    static void hotkeyCallback(int keyNum);
 
 #endif
 
@@ -60,7 +58,6 @@ QMenu *trayMenu;
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
-    void SimulateKeystrokes(std::vector<INPUT>& inputs);
     static HHOOK keyboardHook;
     static void simulateAltSpace();
 
