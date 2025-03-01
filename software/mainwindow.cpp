@@ -62,10 +62,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
         hide();  // Hide the window
         event->ignore();  // Ignore the close event
+        toggleDockIcon(false);
     }
 }
 
 void MainWindow::showWindow() {
+    toggleDockIcon(true);
     showNormal();  // Restore window
     activateWindow();
 }
@@ -74,6 +76,19 @@ void MainWindow::exitApplication() {
     trayIcon->hide();  // Hide tray icon before quitting
     QApplication::quit();
 }
+
+// Toggle Dock Icon on macOS
+void MainWindow::toggleDockIcon(bool show) {
+#ifdef Q_OS_MAC
+    ProcessSerialNumber psn = { 0, kCurrentProcess };
+    if (show) {
+        TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+    } else {
+        TransformProcessType(&psn, kProcessTransformToUIElementApplication);
+    }
+#endif
+}
+
 // ===== WINDOWS IMPLEMENTATION =====
 
 #ifdef _WIN32
