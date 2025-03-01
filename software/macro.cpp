@@ -16,14 +16,14 @@ Macro::~Macro() {}
 void Macro::setType(const QString& newType) {
     if (type != newType) {
         type = newType;
-        emit typeChanged(); // Notify QML about the change
+        emit typeChanged();
     }
 }
 
 void Macro::setContent(const QString& newContent) {
     if (content != newContent) {
         content = newContent;
-        emit contentChanged(); // Notify QML about the change
+        emit contentChanged();
     }
 }
 
@@ -81,5 +81,4 @@ QString Macro::getContent() const {
     return keys;
 }
 
-std::vector<WORD> result = Macro::translateKeys("H+CTRL+C");
 

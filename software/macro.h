@@ -25,6 +25,8 @@ public:
 
     QString getContent() const;
     void setContent(const QString& newContent);
+    static std::vector<WORD> translateKeys(const std::string& content);
+
 
 signals:
     void typeChanged();
@@ -32,11 +34,11 @@ signals:
 
     void runCallback();
 
-    static std::vector<WORD> translateKeys(const std::string& content);
 
 private:
     QString type;
     QString content;
+
 };
 
 #endif

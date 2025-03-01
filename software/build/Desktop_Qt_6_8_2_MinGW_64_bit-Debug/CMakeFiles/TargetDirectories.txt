@@ -1,4 +1,5 @@
 C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/MacroPad.dir
+C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/MacroPad_qmlimportscan.dir
 C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
 C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
 C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/CMakeFiles/list_install_components.dir
