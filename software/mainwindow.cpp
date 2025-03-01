@@ -14,10 +14,12 @@
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
-static Profile profile;
+static Profile profile("Profile 1");
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
+
+    registerGlobalHotkey(&profile, 1, "program", "/Applications/Discord.app");  // This will set the keyboard hook properly
 
     setWindowTitle("MacroPad - Configuration");
 
