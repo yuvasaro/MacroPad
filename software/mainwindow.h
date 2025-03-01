@@ -47,6 +47,7 @@ protected:
 private slots:
     void showWindow();  // Restore window from system tray
     void exitApplication();  // Quit application
+    void toggleDockIcon(bool show);
 
 private:
     void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
