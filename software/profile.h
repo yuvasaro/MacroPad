@@ -42,3 +42,4 @@ signals:
 };
 
 #endif // PROFILE_H
+

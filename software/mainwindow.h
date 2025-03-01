@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>
@@ -22,6 +23,8 @@
 #include <X11/XKBlib.h>
 #endif
 
+#include "profile.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -37,10 +40,8 @@ public:
     ~MainWindow();
 
 #ifdef _WIN32
-    void RegisterHotkey(UINT vkCode, std::function<void()> action);
     void doTasks(std::vector<INPUT>& inputs);
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
-    static void hotkeyCallback(int keyNum);
 
 #endif
 
@@ -50,27 +51,25 @@ protected:
 private slots:
     void showWindow();  // Restore window from system tray
     void exitApplication();  // Quit application
+    void toggleDockIcon(bool show);
 
 private:
-    void registerGlobalHotkey();
+    void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
     void createTrayIcon();  // System tray setup
-   // static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
 
 
 QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;
 
 #ifdef _WIN32
-    static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-    static LRESULT CALLBACK KeyCustomization(int nCode, WPARAM wParam, LPARAM lParam);
-    void SimulateKeystrokes(std::vector<INPUT>& inputs);
-    static void OpenPath(const std::wstring& path);
+    static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
     static HHOOK keyboardHook;
     static void simulateAltSpace();
 
 
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
+    void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
 #elif __linux__
     static void listenForHotkeys();
     Display *display;

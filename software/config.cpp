@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QString>
 
+
 #ifdef _WIN32
 #include <shlobj.h>
 #endif

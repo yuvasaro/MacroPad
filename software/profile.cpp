@@ -101,5 +101,5 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         qWarning() << "Unable to open file for reading:" << filePath;
         return new Profile("");
     }
-}
 
+}
