@@ -30,3 +30,14 @@
 9177	29235	7624943504750584	CMakeFiles/MacroPad.dir/MacroPad_autogen/mocs_compilation.cpp.obj	54176f70fb04cfa1
 9191	30843	7624943504884831	CMakeFiles/MacroPad.dir/mainwindow.cpp.obj	5a5c70ddd108961f
 30843	31911	7624943721410497	MacroPad.exe	dd98802a437b803c
+73	5462	7624951206649786	MacroPad_autogen/timestamp	9c595b9823e4a461
+73	5462	7624951206649786	MacroPad_autogen/mocs_compilation.cpp	9c595b9823e4a461
+73	5462	7624951206649786	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/timestamp	9c595b9823e4a461
+73	5462	7624951206649786	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/mocs_compilation.cpp	9c595b9823e4a461
+5467	5588	7624951209956413	.qt/rcc/qrc_resources.cpp	b15e1caf0eae24fb
+5467	5588	7624951209956413	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/.qt/rcc/qrc_resources.cpp	b15e1caf0eae24fb
+5612	5925	7624951210343367	CMakeFiles/MacroPad.dir/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/.qt/rcc/qrc_resources.cpp.obj	6a38b64ceeb38a4a
+5597	15351	7624951210195609	CMakeFiles/MacroPad.dir/main.cpp.obj	26be66118a385771
+5588	15757	7624951210115879	CMakeFiles/MacroPad.dir/MacroPad_autogen/mocs_compilation.cpp.obj	54176f70fb04cfa1
+5605	16186	7624951210273605	CMakeFiles/MacroPad.dir/mainwindow.cpp.obj	5a5c70ddd108961f
+16187	16875	7624951316094861	MacroPad.exe	dd98802a437b803c
