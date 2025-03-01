@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include "profile.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -46,9 +47,9 @@ private slots:
     void exitApplication();  // Quit application
 
 private:
-    void registerGlobalHotkey();
+    // void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
-   // static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+    // static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
 
 
 QSystemTrayIcon *trayIcon;
@@ -65,6 +66,7 @@ QMenu *trayMenu;
 
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
+    void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
 #elif __linux__
     static void listenForHotkeys();
     Display *display;
