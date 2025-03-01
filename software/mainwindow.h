@@ -64,7 +64,6 @@ QMenu *trayMenu;
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
     static HHOOK keyboardHook;
-    static void simulateAltSpace();
 
 
 #elif __APPLE__
