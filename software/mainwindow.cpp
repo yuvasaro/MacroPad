@@ -1,5 +1,7 @@
 #include "mainwindow.h"
+#include "fileio.h"
 #include "QApplication"
+#include <QQmlEngine>
 #include "QIcon"
 #include <QAction>
 #include <QMenu>
@@ -17,9 +19,23 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
     registerGlobalHotkey();  // This will set the keyboard hook properly
-    createTrayIcon();
 
-    setWindowTitle("Configuration Software");
+    setWindowTitle("MacroPad - Configuration");
+
+    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
+
+    // Create QQuickWidget to display QML
+    qmlWidget = new QQuickWidget(this);
+    qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
+
+    qmlWidget->engine()->rootContext()->setContextProperty("profileManager", new Profile(this));
+    qmlWidget->engine()->rootContext()->setContextProperty("fileIO", new FileIO(this));
+
+    qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
+    setCentralWidget(qmlWidget);
+
+    createTrayIcon();
 }
 
 

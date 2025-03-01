@@ -6,6 +6,9 @@
 #include <QMenu>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QQuickWidget>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -25,6 +28,9 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
+
+private:
+    QQuickWidget *qmlWidget;
 
 public:
     MainWindow(QWidget *parent = nullptr);
