@@ -1,73 +1,43 @@
 #include "macro.h"
-#include <iostream>
 #include <cstdlib>
 #ifdef _WIN32
 #include <minwindef.h>
 #include <windows.h>
 #endif
 
-using namespace std;
 
-Macro::Macro() : type("defaultType"), content("defaultContent"), callback(nullptr) {}
+Macro::Macro(QObject* parent) : QObject(parent), type("defaultType"), content("defaultContent") {}
 
-
-Macro::Macro(const string& userType, const string& userContent) : type(userType), content(userContent) {
-
-    if (type == "keystroke") {
-        callback = bind(&Macro::keystrokeCallback, this);
-    } else if (type == "program") {
-        callback = bind(&Macro::programCallback, this);
-    } else {
-        callback = nullptr;
-    }
-
-}
+Macro::Macro(const QString& userType, const QString& userContent, QObject* parent)
+    : QObject(parent), type(userType), content(userContent) {}
 
 Macro::~Macro() {}
 
-void Macro::keystrokeCallback() {
-
-}
-
-void Macro::programCallback() {
-
-    if (content.empty()) {
-        cerr << "Content is empty!" << endl;
-    }
-
-    if (system(nullptr)) {
-        system(content.c_str());
-    } else {
-        cerr << "system() is not available on this system!";
+void Macro::setType(const QString& newType) {
+    if (type != newType) {
+        type = newType;
+        emit typeChanged(); // Notify QML about the change
     }
 }
 
-void Macro::setType(const string& newType)  {
-    type = newType;
-
-    if (type == "keystroke") {
-        callback = bind(&Macro::keystrokeCallback, ref(*this));
-    } else if (type == "program") {
-        callback = bind(&Macro::programCallback, ref(*this));
-    } else {
-        callback = nullptr;
+void Macro::setContent(const QString& newContent) {
+    if (content != newContent) {
+        content = newContent;
+        emit contentChanged(); // Notify QML about the change
     }
 }
 
-void Macro::setContent(const string& newContent) {
-    content = newContent;
-}
-
-string Macro::getType() {
+QString Macro::getType() const {
     return type;
 }
 
-string Macro::getContent() {
+QString Macro::getContent() const {
     return content;
 }
 
- vector<WORD> Macro::translateKeys(const string& content) {
-    vector<string> strs;
+
+ std::vector<WORD> Macro::translateKeys(const std::string& content) {
+    std::vector<std::string> strs;
     int start = 0;
 
     for (int end = 0; end < content.size(); ++end) {
@@ -83,8 +53,8 @@ string Macro::getContent() {
         strs.push_back(content.substr(start));
     }
 
-    vector<WORD> keys;
-    vector<pair<string, WORD>> keyMap = {
+    std::vector<WORD> keys;
+    std::vector<std::pair<std::string, WORD>> keyMap = {
             {"CTRL", VK_CONTROL},
             {"ALT", VK_MENU},
             {"SHIFT", VK_SHIFT},
@@ -95,7 +65,7 @@ string Macro::getContent() {
             {"BACKSPACE", VK_BACK}
         };
 
-    for(const string& s : strs){
+    for(const std::string& s : strs){
         if(s.size()==1){
             keys.push_back(static_cast<WORD>(s[0]));
         } else {
@@ -107,15 +77,9 @@ string Macro::getContent() {
         }
     }
 
-    for (WORD key : keys) {
-        cout << key << " ";
-    }
 
     return keys;
 }
 
-vector<WORD> result = Macro::translateKeys("H+CTRL+C");
-
-
-
+std::vector<WORD> result = Macro::translateKeys("H+CTRL+C");
 

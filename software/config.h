@@ -15,10 +15,17 @@
 #include <pwd.h>
 #endif
 
-class Config
-{
+#include <QString>
+#include <QObject>
+
+class Config : public QObject {
+    Q_OBJECT
+
 public:
-    static std::filesystem::path getConfigDir();
+    Config() = delete;  // Prevent instantiation
+    ~Config() {};
+
+    static Q_INVOKABLE QString getConfigDir();  // Static method accessible from QML
 };
 
 #endif // CONFIG_H
