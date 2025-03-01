@@ -12,9 +12,10 @@
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
+static Profile profile;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
-
 
 #ifdef _WIN32 //windows testing
     Profile* testProfile = new Profile("TestProfile");
@@ -36,6 +37,9 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
+#endif
+#ifdef __APPLE__
+    registerGlobalHotkey(&profile, 1, "program", "/Applications/Discord.app");  // This will set the keyboard hook properly
 #endif
     createTrayIcon();
 
@@ -272,67 +276,90 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QStrin
 #include <Carbon/Carbon.h>
 #include <QDebug>
 #include <QProcess>
+#include <QFileInfo>
+#include <QDir>
 
-static EventHotKeyRef hotKeyRef_Ins;
-static EventHotKeyRef hotKeyRef_Home;
-static EventHotKeyID hotKeyID_Ins;
-static EventHotKeyID hotKeyID_Home;
 static EventHandlerUPP eventHandlerUPP;
 
-// Placeholder path to the executable
-const QString EXECUTABLE_PATH = "/Users/yuvasaro/Developer/C/experiments/bits/swap/inplace_swap";  // Replace this!
+static const std::map<int, int> keyMap = {
+    {1, kVK_ANSI_1},
+    {2, kVK_ANSI_2},
+    {3, kVK_ANSI_3},
+    {4, kVK_ANSI_4},
+    {5, kVK_ANSI_5},
+    {6, kVK_ANSI_6},
+    {7, kVK_ANSI_7},
+    {8, kVK_ANSI_8},
+    {9, kVK_ANSI_9}
+};
+
+bool isAppBundle(const QString &path) {
+    QFileInfo appInfo(path);
+
+    // 1. Check if path exists and is a directory
+    if (!appInfo.exists() || !appInfo.isDir()) {
+        return false;
+    }
+
+    // 2. Verify if it ends with ".app"
+    if (!path.endsWith(".app", Qt::CaseInsensitive)) {
+        return false;
+    }
+
+    // 3. Check if it contains an executable inside "Contents/MacOS/"
+    QDir macOSDir(path + "/Contents/MacOS");
+    QFileInfoList files = macOSDir.entryInfoList(QDir::Files | QDir::Executable);
+
+    return !files.isEmpty();  // Returns true if there is at least one executable file
+}
 
 OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
+    std::unique_ptr<Macro>& macro = profile.getMacro(hotKeyID.id);
 
-    if (hotKeyID.id == 1) {
-        qDebug() << "Insert (Ins) key pressed! Opening Discord...";
-        system("open -a 'Discord'");
-    }
-    else if (hotKeyID.id == 2) {
-        qDebug() << "Home key pressed! Running executable at:" << EXECUTABLE_PATH;
-        if (!QProcess::startDetached(EXECUTABLE_PATH)) {
-            qDebug() << "Failed to launch executable!";
+    if (macro != nullptr) {
+        qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
+
+        const QString& type = macro->getType();
+        const QString& content = macro->getContent();
+
+        if (macro->getType() == "keystroke") {
+
+        } else if (macro->getType() == "program") {
+            if (isAppBundle(content)) {
+                QProcess::startDetached("open", {"-a", content});
+            } else {
+                QProcess::startDetached(content);
+            }
         }
     }
 
     return noErr;
 }
 
-void MainWindow::registerGlobalHotkey() {
-    qDebug() << "Registering Insert (Ins) and Home keys as global hotkeys...";
-
+void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
 
-    hotKeyID_Ins.signature = 'htk1';
-    hotKeyID_Ins.id = 1;
-    hotKeyID_Home.signature = 'htk2';
-    hotKeyID_Home.id = 2;
+    EventHotKeyRef hotkeyRef;
+    EventHotKeyID hotkeyID;
+    hotkeyID.id = keyNum;
 
     // Create the event handler
     eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
     InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
 
-    // Register "Insert" key (kVK_Help is the closest macOS equivalent to Ins)
-    OSStatus status_Ins = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID_Ins, GetApplicationEventTarget(), 0, &hotKeyRef_Ins);
+    OSStatus status = RegisterEventHotKey(keyMap.at(keyNum), 0, hotkeyID, GetApplicationEventTarget(), 0, &hotkeyRef);
 
-    // Register "Home" key
-    OSStatus status_Home = RegisterEventHotKey(kVK_Home, 0, hotKeyID_Home, GetApplicationEventTarget(), 0, &hotKeyRef_Home);
-
-    if (status_Ins != noErr) {
-        qDebug() << "Failed to register Insert hotkey. Error code:" << status_Ins;
+    if (status != noErr) {
+        qDebug() << "Failed to register hotkey. Error code:" << status;
     } else {
-        qDebug() << "Insert (Ins) hotkey registered successfully!";
+        qDebug() << "Hotkey registered successfully!";
     }
 
-    if (status_Home != noErr) {
-        qDebug() << "Failed to register Home hotkey. Error code:" << status_Home;
-    } else {
-        qDebug() << "Home hotkey registered successfully! Press Home to run the executable.";
-    }
+    profile->setMacro(keyNum, type, content);
 }
 #endif
 
