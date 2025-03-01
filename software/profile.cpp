@@ -87,4 +87,3 @@ Profile Profile::loadProfile(const string& nameLookUp) {
         return Profile("");
     }
 }
-

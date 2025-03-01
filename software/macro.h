@@ -1,6 +1,10 @@
 #ifndef MACRO_H
 #define MACRO_H
 
+#ifdef _WIN32
+#include <minwindef.h>
+#include <windows.h>
+#endif
 #include <string>
 #include <functional>
 
@@ -29,6 +33,8 @@ public:
     string getContent();
 
     void runCallback();
+
+    static vector<WORD> translateKeys(const string& content);
 };
 
 #endif // MACRO_H

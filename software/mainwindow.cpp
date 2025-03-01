@@ -188,7 +188,7 @@ LRESULT CALLBACK MainWindow::KeyCustomization(int nCode, WPARAM wParam, LPARAM l
         if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F9) {
             INPUT inputs[14] = {};
             std::vector<std::pair<WORD, char>> my_map = {
-                {VK_LCONTROL,'p'},{'C','p'},{'C','r'},{VK_LCONTROL,'r'},
+                {17,'p'},{67,'p'},{'C','r'},{VK_LCONTROL,'r'},
                 {VK_LCONTROL,'p'},{'T','p'},{'T','r'},{VK_LCONTROL,'r'},
                 {VK_LCONTROL,'p'},{'V','p'},{'V','r'},{VK_LCONTROL,'r'},
                 {VK_RETURN,'p'},{VK_RETURN,'r'}};
