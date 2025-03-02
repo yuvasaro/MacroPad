@@ -32,9 +32,6 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
-private:
-    QQuickWidget *qmlWidget;
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -45,6 +42,8 @@ public:
 
 #endif
 
+Q_INVOKABLE void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
+
 protected:
     void closeEvent(QCloseEvent *event) override;  // Override close event to minimize to tray
 
@@ -54,10 +53,10 @@ private slots:
     void toggleDockIcon(bool show);
 
 private:
-    void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
-    void createTrayIcon();  // System tray setup
+    void createTrayIcon();
 
 
+QQuickWidget *qmlWidget;
 QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;
 

@@ -1,9 +1,11 @@
 #include "mainwindow.h"
+#include "config.h"
 #include "fileio.h"
 #include "QApplication"
 #include <QQmlEngine>
 #include "QIcon"
 #include <QAction>
+#include <QVBoxLayout>
 #include <QMenu>
 #include <iostream>
 #include "profile.h"
@@ -29,15 +31,24 @@ MainWindow::MainWindow(QWidget *parent)
     qmlWidget = new QQuickWidget(this);
     qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-    qmlWidget->engine()->rootContext()->setContextProperty("profileManager", new Profile(this));
-    qmlWidget->engine()->rootContext()->setContextProperty("fileIO", new FileIO(this));
+    Profile *profileManager = new Profile(this);
+    FileIO *fileIO = new FileIO(this);
+
+    // Register with QML
+    qmlWidget->engine()->rootContext()->setContextProperty("profileManager", profileManager);
+    qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
 
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
 
-    setCentralWidget(qmlWidget);
+    QWidget *centralWidget = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(centralWidget);
+    layout->addWidget(qmlWidget);
+    centralWidget->setLayout(layout);
+    setCentralWidget(centralWidget);
 
     createTrayIcon();
 }
+
 
 
 MainWindow::~MainWindow() {
