@@ -24,7 +24,7 @@ Dialog {
 
         Text {
             text: "Select Keystroke Combination"
-            color: "white"
+            color: "grey"
         }
 
         Row {
