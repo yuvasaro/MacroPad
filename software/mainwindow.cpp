@@ -42,6 +42,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 #endif
 
+#ifdef __APPLE__
+    registerGlobalHotkey(&profile, 1, "executable", "/Applications/Discord.app");
+#endif
+
     setWindowTitle("MacroPad - Configuration");
 
     qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
@@ -250,6 +254,7 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QStrin
 #include <QProcess>
 #include <QFileInfo>
 #include <QDir>
+#include <QThread>
 
 static EventHandlerUPP eventHandlerUPP;
 
@@ -285,6 +290,23 @@ bool isAppBundle(const QString &path) {
     return !files.isEmpty();  // Returns true if there is at least one executable file
 }
 
+bool simulateCommandSpace() {
+    // AppleScript command to simulate Cmd + Space
+    QString script = "osascript -e 'tell application \"System Events\" to key code 49 using command down'";
+
+    // Run the script using QProcess
+    QProcess process;
+    process.start("/bin/sh", QStringList() << "-c" << script);
+    process.waitForFinished();
+
+    // Output the result
+    QString output = process.readAllStandardOutput();
+    QString error = process.readAllStandardError();
+
+    qDebug() << "Output:" << output;
+    qDebug() << "Error:" << error;
+}
+
 OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
@@ -298,9 +320,11 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
 
         if (macro->getType() == "keystroke") {
 
-        } else if (macro->getType() == "program") {
+        } else if (macro->getType() == "executable") {
             if (isAppBundle(content)) {
-                QProcess::startDetached("open", {"-a", content});
+                // QProcess::startDetached("open", {"-a", content});
+                simulateCommandSpace();
+                qDebug() << "Simulated command space";
             } else {
                 QProcess::startDetached(content);
             }
