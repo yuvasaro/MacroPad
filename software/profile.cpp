@@ -6,14 +6,34 @@ using namespace std;
 
 Profile::Profile(const string& userName): name(userName) {}
 
+<<<<<<< Updated upstream
 void Profile::setMacro(int keyNum, const string& type, const string& content) {
     macros[keyNum] = std::move(make_unique<Macro>(type, content));
+=======
+Profile::Profile(const QString& userName, QObject* parent) : QObject(parent), name(userName) {}
+
+QString Profile::getName() const {
+    return name;
 }
+
+void Profile::setName(const QString& newName) {
+    if (name != newName) {
+        name = newName;
+        emit nameChanged();
+    }
+}
+
+void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
+    macros[keyNum] = QSharedPointer<Macro>::create(type, content);
+>>>>>>> Stashed changes
+}
+
 
 void Profile::deleteMacro(int keyNum) {
-    macros.erase(keyNum);
+    macros.remove(keyNum);
 }
 
+<<<<<<< Updated upstream
 void Profile::runMacro(int keyNum) {
     cout << "In Profile::runMacro type='" << macros[keyNum]->getType() << "', content='" << macros[keyNum]->getContent() << "'" << endl;
     if (macros.find(keyNum) != macros.end()) {
@@ -32,6 +52,25 @@ void Profile::saveProfile(const string& filePath) {
             outFile << macro.first << ":\n";
             outFile << "type: " << macro.second->getType() << "\n";
             outFile << "content: " << macro.second->getContent() << "\n";
+=======
+QSharedPointer<Macro> Profile::getMacro(int keyNum) {
+    return macros.value(keyNum, QSharedPointer<Macro>());
+}
+
+void Profile::saveProfile() {
+    QString configDir = Config::getConfigDir();
+    QString filePath = configDir + "/" + name + ".txt";
+
+    QFile outFile(filePath);
+    if (outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&outFile);
+        out << "Name: " << name << "\n";
+
+        for (auto it = macros.begin(); it != macros.end(); ++it) {
+            out << it.key() << ":\n";
+            out << "type: " << it.value()->getType() << "\n";
+            out << "content: " << it.value()->getContent() << "\n";
+>>>>>>> Stashed changes
         }
 
         outFile.close();

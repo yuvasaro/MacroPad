@@ -4,6 +4,10 @@
 #include <QAction>
 #include <QMenu>
 #include "string"
+#include <QQuickItem>
+#include <QQmlContext>
+#include <QDebug>
+
 
 #ifdef _WIN32
 #include "shellapi.h"
@@ -12,8 +16,74 @@ HHOOK MainWindow::keyboardHook = nullptr;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
+    registerGlobalHotkey(&profile, 1, "program", "/Applications/Discord.app");
 
+<<<<<<< Updated upstream
     registerGlobalHotkey();  // This will set the keyboard hook properly
+=======
+#ifdef _WIN32 //windows demostration
+
+    registerGlobalHotkey(&profile, 1, "executable", "Notepad");
+    registerGlobalHotkey(&profile, 2, "keystroke", "Ctrl+Alt+Tab");
+    registerGlobalHotkey(&profile, 3, "executable", "file:///C:/Program Files/BlueJ/BlueJ.exe");
+
+    qDebug() << "Profile 'TestProfile' created and saved.";
+
+    // Print out the macros in the profile for debugging
+    qDebug() << "Assigned macros for 'TestProfile':";
+    for (int i = 1; i <= 9; ++i) { // assuming you only have up to 5 macro keys
+        std::unique_ptr<Macro>& macro = profile.getMacro(i);
+        if (macro) {
+            qDebug() << "Key " << i << " -> Type:" << macro->getType() << ", Content:" << macro->getContent();
+        } else {
+            qDebug() << "Key " << i << " is not assigned a macro.";
+        }
+    }
+
+#endif
+
+    setWindowTitle("MacroPad - Configuration");
+
+
+    // Create QQuickWidget to display QML
+    qmlWidget = new QQuickWidget(this);
+    qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
+
+    FileIO *fileIO = new FileIO(this);
+    Macro *macro = new Macro(this);
+    Profile *profileManager = new Profile(this);
+
+
+    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
+    qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
+    qmlRegisterType<Profile>("Profile", 1, 0, "Profile");
+
+
+    // Register with QML
+    qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
+    qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
+    qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", profileManager);
+
+
+
+    qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
+    QObject *root = qmlWidget->rootObject();
+    if (root) {
+        QObject *profileObj = root->findChild<QObject*>("profileManager");
+        if (profileObj) {
+            connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
+                    this, SLOT(onKeyConfigured(int,QString,QString)));
+        }
+    }
+
+    QWidget *centralWidget = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(centralWidget);
+    layout->addWidget(qmlWidget);
+    centralWidget->setLayout(layout);
+    setCentralWidget(centralWidget);
+
+>>>>>>> Stashed changes
     createTrayIcon();
 
     setWindowTitle("Configuration Software");
@@ -165,6 +235,7 @@ const QString EXECUTABLE_PATH = "/Users/yuvasaro/Developer/C/experiments/bits/sw
 OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
+<<<<<<< Updated upstream
 
     if (hotKeyID.id == 1) {
         qDebug() << "Insert (Ins) key pressed! Opening Discord...";
@@ -174,15 +245,43 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
         qDebug() << "Home key pressed! Running executable at:" << EXECUTABLE_PATH;
         if (!QProcess::startDetached(EXECUTABLE_PATH)) {
             qDebug() << "Failed to launch executable!";
+=======
+    QSharedPointer<Macro> macro = profile.getMacro(hotKeyID.id);
+    if (!macro.isNull()) {
+        qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
+
+        const QString& type = macro->getType();
+        const QString& content = macro->getContent();
+
+        if (macro->getType() == "keystroke") {
+
+        } else if (macro->getType() == "program") {
+            if (isAppBundle(content)) {
+                QProcess::startDetached("open", {"-a", content});
+            } else {
+                QProcess::startDetached(content);
+            }
+>>>>>>> Stashed changes
         }
     }
 
     return noErr;
 }
 
+<<<<<<< Updated upstream
 void MainWindow::registerGlobalHotkey() {
     qDebug() << "Registering Insert (Ins) and Home keys as global hotkeys...";
 
+=======
+
+
+void MainWindow::onKeyConfigured(int keyIndex, const QString &type, const QString &content) {
+    qDebug() << "Registering hotkey for keyIndex:" << keyIndex << "Type:" << type << "Content:" << content;
+    registerGlobalHotkey(profileManager, keyIndex, type, content);
+}
+
+void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
+>>>>>>> Stashed changes
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;

@@ -40,10 +40,18 @@ private slots:
     void showWindow();  // Restore window from system tray
     void exitApplication();  // Quit application
 
+public slots:
+    void onKeyConfigured(int keyIndex, const QString &type, const QString &content);
+
 private:
+<<<<<<< Updated upstream
     void registerGlobalHotkey();
     void createTrayIcon();  // System tray setup
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+=======
+    void createTrayIcon();
+    Profile* profileManager;
+>>>>>>> Stashed changes
 
 
 QSystemTrayIcon *trayIcon;
