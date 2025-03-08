@@ -11,6 +11,8 @@
 #include <thread>
 #include "profile.h"
 #include "string"
+#include <objc/objc.h>
+#include <objc/NSObject.h>
 
 #ifdef _WIN32
 
@@ -134,6 +136,7 @@ void MainWindow::toggleDockIcon(bool show) {
         TransformProcessType(&psn, kProcessTransformToUIElementApplication);
     }
 #endif
+
 }
 
 // ===== WINDOWS IMPLEMENTATION =====

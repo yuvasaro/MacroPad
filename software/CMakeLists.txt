@@ -21,6 +21,14 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+
+    if(APPLE)
+        set(APPTRACKER_SOURCES apptracker.h apptracker.mm)  # Use Objective-C++ on macOS
+        set_source_files_properties(apptracker.mm PROPERTIES COMPILE_FLAGS "-x objective-c++")  # Ensure ObjC++ compilation
+    else()
+        set(APPTRACKER_SOURCES apptracker.h apptracker.cpp)  # Use regular C++ for Windows/Linux
+    endif()
+
     qt_add_executable(MacroPad
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
@@ -28,6 +36,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         profile.h profile.cpp
         config.h config.cpp
         fileio.h fileio.cpp
+        ${APPTRACKER_SOURCES}
+        apptracker.cpp # just for now (will be deleted once file is finished)
+
+
     )
     qt_add_resources(MacroPad "resources"
         PREFIX "/"
