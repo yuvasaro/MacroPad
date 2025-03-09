@@ -11,6 +11,7 @@ Rectangle {
         id: profileManager
     }
 
+
     Grid {
         id: keyGrid
         columns: 3
@@ -105,3 +106,4 @@ Rectangle {
             }
         }
     }
+

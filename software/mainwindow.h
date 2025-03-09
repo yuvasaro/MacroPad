@@ -52,13 +52,17 @@ private slots:
     void exitApplication();  // Quit application
     void toggleDockIcon(bool show);
 
+public slots:
+    void onKeyConfigured(int keyIndex, const QString &type, const QString &content);
+
 private:
     void createTrayIcon();
-
+    Profile *profileManager;
 
 QQuickWidget *qmlWidget;
 QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;
+};
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
@@ -71,6 +75,5 @@ QMenu *trayMenu;
     static void listenForHotkeys();
     Display *display;
 #endif
-};
 
 #endif // MAINWINDOW_H

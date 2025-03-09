@@ -22,15 +22,16 @@ void Profile::setName(const QString& newName) {
 }
 
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
-    macros[keyNum] = std::move(std::make_unique<Macro>(type, content));
+    macros[keyNum] = QSharedPointer<Macro>::create(type, content);
 }
+
 
 void Profile::deleteMacro(int keyNum) {
-    macros.erase(keyNum);
+    macros.remove(keyNum);
 }
 
-std::unique_ptr<Macro>& Profile::getMacro(int keyNum) {
-    return macros[keyNum];
+QSharedPointer<Macro> Profile::getMacro(int keyNum) {
+    return macros.value(keyNum, QSharedPointer<Macro>());
 }
 
 void Profile::saveProfile() {
@@ -42,10 +43,10 @@ void Profile::saveProfile() {
         QTextStream out(&outFile);
         out << "Name: " << name << "\n";
 
-        for (auto& macro : macros) {
-            out << macro.first << ":\n";
-            out << "type: " << macro.second->getType() << "\n";
-            out << "content: " << macro.second->getContent() << "\n";
+        for (auto it = macros.begin(); it != macros.end(); ++it) {
+            out << it.key() << ":\n";
+            out << "type: " << it.value()->getType() << "\n";
+            out << "content: " << it.value()->getContent() << "\n";
         }
 
         outFile.close();
@@ -103,3 +104,4 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
     }
 
 }
+
