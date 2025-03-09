@@ -7,6 +7,7 @@
 #include <QAction>
 #include <QVBoxLayout>
 #include <QMenu>
+#include <QQuickItem>
 #include <iostream>
 #include <thread>
 #include "profile.h"
@@ -24,6 +25,7 @@ static Profile profile("Profile 1");
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
+    registerGlobalHotkey(&profile, 1, "program", "/Applications/Discord.app");
 
 #ifdef _WIN32 //windows demostration
 
@@ -48,20 +50,38 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("MacroPad - Configuration");
 
-    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
 
     // Create QQuickWidget to display QML
     qmlWidget = new QQuickWidget(this);
     qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-    Profile *profileManager = new Profile(this);
     FileIO *fileIO = new FileIO(this);
+    Macro *macro = new Macro(this);
+    profileManager = new Profile(this);
+
+
+
+    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
+    qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
+
 
     // Register with QML
-    qmlWidget->engine()->rootContext()->setContextProperty("profileManager", profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
+    qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
+    qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", profileManager);
+
+
 
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
+    QObject *root = qmlWidget->rootObject();
+    if (root) {
+        QObject *profileObj = root->findChild<QObject*>("profileManager");
+        if (profileObj) {
+            connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
+                    this, SLOT(onKeyConfigured(int,QString,QString)));
+        }
+    }
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -301,30 +321,36 @@ bool isAppBundle(const QString &path) {
     return !files.isEmpty();  // Returns true if there is at least one executable file
 }
 
-OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
-    EventHotKeyID hotKeyID;
-    GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
-    std::unique_ptr<Macro>& macro = profile.getMacro(hotKeyID.id);
+static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData){
+        EventHotKeyID hotKeyID;
+        GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
+        QSharedPointer<Macro> macro = profile.getMacro(hotKeyID.id);
 
-    if (macro != nullptr) {
-        qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
+        if (!macro.isNull()) {
+            qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
 
-        const QString& type = macro->getType();
-        const QString& content = macro->getContent();
+            const QString& type = macro->getType();
+            const QString& content = macro->getContent();
 
-        if (macro->getType() == "keystroke") {
+            if (macro->getType() == "keystroke") {
 
-        } else if (macro->getType() == "program") {
-            if (isAppBundle(content)) {
-                QProcess::startDetached("open", {"-a", content});
-            } else {
-                QProcess::startDetached(content);
+            } else if (macro->getType() == "program") {
+                if (isAppBundle(content)) {
+                    QProcess::startDetached("open", {"-a", content});
+                } else {
+                    QProcess::startDetached(content);
+                }
             }
         }
-    }
 
-    return noErr;
+        return noErr;
 }
+
+void MainWindow::onKeyConfigured(int keyIndex, const QString &type, const QString &content) {
+    qDebug() << "Registering hotkey for keyIndex:" << keyIndex << "Type:" << type << "Content:" << content;
+    registerGlobalHotkey(&profile, keyIndex, type, content);
+}
+
 
 void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
     EventTypeSpec eventType;
@@ -378,3 +404,4 @@ void MainWindow::registerGlobalHotkey() {
     listenForHotkeys();
 }
 #endif
+

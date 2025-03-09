@@ -2,12 +2,15 @@ import QtQuick
 import QtQuick.Controls
 import QtCore 6.2
 import FileIO 1.0
+import Macro 1.0
 
 Item {
     id: profileManager
 
     property var profiles: []
     property var profileNames: ["General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5", "Profile 6"]
+
+    signal keyConfigured(int keyIndex, string type, string content)
 
     FileIO {
         id: fileIO
@@ -47,23 +50,33 @@ Item {
     }
 
     function saveProfiles() {
-        var profileStrings = profiles.map(profile => {
-            var profileText = "name: " + profile.name + "\n";
-            profile.keys.forEach((key, index) => {
-                profileText += (index + 1) + ":\n  type: " + (key.type || "") + "\n  content: " + (key.content || "") + "\n";
-            });
-            return profileText;
-        });
-
-        var formattedText = profileStrings.join("\n");
-
-        console.log("Saving profiles to:", fileIO.filePath);
-        if (fileIO.write(formattedText)) {
-            console.log("Profiles saved successfully to", fileIO.filePath);
-        } else {
-            console.log("ERROR: Failed to save profiles to", fileIO.filePath);
+        if (profiles.length === 0) {
+            console.log("No profiles to save.");
+            return;
         }
+
+        var currentProfile = profiles[profileSelector.currentIndex];
+
+        if (!currentProfile) {
+            console.log("ERROR: No current profile selected.");
+            return;
+        }
+
+        console.log("Saving profile:", currentProfile.name);
+
+        profileInstance.setName(currentProfile.name);
+
+        for (var i = 0; i < currentProfile.keys.length; i++) {
+            var key = currentProfile.keys[i];
+            if (key) {
+                profileInstance.setMacro(i + 1, key.type, key.content);
+            }
+        }
+
+        profileInstance.saveProfile();
+        console.log("Profile saved successfully.");
     }
+
 
     function loadProfile(index) {
             console.log("Loading profile:", profileNames[index]);
@@ -95,6 +108,7 @@ Item {
         }
 
         saveProfiles();
+        keyConfigured(keyIndex, type, value);
     }
 
     Component.onCompleted: {
