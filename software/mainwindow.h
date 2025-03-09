@@ -66,10 +66,6 @@ QMenu *trayMenu;
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
     static HHOOK keyboardHook;
-
-
-#elif __APPLE__
-    static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
 #elif __linux__
     static void listenForHotkeys();
     Display *display;
