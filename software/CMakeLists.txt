@@ -8,9 +8,12 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets SerialPort)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets SerialPort)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Quick QuickWidgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets)
 
 set(PROJECT_SOURCES
     main.cpp
@@ -22,11 +25,35 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+
+    if(APPLE)
+        set(APPTRACKER_SOURCES apptracker.h apptracker.mm)  # Use Objective-C++ on macOS
+        set_source_files_properties(apptracker.mm PROPERTIES COMPILE_FLAGS "-x objective-c++")  # Ensure ObjC++ compilation
+    else()
+        set(APPTRACKER_SOURCES apptracker.h apptracker.cpp)  # Use regular C++ for Windows/Linux
+    endif()
+
     qt_add_executable(MacroPad
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         serialhandler.h serialhandler.cpp
+        macro.h macro.cpp
+        profile.h profile.cpp
+        config.h config.cpp
+        fileio.h fileio.cpp
+        ${APPTRACKER_SOURCES}
+        apptracker.cpp # just for now (will be deleted once file is finished)
+
+
     )
+    qt_add_resources(MacroPad "resources"
+        PREFIX "/"
+        FILES
+            Main.qml
+            KeyConfig.qml
+            ProfileManager.qml
+    )
+
 else()
     if(ANDROID)
         add_library(MacroPad SHARED
@@ -40,6 +67,7 @@ else()
 endif()
 
 target_link_libraries(MacroPad PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::SerialPort)
+target_link_libraries(MacroPad PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::QuickWidgets)
 
 # Platform-Specific Configurations
 if(APPLE)

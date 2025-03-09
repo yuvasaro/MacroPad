@@ -67,4 +67,13 @@ void SerialHandler::readSerialData()
     emit dataReceived(number);
 }
 
-
+void SerialHandler::sendProfile(int profileCode)
+{
+    if (COMPORT && COMPORT->isOpen()) {
+        QByteArray data = QByteArray::number(profileCode);
+        qDebug() << "Sending profile code:" << profileCode;
+        COMPORT->write(data);
+    } else {
+        qDebug() << "Serial port not open";
+    }
+}

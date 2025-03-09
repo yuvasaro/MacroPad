@@ -1,34 +1,105 @@
 #include "mainwindow.h"
+#include "config.h"
+#include "fileio.h"
 #include "QApplication"
+#include <QQmlEngine>
 #include "QIcon"
 #include <QAction>
+#include <QVBoxLayout>
 #include <QMenu>
-#include <QMessageBox>
-#include <QDebug>
-#include "shellapi.h"
-#include "serialhandler.h"
+#include <QQuickItem>
+#include <iostream>
+#include <thread>
+#include "profile.h"
+#include "string"
+#include <objc/objc.h>
+#include <objc/NSObject.h>
 
 #ifdef _WIN32
-#include <Windows.h>
-#include <thread>
+
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-    trayIcon(new QSystemTrayIcon(this)),
-    trayMenu(new QMenu(this)),
-    m_serialHandler(new SerialHandler(this))
-{
-    registerGlobalHotkey();
-    createTrayIcon();
-    connect(m_serialHandler, &SerialHandler::dataReceived,
-            this, &MainWindow::onDataReceived);
 
-    setWindowTitle("Configuration Software");
+static Profile profile("Profile 1");
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
+    registerGlobalHotkey(&profile, 1, "program", "/Applications/Discord.app");
+
+#ifdef _WIN32 //windows demostration
+
+    registerGlobalHotkey(&profile, 1, "executable", "Notepad");
+    registerGlobalHotkey(&profile, 2, "keystroke", "Ctrl+Alt+Tab");
+    registerGlobalHotkey(&profile, 3, "executable", "file:///C:/Program Files/BlueJ/BlueJ.exe");
+
+    qDebug() << "Profile 'TestProfile' created and saved.";
+
+    // Print out the macros in the profile for debugging
+    qDebug() << "Assigned macros for 'TestProfile':";
+    for (int i = 1; i <= 9; ++i) { // assuming you only have up to 5 macro keys
+        std::unique_ptr<Macro>& macro = profile.getMacro(i);
+        if (macro) {
+            qDebug() << "Key " << i << " -> Type:" << macro->getType() << ", Content:" << macro->getContent();
+        } else {
+            qDebug() << "Key " << i << " is not assigned a macro.";
+        }
+    }
+
+#endif
+
+    setWindowTitle("MacroPad - Configuration");
+
+
+    // Create QQuickWidget to display QML
+    qmlWidget = new QQuickWidget(this);
+    qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
+
+    FileIO *fileIO = new FileIO(this);
+    Macro *macro = new Macro(this);
+    profileManager = new Profile(this);
+
+
+
+    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
+    qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
+
+
+    // Register with QML
+    qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
+    qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
+    qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", profileManager);
+
+
+
+    qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
+    QObject *root = qmlWidget->rootObject();
+    if (root) {
+        QObject *profileObj = root->findChild<QObject*>("profileManager");
+        if (profileObj) {
+            connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
+                    this, SLOT(onKeyConfigured(int,QString,QString)));
+        }
+    }
+
+    QWidget *centralWidget = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(centralWidget);
+    layout->addWidget(qmlWidget);
+    centralWidget->setLayout(layout);
+    setCentralWidget(centralWidget);
+
+    createTrayIcon();
 }
 
-MainWindow::~MainWindow() {}
+
+
+MainWindow::~MainWindow() {
+    /* if (keyboardHook) {
+        UnhookWindowsHookEx(keyboardHook);
+        keyboardHook = nullptr;
+    } */
+}
 
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
@@ -59,10 +130,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
         hide();  // Hide the window
         event->ignore();  // Ignore the close event
+        toggleDockIcon(false);
     }
 }
 
 void MainWindow::showWindow() {
+    toggleDockIcon(true);
     showNormal();  // Restore window
     activateWindow();
 }
@@ -72,380 +145,232 @@ void MainWindow::exitApplication() {
     QApplication::quit();
 }
 
+// Toggle Dock Icon on macOS
+void MainWindow::toggleDockIcon(bool show) {
+#ifdef Q_OS_MAC
+    ProcessSerialNumber psn = { 0, kCurrentProcess };
+    if (show) {
+        TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+    } else {
+        TransformProcessType(&psn, kProcessTransformToUIElementApplication);
+    }
+#endif
+
+}
+
 // ===== WINDOWS IMPLEMENTATION =====
+
 #ifdef _WIN32
 
-std::string pathNotion = "C:\\Users\\aarav\\AppData\\Local\\Programs\\Notion\\Notion.exe";
-std::wstring wpathNotion(pathNotion.begin(), pathNotion.end());  // Convert std::string to std::wstring
+//std::string path = "C:\\Users\\aarav\\OneDrive\\Desktop\\Arduino IDE.lnk";
+// std::string path = "Notepad";
+//std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
 
-// Helper function to simulate Alt+Space keystroke
-void performAltSpace() {
-    qDebug() << "performAltSpace called";
-    INPUT inputs[4] = {};
 
-    // Press ALT key
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_MENU; // Alt key
+std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
+std::unique_ptr<Profile> currentProfile = std::make_unique<Profile>("DefaultProfile");
+HHOOK keyboardHook = NULL;
 
-    // Press SPACE key
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_SPACE; // Space key
+// //Week 6: modified
 
-    // Release SPACE key
-    inputs[2].type = INPUT_KEYBOARD;
-    inputs[2].ki.wVk = VK_SPACE;
-    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Release ALT key
-    inputs[3].type = INPUT_KEYBOARD;
-    inputs[3].ki.wVk = VK_MENU;
-    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    SendInput(4, inputs, sizeof(INPUT));
-}
-
-// Simulates Ctrl+Shift+` (backtick on a US keyboard)
-static void performCtrlShiftBacktick()
-{
-    qDebug() << "performCtrlShiftBacktick called";
-
-    // VK_OEM_3 is the virtual-key code for the '`' key on US keyboards
-    // (the same key that produces '~' when shifted)
-    const SHORT KEY_BACKTICK = VK_OEM_3;
-
-    INPUT inputs[6] = {};
-
-    // Press CTRL
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_CONTROL;
-
-    // Press SHIFT
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_SHIFT;
-
-    // Press ` (backtick)
-    inputs[2].type = INPUT_KEYBOARD;
-    inputs[2].ki.wVk = KEY_BACKTICK;
-
-    // Release ` (backtick)
-    inputs[3].type = INPUT_KEYBOARD;
-    inputs[3].ki.wVk = KEY_BACKTICK;
-    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Release SHIFT
-    inputs[4].type = INPUT_KEYBOARD;
-    inputs[4].ki.wVk = VK_SHIFT;
-    inputs[4].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Release CTRL
-    inputs[5].type = INPUT_KEYBOARD;
-    inputs[5].ki.wVk = VK_CONTROL;
-    inputs[5].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Send the sequence
-    SendInput(6, inputs, sizeof(INPUT));
-}
-
-// Simulates Ctrl+Shift+D
-static void performCtrlShiftD()
-{
-    qDebug() << "performCtrlShiftD called";
-
-    INPUT inputs[6] = {};
-
-    // Press CTRL
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_CONTROL;
-
-    // Press SHIFT
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_SHIFT;
-
-    // Press 'D'
-    inputs[2].type = INPUT_KEYBOARD;
-    inputs[2].ki.wVk = 'D';
-
-    // Release 'D'
-    inputs[3].type = INPUT_KEYBOARD;
-    inputs[3].ki.wVk = 'D';
-    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Release SHIFT
-    inputs[4].type = INPUT_KEYBOARD;
-    inputs[4].ki.wVk = VK_SHIFT;
-    inputs[4].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Release CTRL
-    inputs[5].type = INPUT_KEYBOARD;
-    inputs[5].ki.wVk = VK_CONTROL;
-    inputs[5].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Send the sequence
-    SendInput(6, inputs, sizeof(INPUT));
-}
-
-// Simulates pressing and releasing the "Next Track" multimedia key.
-static void skipTrack()
-{
-    qDebug() << "skipTrack called";
-    INPUT inputs[2] = {};
-
-    // Press the VK_MEDIA_NEXT_TRACK key
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_MEDIA_NEXT_TRACK;
-
-    // Release the VK_MEDIA_NEXT_TRACK key
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_MEDIA_NEXT_TRACK;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Send the key events
-    SendInput(2, inputs, sizeof(INPUT));
-}
-
-// Simulates pressing and releasing the "Volume Up" multimedia key.
-static void volumeUp()
-{
-    qDebug() << "volumeUp called";
-    INPUT inputs[2] = {};
-
-    // Press the VK_VOLUME_UP key
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_UP;
-
-    // Release the VK_VOLUME_UP key
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_UP;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Send the key events
-    SendInput(2, inputs, sizeof(INPUT));
-}
-
-// Simulates pressing and releasing the "Volume Down" multimedia key.
-static void volumeDown()
-{
-    qDebug() << "volumeDown called";
-    INPUT inputs[2] = {};
-
-    // Press the VK_VOLUME_DOWN key
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_DOWN;
-
-    // Release the VK_VOLUME_DOWN key
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_DOWN;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Send the key events
-    SendInput(2, inputs, sizeof(INPUT));
-}
-
-// Simulates pressing and releasing the "Mute" multimedia key.
-static void mute()
-{
-    qDebug() << "mute called";
-    INPUT inputs[2] = {};
-
-    // Press the VK_VOLUME_MUTE key
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_MUTE;
-
-    // Release the VK_VOLUME_MUTE key
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_MUTE;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-
-    // Send the key events
-    SendInput(2, inputs, sizeof(INPUT));
-}
-
-LRESULT CALLBACK MainWindow::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
-        KBDLLHOOKSTRUCT *kbdStruct = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-        if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F5) {
-            qDebug() << "F5 detected in global hook";
-            // F5 pressed: simulate Alt+Space in a separate thread
-            std::thread([] {
-                performAltSpace();
-            }).detach();
-        }
-        if (wParam == WM_KEYDOWN && kbdStruct->vkCode == VK_F6) {
-            qDebug() << "F6 detected in global hook";
-            // F6 pressed: execute existing functionality (launch app)
-            std::thread([] {
-                //ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            }).detach();
+        KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
+
+        if (wParam == WM_KEYDOWN) {
+            int vkCode = kbdStruct->vkCode;
+
+            // Check if the key has a registered action
+            auto it = hotkeyActions.find(vkCode);
+            if (it != hotkeyActions.end()) {
+                it->second(); // Execute the stored action (macro)
+                return 1;  // Prevents default key behavior (optional)
+            }
         }
     }
-    return CallNextHookEx(NULL, nCode, wParam, lParam);
+
+    // Pass the event to the next hook in the chain
+    return CallNextHookEx(keyboardHook, nCode, wParam, lParam);
 }
 
-void MainWindow::registerGlobalHotkey() {
-    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
-    if (!keyboardHook) {
-        qDebug() << "Failed to set global hotkey hook:" << GetLastError();
-    } else {
-        qDebug() << "Global hotkey hook registered successfully.";
-    }
-}
+//week 8 keyboard version
+void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content){
+    UINT vkCode = 0;
 
-// void launchProgram(std::wstring wpath)
-// {
-//     //std::wstring wpath(path.begin(), path.end());  // Convert std::string to std::wstring
-//     // Launch an app
-//     std::thread([] {
-//         extern std::wstring wpath; // from your code
-//         ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
-//     }).detach();
-// }
-
-std::string pathVSCode = "C:\\Users\\aarav\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe";
-std::wstring wpathVSCode(pathVSCode.begin(), pathVSCode.end());  // Convert std::string to std::wstring
-
-std::string pathArduino = "C:\\Users\\aarav\\AppData\\Local\\Programs\\Arduino IDE\\Arduino IDE.exe";
-std::wstring wpathArduino(pathArduino.begin(), pathArduino.end());  // Convert std::string to std::wstring
-
-std::string pathGitHub = "C:\\Users\\aarav\\AppData\\Local\\GitHubDesktop\\GitHubDesktop.exe";
-std::wstring wpathGitHub(pathGitHub.begin(), pathGitHub.end());  // Convert std::string to std::wstring
-
-// --------------------------
-//   New Slot Implementation
-// --------------------------
-int profile =1;
-void MainWindow::onDataReceived(int number)
-{
-    qDebug() << "onDataReceived: " << number;
-    if(number>10)
-    {
-        profile = number-10;
-        qDebug() << "Profile switched to " << profile;
-    }
-
-    if(number>70 && number <80)
-    {
-        if(number == 71)
-            volumeUp();
-        else if(number == 72)
-            volumeDown();
-        else if(number == 73)
-            mute();
-    }
-
-    switch(profile)
-    {
-    case 1:
-        qDebug() << "Profile : " << profile;
-
-        if (number == 1) {
-            // launch VSCode
-            std::thread([] {
-                extern std::wstring wpathVSCode; // from your code
-                ShellExecuteW(NULL, L"open", wpathVSCode.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            }).detach();
-            qDebug()<< "VSCode launched";
-        }
-        else if (number == 2) {
-            //launch Arduino
-            std::thread([] {
-                extern std::wstring wpathArduino; // from your code
-                ShellExecuteW(NULL, L"open", wpathArduino.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            }).detach();
-            qDebug()<< "Arduino launched";
-        }
-        // Add more conditions as needed
-        else if (number == 3) {
-            //should launch Spotify
-
-            // Simulate Alt+Space in a separate thread
-            std::thread([] {
-                performAltSpace();
-            }).detach();
-            qDebug()<< "Spotify launched";
-        }
-        else if (number == 4) {
-            //launchProgram(wpathNotion);
-            std::thread([] {
-                extern std::wstring wpathNotion; // from your code
-                ShellExecuteW(NULL, L"open", wpathNotion.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            }).detach();
-            qDebug()<< "Notion launched";
-        }
-        // Add more conditions as needed
-        break;
-    case 2: // VSCode profile
-        qDebug() << "Profile : " << profile;
-
-        if (number == 1) {
-            // open Terminal
-            std::thread([] {
-                performCtrlShiftBacktick();
-            }).detach();
-            qDebug()<< "Terminal opened";
-        }
-        else if (number == 2) {
-            //run and debug
-            std::thread([] {
-                performCtrlShiftD();
-            }).detach();
-            qDebug()<< "run and debug launched";
-        }
-        // Add more conditions as needed
-        else if (number == 3) {
-            //launch GitHub
-            std::thread([] {
-                extern std::wstring wpathGitHub; // from your code
-                ShellExecuteW(NULL, L"open", wpathGitHub.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            }).detach();
-
-            qDebug()<< "GitHub launched";
-        }
-        else if (number == 4) {
-            //skip Track
-            std::thread([] {
-                skipTrack();
-            }).detach();
-            qDebug()<< "Track skipped";
-        }
-        // Add more conditions as needed
-        break;
+    // Map keyNum to virtual key code (adjust mapping as needed)
+    switch (keyNum) {
+    case 1: vkCode = 0x31; break; //should be changed to macro keys after profile is loaded
+    case 2: vkCode = 0x32; break;
+    case 3: vkCode = 0x33; break;
+    case 4: vkCode = 0x34; break;
+    case 5: vkCode = 0x35; break;
+    case 6: vkCode = 0x36; break;
+    case 7: vkCode = 0x37; break;
+    case 8: vkCode = 0x38; break;
+    case 9: vkCode = 0x39; break;
     default:
-        break;
+        std::cerr << "Invalid key number specified.\n";
+        return;
     }
 
+    // Register the hotkey based on the type
+    if (type == "executable") {
+        std::wstring wcontent = content.toStdWString();
+        hotkeyActions[vkCode] = [wcontent]() {
+            ShellExecuteW(NULL, L"open", wcontent.c_str(), NULL, NULL, SW_SHOWNORMAL);
+        };
+    } else if (type == "keystroke") {
+        hotkeyActions[vkCode] = [content]() {
+            std::thread([content]() {
+
+                // Define key mapping
+                QMap<QString, int> keyMap = {
+                    {"Cmd", VK_LWIN}, {"Shift", VK_SHIFT}, {"Ctrl", VK_CONTROL}, {"Alt", VK_MENU},
+                    {"Space", VK_SPACE}, {"Enter", VK_RETURN}, {"Backspace", VK_BACK}, {"Tab", VK_TAB},
+                    {"Esc", VK_ESCAPE}
+                };
+
+                for (char c = '0'; c <= '9'; ++c) {
+                    keyMap[QString(c)] = c;
+                }
+
+                for (char c = 'A'; c <= 'Z'; ++c) {
+                    keyMap[QString(c)] = c;
+                }
+
+                // Parse the key sequence
+                QStringList keySequence = content.split("+");
+                std::vector<int> keyCodes;
+
+                for (const QString& key : std::as_const(keySequence)) {
+                    if (keyMap.contains(key)) {
+                        keyCodes.push_back(keyMap[key]);
+                    }
+                }
+
+                // Press all keys
+                for (int key : keyCodes) {
+                    keybd_event(key, 0, 0, 0);
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));  // Small delay
+
+                // Release all keys (in reverse order)
+                for (auto it = keyCodes.rbegin(); it != keyCodes.rend(); ++it) {
+                    keybd_event(*it, 0, KEYEVENTF_KEYUP, 0);
+                }
+            }).detach();
+        };
+    } else {
+        std::cerr << "Unsupported action type.\n";
+    }
+
+    // Ensure the keyboard hook is set
+    if (!keyboardHook) {
+        keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, hotkeyCallback, GetModuleHandle(NULL), 0);
+    }
+
+    profile->setMacro(keyNum, type, content);
 }
 
 #endif
 
 // ===== MACOS IMPLEMENTATION =====
 #ifdef __APPLE__
-#include <CoreServices/CoreServices.h>
 #include <ApplicationServices/ApplicationServices.h>
-#include <iostream>
+#include <Carbon/Carbon.h>
+#include <QDebug>
+#include <QProcess>
+#include <QFileInfo>
+#include <QDir>
 
-OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
-    std::cout << "Tilde (~) key pressed! Triggering Cmd+Space..." << std::endl;
-    system("osascript -e 'tell application \"System Events\" to key code 49 using command down'");
-    return noErr;
+static EventHandlerUPP eventHandlerUPP;
+
+static const std::map<int, int> keyMap = {
+    {1, kVK_ANSI_1},
+    {2, kVK_ANSI_2},
+    {3, kVK_ANSI_3},
+    {4, kVK_ANSI_4},
+    {5, kVK_ANSI_5},
+    {6, kVK_ANSI_6},
+    {7, kVK_ANSI_7},
+    {8, kVK_ANSI_8},
+    {9, kVK_ANSI_9}
+};
+
+bool isAppBundle(const QString &path) {
+    QFileInfo appInfo(path);
+
+    // 1. Check if path exists and is a directory
+    if (!appInfo.exists() || !appInfo.isDir()) {
+        return false;
+    }
+
+    // 2. Verify if it ends with ".app"
+    if (!path.endsWith(".app", Qt::CaseInsensitive)) {
+        return false;
+    }
+
+    // 3. Check if it contains an executable inside "Contents/MacOS/"
+    QDir macOSDir(path + "/Contents/MacOS");
+    QFileInfoList files = macOSDir.entryInfoList(QDir::Files | QDir::Executable);
+
+    return !files.isEmpty();  // Returns true if there is at least one executable file
 }
 
-void MainWindow::registerGlobalHotkey() {
-    std::cout << "Registering tilde (~) as a global hotkey..." << std::endl;
+static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData){
+        EventHotKeyID hotKeyID;
+        GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
+        QSharedPointer<Macro> macro = profile.getMacro(hotKeyID.id);
 
-    EventHotKeyRef hotKeyRef;
-    EventHotKeyID hotKeyID;
+        if (!macro.isNull()) {
+            qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
+
+            const QString& type = macro->getType();
+            const QString& content = macro->getContent();
+
+            if (macro->getType() == "keystroke") {
+
+            } else if (macro->getType() == "program") {
+                if (isAppBundle(content)) {
+                    QProcess::startDetached("open", {"-a", content});
+                } else {
+                    QProcess::startDetached(content);
+                }
+            }
+        }
+
+        return noErr;
+}
+
+void MainWindow::onKeyConfigured(int keyIndex, const QString &type, const QString &content) {
+    qDebug() << "Registering hotkey for keyIndex:" << keyIndex << "Type:" << type << "Content:" << content;
+    registerGlobalHotkey(&profile, keyIndex, type, content);
+}
+
+
+void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
-    hotKeyID.signature = 'htk1';
-    hotKeyID.id = 1;
-    OSStatus status = RegisterEventHotKey(kVK_ANSI_Grave, 0, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef);
+
+    EventHotKeyRef hotkeyRef;
+    EventHotKeyID hotkeyID;
+    hotkeyID.id = keyNum;
+
+    // Create the event handler
+    eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
+    InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
+
+    OSStatus status = RegisterEventHotKey(keyMap.at(keyNum), 0, hotkeyID, GetApplicationEventTarget(), 0, &hotkeyRef);
+
     if (status != noErr) {
-        std::cerr << "Failed to register hotkey. Error code: " << status << std::endl;
+        qDebug() << "Failed to register hotkey. Error code:" << status;
     } else {
-        std::cout << "Hotkey registered successfully! Press ~ to trigger Cmd+Space." << std::endl;
+        qDebug() << "Hotkey registered successfully!";
     }
-    InstallApplicationEventHandler(&hotkeyCallback, 1, &eventType, nullptr, nullptr);
+
+    profile->setMacro(keyNum, type, content);
 }
 #endif
 
@@ -478,3 +403,4 @@ void MainWindow::registerGlobalHotkey() {
     listenForHotkeys();
 }
 #endif
+

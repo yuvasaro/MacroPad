@@ -15,6 +15,8 @@ public:
     explicit SerialHandler(QObject *parent = nullptr);
     ~SerialHandler();
 
+    void sendProfile(int profileCode);
+
 signals:
     //void buttonPressed(int button);
     void dataReceived(const int number);
