@@ -14,11 +14,12 @@ class Profile : public QObject {
 private:
 
     QString name;
+    QString app;
     std::map<int, std::unique_ptr<Macro>> macros;
 
 public:
     explicit Profile(QObject* parent = nullptr);
-    Profile(const QString& userName, QObject* parent = nullptr);
+    Profile(const QString& userName, const QString& appName, QObject* parent = nullptr);
     ~Profile() = default;
 
     Profile(const Profile&) = delete;
@@ -29,6 +30,7 @@ public:
     Profile& operator=(Profile&&) = delete;
 
     Q_INVOKABLE QString getName() const;
+    Q_INVOKABLE QString getApp() const;
     Q_INVOKABLE void setName(const QString& newName);
     Q_INVOKABLE void setMacro(int keyNum, const QString& type, const QString& content);
     Q_INVOKABLE void deleteMacro(int keyNum);

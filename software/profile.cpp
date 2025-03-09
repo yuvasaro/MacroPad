@@ -8,10 +8,14 @@
 
 Profile::Profile(QObject* parent) : QObject(parent) {}
 
-Profile::Profile(const QString& userName, QObject* parent) : QObject(parent), name(userName) {}
+Profile::Profile(const QString& userName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(userName) {}
 
 QString Profile::getName() const {
     return name;
+}
+
+QString Profile::getApp() const {
+    return app;
 }
 
 void Profile::setName(const QString& newName) {
@@ -71,10 +75,10 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
             profileName = line.mid(6);
         } else {
             qWarning() << "Missing profile name!";
-            return new Profile("");
+            return new Profile("", "");
         }
 
-        Profile* userProfile = new Profile(profileName);
+        Profile* userProfile = new Profile(profileName, appName);
 
         while (!in.atEnd()) {
             line = in.readLine();
@@ -99,7 +103,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
 
     } else {
         qWarning() << "Unable to open file for reading:" << filePath;
-        return new Profile("");
+        return new Profile("", "");
     }
 
 }

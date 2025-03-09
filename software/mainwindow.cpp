@@ -11,8 +11,7 @@
 #include <thread>
 #include "profile.h"
 #include "string"
-#include <objc/objc.h>
-#include <objc/NSObject.h>
+
 
 #ifdef _WIN32
 
@@ -264,6 +263,8 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QStrin
 #include <QProcess>
 #include <QFileInfo>
 #include <QDir>
+#include <objc/objc.h>
+#include <objc/NSObject.h>
 
 static EventHandlerUPP eventHandlerUPP;
 
