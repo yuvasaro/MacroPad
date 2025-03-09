@@ -320,7 +320,7 @@ bool isAppBundle(const QString &path) {
     return !files.isEmpty();  // Returns true if there is at least one executable file
 }
 
-static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData){
+OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData){
         EventHotKeyID hotKeyID;
         GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
         QSharedPointer<Macro> macro = profile.getMacro(hotKeyID.id);
