@@ -25,6 +25,13 @@ void Profile::setName(const QString& newName) {
     }
 }
 
+void Profile::setApp(const QString& newApp) {
+    if (app != newApp) {
+        app = newApp;
+        emit appChanged();
+    }
+}
+
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
     macros[keyNum] = std::move(std::make_unique<Macro>(type, content));
 }
@@ -45,6 +52,7 @@ void Profile::saveProfile() {
     if (outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&outFile);
         out << "Name: " << name << "\n";
+        out << "App: " << app << "\n";
 
         for (auto& macro : macros) {
             out << macro.first << ":\n";
@@ -66,6 +74,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         QTextStream in(&inFile);
         QString line;
         QString profileName;
+        QString profileApp;
         QString macroType;
         QString macroContent;
         int keyNum = -1;
@@ -75,10 +84,18 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
             profileName = line.mid(6);
         } else {
             qWarning() << "Missing profile name!";
-            return new Profile("", "");
+            return new Profile("", "", nullptr);
         }
 
-        Profile* userProfile = new Profile(profileName, appName);
+        line = in.readLine();
+        if (line.startsWith("App: ")) {
+            profileApp = line.mid(5);
+        } else {
+            qWarning() << "Missing profile name!";
+            return new Profile("", "", nullptr);            ;
+        }
+
+        Profile* userProfile = new Profile(profileName, profileApp);
 
         while (!in.atEnd()) {
             line = in.readLine();
@@ -103,7 +120,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
 
     } else {
         qWarning() << "Unable to open file for reading:" << filePath;
-        return new Profile("", "");
+        return new Profile("", "", nullptr);
     }
 
 }

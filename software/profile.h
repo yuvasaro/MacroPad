@@ -32,6 +32,7 @@ public:
     Q_INVOKABLE QString getName() const;
     Q_INVOKABLE QString getApp() const;
     Q_INVOKABLE void setName(const QString& newName);
+    Q_INVOKABLE void setApp(const QString& newApp);
     Q_INVOKABLE void setMacro(int keyNum, const QString& type, const QString& content);
     Q_INVOKABLE void deleteMacro(int keyNum);
     Q_INVOKABLE std::unique_ptr<Macro>& getMacro(int keyNum);
@@ -40,6 +41,7 @@ public:
 
 signals:
     void nameChanged();
+    void appChanged();
 
 };
 

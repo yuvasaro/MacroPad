@@ -19,7 +19,7 @@ HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
 
-static Profile profile("Profile 1");
+static Profile profile("Profile 1", "Google Chrome");
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
