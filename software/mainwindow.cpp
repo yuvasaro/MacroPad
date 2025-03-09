@@ -37,14 +37,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Print out the macros in the profile for debugging
     qDebug() << "Assigned macros for 'TestProfile':";
-    for (int i = 1; i <= 9; ++i) { // assuming you only have up to 5 macro keys
-        std::unique_ptr<Macro>& macro = profile.getMacro(i);
-        if (macro) {
-            qDebug() << "Key " << i << " -> Type:" << macro->getType() << ", Content:" << macro->getContent();
-        } else {
-            qDebug() << "Key " << i << " is not assigned a macro.";
-        }
-    }
+    // for (int i = 1; i <= 9; ++i) { // assuming you only have up to 5 macro keys
+    //     std::unique_ptr<Macro>& macro = profile.getMacro(i);
+    //     if (macro) {
+    //         qDebug() << "Key " << i << " -> Type:" << macro->getType() << ", Content:" << macro->getContent();
+    //     } else {
+    //         qDebug() << "Key " << i << " is not assigned a macro.";
+    //     }
+    // }
 
 #endif
 
@@ -170,11 +170,10 @@ void MainWindow::toggleDockIcon(bool show) {
 
 std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
 std::unique_ptr<Profile> currentProfile = std::make_unique<Profile>("DefaultProfile");
-HHOOK keyboardHook = NULL;
+//HHOOK MainWindow::keyboardHook = NULL;
 
-// //Week 6: modified
 
-LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam){
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
 
@@ -182,8 +181,8 @@ LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lPa
             int vkCode = kbdStruct->vkCode;
 
             // Check if the key has a registered action
-            auto it = hotkeyActions.find(vkCode);
-            if (it != hotkeyActions.end()) {
+            auto it = MainWindow::hotkeyActions.find(vkCode);
+            if (it != MainWindow::hotkeyActions.end()) {
                 it->second(); // Execute the stored action (macro)
                 return 1;  // Prevents default key behavior (optional)
             }
