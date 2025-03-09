@@ -11,8 +11,8 @@
 #include <thread>
 #include "profile.h"
 #include "string"
-#include <objc/objc.h>
-#include <objc/NSObject.h>
+
+
 
 #ifdef _WIN32
 
@@ -258,6 +258,8 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QStrin
 
 // ===== MACOS IMPLEMENTATION =====
 #ifdef __APPLE__
+#include <objc/NSObject.h>
+#include <objc/objc.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
 #include <QDebug>

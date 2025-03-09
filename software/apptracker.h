@@ -17,6 +17,8 @@ signals:
 private:
     void startTracking();  // Platform-specific implementation for tracking apps
     void stopTracking();
+
+    QString lastAppName;
 };
 
 #endif // APPTRACKER_H
