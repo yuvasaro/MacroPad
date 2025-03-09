@@ -14,12 +14,9 @@ class Profile : public QObject {
 private:
 
     QString name;
-<<<<<<< HEAD
     QString app;
-    std::map<int, std::unique_ptr<Macro>> macros;
-=======
     QMap<int, QSharedPointer<Macro>> macros;
->>>>>>> f4c04bcf4479a8ab51b4e812c7eb614a866e0aae
+
 
 public:
     explicit Profile(QObject* parent = nullptr);

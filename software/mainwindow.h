@@ -59,10 +59,12 @@ private:
     void createTrayIcon();
     Profile *profileManager;
 
+   // QSharedPointer<Profile> currentProfile;
+   // QList<QSharedPointer<Profile>> profiles;
+
 QQuickWidget *qmlWidget;
 QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;
-};
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
@@ -75,5 +77,7 @@ QMenu *trayMenu;
     static void listenForHotkeys();
     Display *display;
 #endif
+
+};
 
 #endif // MAINWINDOW_H
