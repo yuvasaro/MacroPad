@@ -74,14 +74,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
 
-    QObject *root = qmlWidget->rootObject();
-    if (root) {
-        QObject *profileObj = root->findChild<QObject*>("profileManager");
-        if (profileObj) {
-            connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
-                    this, SLOT(onKeyConfigured(int,QString,QString)));
-        }
-    }
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -343,12 +335,6 @@ OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *u
 
         return noErr;
 }
-
-void MainWindow::onKeyConfigured(int keyIndex, const QString &type, const QString &content) {
-    qDebug() << "Registering hotkey for keyIndex:" << keyIndex << "Type:" << type << "Content:" << content;
-    registerGlobalHotkey(&profile, keyIndex, type, content);
-}
-
 
 void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
     EventTypeSpec eventType;

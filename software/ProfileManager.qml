@@ -10,8 +10,6 @@ Item {
     property var profiles: []
     property var profileNames: ["General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5", "Profile 6"]
 
-    signal keyConfigured(int keyIndex, string type, string content)
-
     FileIO {
         id: fileIO
         filePath: StandardPaths.writableLocation(StandardPaths.AppDataLocation) + "/profiles.json"
@@ -108,7 +106,6 @@ Item {
         }
 
         saveProfiles();
-        keyConfigured(keyIndex, type, value);
     }
 
     Component.onCompleted: {

@@ -13,7 +13,8 @@ Dialog {
     property string keystroke: ""
     property string executable: ""
 
-    onOpened: {
+    Component.onCompleted: {
+        console.log("Initializing KeyConfig Dialog for Key:", keyIndex);
         keystrokeInput.text = keystroke;
         executablePath.text = executable;
     }
@@ -23,6 +24,7 @@ Dialog {
         spacing: 10
 
         Text {
+            id: keystrokeInput
             text: "Select Keystroke Combination"
             color: "grey"
         }
@@ -68,6 +70,7 @@ Dialog {
                     }
                 }
             }
+
         }
 
         Button {
