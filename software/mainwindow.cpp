@@ -75,13 +75,13 @@ MainWindow::MainWindow(QWidget *parent)
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
 
     QObject *root = qmlWidget->rootObject();
-    if (root) {
-        QObject *profileObj = root->findChild<QObject*>("profileManager");
-        if (profileObj) {
-            connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
-                    this, SLOT(onKeyConfigured(int,QString,QString)));
-        }
-    }
+    // if (root) {
+    //     QObject *profileObj = root->findChild<QObject*>("profileManager");
+    //     if (profileObj) {
+    //         connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
+    //                 this, SLOT(onKeyConfigured(int,QString,QString)));
+    //     }
+    // }
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);

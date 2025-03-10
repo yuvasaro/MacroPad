@@ -53,7 +53,7 @@ private slots:
     void toggleDockIcon(bool show);
 
 public slots:
-    void onKeyConfigured(int keyIndex, const QString &type, const QString &content);
+    //void onKeyConfigured(int keyIndex, const QString &type, const QString &content);
 
 private:
     void createTrayIcon();
@@ -74,5 +74,6 @@ QMenu *trayMenu;
     static void listenForHotkeys();
     Display *display;
 #endif
+
 };
 #endif // MAINWINDOW_H
