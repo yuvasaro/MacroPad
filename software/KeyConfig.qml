@@ -13,7 +13,8 @@ Dialog {
     property string keystroke: ""
     property string executable: ""
 
-    onOpened: {
+    Component.onCompleted: {
+        console.log("Initializing KeyConfig Dialog for Key:", keyIndex);
         keystrokeInput.text = keystroke;
         executablePath.text = executable;
     }
@@ -23,8 +24,9 @@ Dialog {
         spacing: 10
 
         Text {
+            id: keystrokeInput
             text: "Select Keystroke Combination"
-            color: "white"
+            color: "grey"
         }
 
         Row {
@@ -68,6 +70,7 @@ Dialog {
                     }
                 }
             }
+
         }
 
         Button {
@@ -99,10 +102,12 @@ Dialog {
 
                 if (keystrokeValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
+                    mainWindow.registerGlobalHotkey(profileInstance, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
                 }
 
                 if (executableValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue);
+                    mainWindow.registerGlobalHotkey(profileInstance, keyConfigDialog.keyIndex, "executable", executableValue);
                 }
 
                 keyConfigDialog.accept();
@@ -123,7 +128,7 @@ Dialog {
 
         onAccepted: {
             console.log("Selected executable:", selectedFile)
-            keyConfigDialog.executable = selectedFile.toString();
+            keyConfigDialog.executable = selectedFile.toString().replace("file://", "");
             executablePath.text = keyConfigDialog.executable;
 
             modifier1.currentIndex = 0;
@@ -132,3 +137,4 @@ Dialog {
         }
     }
 }
+

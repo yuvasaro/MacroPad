@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(MacroPad VERSION 0.1 LANGUAGES CXX)
 
+message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
+
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -21,6 +23,14 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+
+    if(APPLE)
+        set(APPTRACKER_SOURCES apptracker.h apptracker.mm)  # Use Objective-C++ on macOS
+        set_source_files_properties(apptracker.mm PROPERTIES COMPILE_FLAGS "-x objective-c++")  # Ensure ObjC++ compilation
+    else()
+        set(APPTRACKER_SOURCES apptracker.h apptracker.cpp)  # Use regular C++ for Windows/Linux
+    endif()
+
     qt_add_executable(MacroPad
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
@@ -28,6 +38,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         profile.h profile.cpp
         config.h config.cpp
         fileio.h fileio.cpp
+        ${APPTRACKER_SOURCES}
+        apptracker.cpp # just for now (will be deleted once file is finished)
+
+
     )
     qt_add_resources(MacroPad "resources"
         PREFIX "/"
@@ -53,12 +67,31 @@ target_link_libraries(MacroPad PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VER
 
 # Platform-Specific Configurations
 if(APPLE)
+    set(MACOSX_BUNDLE_ICON_FILE MPIcon.icns)
+    set(MACOSX_BUNDLE_ICON ${CMAKE_SOURCE_DIR}/MPIcon.icns)
+
+    set_source_files_properties(${MACOSX_BUNDLE_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+    add_custom_command(TARGET MacroPad POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying .icns icon..."
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_SOURCE_DIR}/MPIcon.icns
+            $<TARGET_FILE_DIR:MacroPad>/../Resources/MPIcon.icns
+    )
+    add_custom_command(TARGET MacroPad POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying .png icon..."
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_SOURCE_DIR}/MPIcon.png
+            $<TARGET_FILE_DIR:MacroPad>/../Resources/MPIcon.png
+    )
+
     target_link_libraries(MacroPad PRIVATE "-framework Carbon" "-framework ApplicationServices")
     set_target_properties(MacroPad PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER com.example.MacroPad
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        MACOSX_BUNDLE_ICON_FILE MPIcon.icns
     )
 elseif(WIN32)
     target_link_libraries(MacroPad PRIVATE user32.lib)

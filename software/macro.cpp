@@ -31,3 +31,4 @@ QString Macro::getContent() const {
     return content;
 }
 
+
