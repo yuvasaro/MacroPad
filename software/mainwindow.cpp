@@ -100,7 +100,15 @@ void MainWindow::createTrayIcon() {
     }
 
     // Set a valid icon (adjust path accordingly)
-    trayIcon->setIcon(QIcon(":/icons/app_icon.png"));
+#ifdef Q_OS_MAC
+    QString iconPath = QCoreApplication::applicationDirPath() + "/../Resources/MPIcon.png";
+    QIcon icon(iconPath);
+    qDebug() << "Loading tray icon from:" << iconPath;
+    qDebug() << "File exists:" << QFile::exists(iconPath);
+    qDebug() << "Icon loaded successfully:" << !icon.isNull();
+    trayIcon->setIcon(icon);
+#endif
+
     trayIcon->setToolTip("Configuration Software Running");
 
     // Create tray menu actions
