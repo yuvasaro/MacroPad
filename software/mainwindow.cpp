@@ -72,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(centralWidget);
 
     createTrayIcon();
+
+    registerGlobalHotkey(profileManager, 1, "executable", "/Applications/Discord.app");
 }
 
 MainWindow::~MainWindow() {
@@ -287,6 +289,50 @@ static const std::map<int, int> keyMap = {
     {9, kVK_ANSI_9}
 };
 
+static const QMap<QString, CGKeyCode> keyHex{
+    {"cmd", 0x31},    // Command
+    {"shift", 0x38},  // Shift
+    {"ctrl", 0x3B},   // Control
+    {"alt", 0x3A},    // Option
+    {"space", 0x31},  // Space
+    {"a", 0x00},      // 'a'
+    {"b", 0x0B},      // 'b'
+    {"c", 0x08},      // 'c'
+    {"d", 0x02},      // 'd'
+    {"e", 0x04},      // 'e'
+    {"f", 0x05},      // 'f'
+    {"g", 0x03},      // 'g'
+    {"h", 0x04},      // 'h'
+    {"i", 0x22},      // 'i'
+    {"j", 0x26},      // 'j'
+    {"k", 0x28},      // 'k'
+    {"l", 0x25},      // 'l'
+    {"m", 0x2E},      // 'm'
+    {"n", 0x2D},      // 'n'
+    {"o", 0x1F},      // 'o'
+    {"p", 0x23},      // 'p'
+    {"q", 0x0C},      // 'q'
+    {"r", 0x0F},      // 'r'
+    {"s", 0x01},      // 's'
+    {"t", 0x11},      // 't'
+    {"u", 0x20},      // 'u'
+    {"v", 0x09},      // 'v'
+    {"w", 0x0D},      // 'w'
+    {"x", 0x07},      // 'x'
+    {"y", 0x10},      // 'y'
+    {"z", 0x06},      // 'z'
+    {"1", 0x12},      // '1'
+    {"2", 0x13},      // '2'
+    {"3", 0x14},      // '3'
+    {"4", 0x15},      // '4'
+    {"5", 0x17},      // '5'
+    {"6", 0x16},      // '6'
+    {"7", 0x1A},      // '7'
+    {"8", 0x1C},      // '8'
+    {"9", 0x19},      // '9'
+    {"0", 0x1D}       // '0'
+};
+
 bool isAppBundle(const QString &path) {
     QFileInfo appInfo(path);
 
@@ -307,21 +353,66 @@ bool isAppBundle(const QString &path) {
     return !files.isEmpty();  // Returns true if there is at least one executable file
 }
 
+void pressAndReleaseKey(const QList<QString>& keys) {
+    QList<CGEventRef> keysDown;
+    QList<CGEventRef> keysUp;
+    CGEventFlags flags = 0;
+
+    // Iterate over the provided keys to determine modifiers and normal keys
+    for (const auto& key : keys) {
+        if (key == "cmd") {
+            flags |= kCGEventFlagMaskCommand;  // Add Command modifier
+        } else if (key == "shift") {
+            flags |= kCGEventFlagMaskShift;  // Add Shift modifier
+        } else if (key == "ctrl") {
+            flags |= kCGEventFlagMaskControl; // Add Control modifier
+        } else if (key == "alt") {
+            flags |= kCGEventFlagMaskAlternate; // Add Option (Alt) modifier
+        } else {
+            // Create keydown event for normal key
+            CGEventRef keyDown = CGEventCreateKeyboardEvent(NULL, keyHex[key], true);
+            CGEventSetFlags(keyDown, flags); // Apply modifier flags
+            keysDown.push_back(keyDown);
+
+            // Create keyup event for normal key
+            CGEventRef keyUp = CGEventCreateKeyboardEvent(NULL, keyHex[key], false);
+            CGEventSetFlags(keyUp, flags); // Apply modifier flags
+            keysUp.push_back(keyUp);
+        }
+    }
+
+    // Post keydown events
+    for (CGEventRef keyDown : keysDown) {
+        CGEventPost(kCGHIDEventTap, keyDown);
+    }
+
+    qDebug() << "Pressed";
+
+    usleep(1000); // Sleep for 10ms to simulate key press duration
+
+    // Post keyup events in reverse order (release main key first, then modifier)
+    for (CGEventRef keyUp : keysUp) {
+        CGEventPost(kCGHIDEventTap, keyUp);
+    }
+
+    qDebug() << "Released";
+
+    // Release resources
+    for (CGEventRef key : keysDown) {
+        CFRelease(key);
+    }
+    for (CGEventRef key : keysUp) {
+        CFRelease(key);
+    }
+}
+
 bool simulateCommandSpace() {
-    // AppleScript command to simulate Cmd + Space
-    QString script = "osascript -e 'tell application \"System Events\" to key code 49 using command down'";
+    QList<QString> keys;
+    keys.append("cmd");
+    keys.append("shift");
+    keys.append("4");
 
-    // Run the script using QProcess
-    QProcess process;
-    process.start("/bin/sh", QStringList() << "-c" << script);
-    process.waitForFinished();
-
-    // Output the result
-    QString output = process.readAllStandardOutput();
-    QString error = process.readAllStandardError();
-
-    qDebug() << "Output:" << output;
-    qDebug() << "Error:" << error;
+    pressAndReleaseKey(keys);
 }
 
 OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData){
