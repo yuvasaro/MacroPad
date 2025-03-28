@@ -12,8 +12,8 @@
 #include <thread>
 #include "profile.h"
 #include "string"
-#include <objc/objc.h>
-#include <objc/NSObject.h>
+
+
 
 #ifdef _WIN32
 
@@ -24,27 +24,6 @@ Profile* MainWindow::profileManager = new Profile(NULL);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
-
-#ifdef _WIN32 //windows demostration
-
-    registerGlobalHotkey(&profile, 1, "executable", "Notepad");
-    registerGlobalHotkey(&profile, 2, "keystroke", "Ctrl+Alt+Tab");
-    registerGlobalHotkey(&profile, 3, "executable", "file:///C:/Program Files/BlueJ/BlueJ.exe");
-
-    qDebug() << "Profile 'TestProfile' created and saved.";
-
-    // Print out the macros in the profile for debugging
-    qDebug() << "Assigned macros for 'TestProfile':";
-    for (int i = 1; i <= 9; ++i) { // assuming you only have up to 5 macro keys
-        std::unique_ptr<Macro>& macro = profile.getMacro(i);
-        if (macro) {
-            qDebug() << "Key " << i << " -> Type:" << macro->getType() << ", Content:" << macro->getContent();
-        } else {
-            qDebug() << "Key " << i << " is not assigned a macro.";
-        }
-    }
-
-#endif
 
     setWindowTitle("MacroPad - Configuration");
 
@@ -64,6 +43,16 @@ MainWindow::MainWindow(QWidget *parent)
     qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
+    QObject *root = qmlWidget->rootObject();
+    // if (root) {
+    //     QObject *profileObj = root->findChild<QObject*>("profileManager");
+    //     if (profileObj) {
+    //         connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
+    //                 this, SLOT(onKeyConfigured(int,QString,QString)));
+    //     }
+    // }
+
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -157,11 +146,10 @@ void MainWindow::toggleDockIcon(bool show) {
 
 std::unordered_map<UINT, std::function<void()>> MainWindow::hotkeyActions;
 std::unique_ptr<Profile> currentProfile = std::make_unique<Profile>("DefaultProfile");
-HHOOK keyboardHook = NULL;
+//HHOOK MainWindow::keyboardHook = NULL;
 
-// //Week 6: modified
 
-LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam){
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
 
@@ -169,8 +157,8 @@ LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lPa
             int vkCode = kbdStruct->vkCode;
 
             // Check if the key has a registered action
-            auto it = hotkeyActions.find(vkCode);
-            if (it != hotkeyActions.end()) {
+            auto it = MainWindow::hotkeyActions.find(vkCode);
+            if (it != MainWindow::hotkeyActions.end()) {
                 it->second(); // Execute the stored action (macro)
                 return 1;  // Prevents default key behavior (optional)
             }
@@ -265,6 +253,8 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QStrin
 
 // ===== MACOS IMPLEMENTATION =====
 #ifdef __APPLE__
+#include <objc/NSObject.h>
+#include <objc/objc.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
 #include <QDebug>
