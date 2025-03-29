@@ -290,7 +290,7 @@ static const std::map<int, int> keyMap = {
 };
 
 static const QMap<QString, CGKeyCode> keyHex{
-    {"cmd", 0x31},    // Command
+    {"cmd", 0x37},    // Command
     {"shift", 0x38},  // Shift
     {"ctrl", 0x3B},   // Control
     {"alt", 0x3A},    // Option
