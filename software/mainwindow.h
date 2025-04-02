@@ -51,7 +51,6 @@ private slots:
     void showWindow();  // Restore window from system tray
     void exitApplication();  // Quit application
     void toggleDockIcon(bool show);
-
 private:
     void createTrayIcon();
     static Profile* profileManager;
@@ -71,5 +70,4 @@ QMenu *trayMenu;
 #endif
 
 };
-
 #endif // MAINWINDOW_H
