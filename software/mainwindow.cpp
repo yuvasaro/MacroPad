@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QQuickItem>
 #include <iostream>
+#include <qfileinfo.h>
 #include <thread>
 #include "profile.h"
 #include "string"
@@ -85,6 +86,14 @@ void MainWindow::createTrayIcon() {
     // qDebug() << "Icon loaded successfully:" << !icon.isNull();
     trayIcon->setIcon(icon);
 #endif
+
+#ifdef _WIN32
+    QString iconPath = QCoreApplication::applicationDirPath() + "/../../MPIcon.ico";
+    QIcon icon(iconPath);
+    trayIcon->setIcon(icon);
+    this->setWindowIcon(icon);
+#endif
+
 
     trayIcon->setToolTip("Configuration Software Running");
 

@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
 
     AppTracker appTracker;
 
+
+
     // Connect the signal emitted by AppTracker when the active app changes
     QObject::connect(&appTracker, &AppTracker::appChanged, [](const QString &appName) {
         // This lambda function will be called whenever the app changes
