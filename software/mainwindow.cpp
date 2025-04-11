@@ -12,16 +12,14 @@
 #include <thread>
 #include "profile.h"
 #include "string"
+#include "apptracker.h"
 
 #ifdef _WIN32
 
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
-static Profile profile("Profile 1", "Google Chrome");
-
 Profile* MainWindow::profileManager = new Profile(NULL);
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
@@ -62,6 +60,15 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(centralWidget);
 
     createTrayIcon();
+
+
+
+    initializeProfiles();
+
+
+
+    QObject::connect(&appTracker, &AppTracker::appChanged, this, &MainWindow::switchCurrentProfile);
+
 }
 
 MainWindow::~MainWindow() {
@@ -71,6 +78,37 @@ MainWindow::~MainWindow() {
     } */
 }
 
+/*QList<QObject*> MainWindow::getProfiles() const {
+    return profiles;
+}*/
+
+void MainWindow::initializeProfiles() {
+    profiles[0] = new Profile("Default", "");
+    profiles[1] = new Profile("1", "Google Chrome");
+    profiles[2] = new Profile("2", "Qt Creator");
+    profiles[3] = new Profile("3", "MacroPad");
+    profiles[4] = new Profile("4", "Discord");
+    profiles[5] = new Profile("5", "Spotify");
+
+    for (int i = 0; i < 6; i++) {
+        profiles[i]->saveProfile();
+        profiles[i]->loadProfile(profiles[i]->getName());
+    }
+
+    currentProfile = profiles[0];
+}
+
+void MainWindow::switchCurrentProfile(const QString& appName) {
+    qDebug() << "Current app:" << appName;
+    for (int i = 0; i < 6; ++i) {
+        if (profiles[i]->getApp() == appName) {
+            currentProfile = profiles[i];  // Set the current profile to the matching profile
+            qDebug() << "Current profile set to:" << currentProfile->getName();
+            return;
+        }
+    }
+}
+
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::warning(this, "Warning", "System tray is not available!");
@@ -78,12 +116,10 @@ void MainWindow::createTrayIcon() {
     }
 
     // Set a valid icon (adjust path accordingly)
+
 #ifdef Q_OS_MAC
     QString iconPath = QCoreApplication::applicationDirPath() + "/../Resources/MPIcon.png";
     QIcon icon(iconPath);
-    // qDebug() << "Loading tray icon from:" << iconPath;
-    // qDebug() << "File exists:" << QFile::exists(iconPath);
-    // qDebug() << "Icon loaded successfully:" << !icon.isNull();
     trayIcon->setIcon(icon);
 #endif
 

@@ -29,7 +29,7 @@ public:
     Profile& operator=(Profile&&) = delete;
 
 
-    Profile() = default;
+    // Profile() = default;
 
     Q_INVOKABLE QString getName() const;
     Q_INVOKABLE QString getApp() const;

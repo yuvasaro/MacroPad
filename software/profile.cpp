@@ -8,7 +8,7 @@
 
 Profile::Profile(QObject* parent) : QObject(parent) {}
 
-Profile::Profile(const QString& userName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(userName) {}
+Profile::Profile(const QString& profileName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(profileName) {}
 
 QString Profile::getName() const {
     return name;

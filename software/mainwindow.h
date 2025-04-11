@@ -24,6 +24,7 @@
 #endif
 
 #include "profile.h"
+#include "apptracker.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -31,10 +32,13 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
+    // Q_PROPERTY(QList<QObject*> profiles READ profiles NOTIFY profilesChanged) // Property allows QML to access profiles list
 
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    // QList<QObject*> getProfiles() const; // getter so QML can access profiles list
 
 #ifdef _WIN32
     void doTasks(std::vector<INPUT>& inputs);
@@ -54,6 +58,18 @@ private slots:
 private:
     void createTrayIcon();
     static Profile* profileManager;
+
+    AppTracker appTracker;
+
+    //QList<QObject*> profiles;
+    //QObject* currentProfile;
+
+    Profile* profiles[6];
+    Profile* currentProfile;
+
+
+    void initializeProfiles();
+    void switchCurrentProfile(const QString& appName);
 
    // QSharedPointer<Profile> currentProfile;
    // QList<QSharedPointer<Profile>> profiles;
