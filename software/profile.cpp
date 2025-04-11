@@ -17,6 +17,7 @@ QString Profile::getName() const {
     return name;
 }
 
+
 void Profile::setName(const QString& newName) {
     if (name != newName) {
         name = newName;
@@ -24,16 +25,30 @@ void Profile::setName(const QString& newName) {
     }
 }
 
-void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
-    macros[keyNum] = std::move(std::make_unique<Macro>(type, content));
+QString Profile::getApp() const {
+    return application;
 }
+
+void Profile::setApp(const QString& newApp) {
+    if (application != newApp) {
+        application = newApp;
+        emit appChanged();
+        std::cout << "worked";
+    }
+}
+
+
+void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
+    macros[keyNum] = QSharedPointer<Macro>::create(type, content);
+}
+
 
 void Profile::deleteMacro(int keyNum) {
-    macros.erase(keyNum);
+    macros.remove(keyNum);
 }
 
-std::unique_ptr<Macro>& Profile::getMacro(int keyNum) {
-    return macros[keyNum];
+QSharedPointer<Macro> Profile::getMacro(int keyNum) {
+    return macros.value(keyNum, QSharedPointer<Macro>());
 }
 
 void Profile::saveProfile() {
@@ -44,11 +59,12 @@ void Profile::saveProfile() {
     if (outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&outFile);
         out << "Name: " << name << "\n";
+        out << "Application: " << application << "\n";
 
-        for (auto& macro : macros) {
-            out << macro.first << ":\n";
-            out << "type: " << macro.second->getType() << "\n";
-            out << "content: " << macro.second->getContent() << "\n";
+        for (auto it = macros.begin(); it != macros.end(); ++it) {
+            out << it.key() << ":\n";
+            out << "type: " << it.value()->getType() << "\n";
+            out << "content: " << it.value()->getContent() << "\n";
         }
 
         outFile.close();
@@ -65,6 +81,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         QTextStream in(&inFile);
         QString line;
         QString profileName;
+        QString application;
         QString macroType;
         QString macroContent;
         int keyNum = -1;
@@ -78,6 +95,10 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         }
 
         Profile* userProfile = new Profile(profileName);
+
+        if (line.startsWith("Application: ")){
+            application = line.mid(13);
+        }
 
         while (!in.atEnd()) {
             line = in.readLine();
@@ -106,3 +127,4 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
     }
 
 }
+

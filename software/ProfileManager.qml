@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtCore 6.2
 import FileIO 1.0
+import Macro 1.0
 
 Item {
     id: profileManager
@@ -47,23 +48,37 @@ Item {
     }
 
     function saveProfiles() {
-        var profileStrings = profiles.map(profile => {
-            var profileText = "name: " + profile.name + "\n";
-            profile.keys.forEach((key, index) => {
-                profileText += (index + 1) + ":\n  type: " + (key.type || "") + "\n  content: " + (key.content || "") + "\n";
-            });
-            return profileText;
-        });
-
-        var formattedText = profileStrings.join("\n");
-
-        console.log("Saving profiles to:", fileIO.filePath);
-        if (fileIO.write(formattedText)) {
-            console.log("Profiles saved successfully to", fileIO.filePath);
-        } else {
-            console.log("ERROR: Failed to save profiles to", fileIO.filePath);
+        if (profiles.length === 0) {
+            console.log("No profiles to save.");
+            return;
         }
+
+        var currentProfile = profiles[profileSelector.currentIndex];
+
+        if (!currentProfile) {
+            console.log("ERROR: No current profile selected.");
+            return;
+        }
+
+        console.log("Saving profile:", currentProfile.name);
+
+        profileInstance.setName(currentProfile.name);
+
+        for (var i = 0; i < currentProfile.keys.length; i++) {
+            var key = currentProfile.keys[i];
+            if (key) {
+                profileInstance.setMacro(i + 1, key.type, key.content);
+            }
+        }
+
+        if (currentProfile.application) {
+                profileInstance.setApp(currentProfile.application);
+            }
+
+        profileInstance.saveProfile();
+        console.log("Profile saved successfully.");
     }
+
 
     function loadProfile(index) {
             console.log("Loading profile:", profileNames[index]);
@@ -96,6 +111,14 @@ Item {
 
         saveProfiles();
     }
+
+    function setApp(app) {
+        console.log("app changed");
+        var profile = profiles[profileSelector.currentIndex];
+        profile.application = app;
+        profileInstance.setApp(app);
+    }
+
 
     Component.onCompleted: {
         loadProfiles();

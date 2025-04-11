@@ -2,6 +2,7 @@ C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/Macro
   C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/moc_predefs.h \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QEvent \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QList \
+  C:/Qt/6.8.2/mingw_64/include/QtCore/QMap \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QMargins \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QObject \
   C:/Qt/6.8.2/mingw_64/include/QtCore/QRect \

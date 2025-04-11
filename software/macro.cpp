@@ -36,6 +36,7 @@ QString Macro::getContent() const {
 }
 
 
+/*
  std::vector<WORD> Macro::translateKeys(const std::string& content) {
     std::vector<std::string> strs;
     int start = 0;
@@ -81,4 +82,4 @@ QString Macro::getContent() const {
     return keys;
 }
 
-
+*/

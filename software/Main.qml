@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 
 Rectangle {
     id: root
@@ -10,6 +11,7 @@ Rectangle {
     ProfileManager {
         id: profileManager
     }
+
 
     Grid {
         id: keyGrid
@@ -104,4 +106,31 @@ Rectangle {
                 profileManager.loadProfile(currentIndex)
             }
         }
+
+
+        FileDialog {
+            id: fileDialog
+            title: "Select an Executable File"
+            fileMode: FileDialog.OpenFile
+            nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
+
+            onAccepted: {
+                console.log("Selected executable:", selectedFile)
+                profileManager.setApp(selectedFile.toString().replace("file://", ""));
+
+            }
+        }
+
+        Button {
+            width: 100
+            height: 40
+            text: "Select Executable"
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 10
+            anchors.rightMargin: 10
+            visible: profileSelector.currentText !== "General"
+            onClicked: fileDialog.open()
+        }
     }
+

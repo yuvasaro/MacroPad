@@ -7,60 +7,53 @@
 #include <QAction>
 #include <QVBoxLayout>
 #include <QMenu>
+#include <QQuickItem>
 #include <iostream>
 #include <thread>
 #include "profile.h"
 #include "string"
+
+
 
 #ifdef _WIN32
 
 HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
-
-static Profile profile("Profile 1");
+Profile* MainWindow::profileManager = new Profile(NULL);
 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
 
-#ifdef _WIN32 //windows demostration
-
-    registerGlobalHotkey(&profile, 1, "executable", "Notepad");
-    registerGlobalHotkey(&profile, 2, "keystroke", "Ctrl+Alt+Tab");
-    registerGlobalHotkey(&profile, 3, "executable", "file:///C:/Program Files/BlueJ/BlueJ.exe");
-
-    qDebug() << "Profile 'TestProfile' created and saved.";
-
-    // Print out the macros in the profile for debugging
-    qDebug() << "Assigned macros for 'TestProfile':";
-    for (int i = 1; i <= 9; ++i) { // assuming you only have up to 5 macro keys
-        std::unique_ptr<Macro>& macro = profile.getMacro(i);
-        if (macro) {
-            qDebug() << "Key " << i << " -> Type:" << macro->getType() << ", Content:" << macro->getContent();
-        } else {
-            qDebug() << "Key " << i << " is not assigned a macro.";
-        }
-    }
-
-#endif
-
     setWindowTitle("MacroPad - Configuration");
-
-    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
 
     // Create QQuickWidget to display QML
     qmlWidget = new QQuickWidget(this);
     qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-    Profile *profileManager = new Profile(this);
     FileIO *fileIO = new FileIO(this);
+    Macro *macro = new Macro(this);
+
+    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
+    qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
 
     // Register with QML
-    qmlWidget->engine()->rootContext()->setContextProperty("profileManager", profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
-
+    qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
+    qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", profileManager);
+    qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
+    QObject *root = qmlWidget->rootObject();
+    // if (root) {
+    //     QObject *profileObj = root->findChild<QObject*>("profileManager");
+    //     if (profileObj) {
+    //         connect(profileObj, SIGNAL(keyConfigured(int,QString,QString)),
+    //                 this, SLOT(onKeyConfigured(int,QString,QString)));
+    //     }
+    // }
+
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -70,8 +63,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     createTrayIcon();
 }
-
-
 
 MainWindow::~MainWindow() {
     /* if (keyboardHook) {
@@ -87,7 +78,15 @@ void MainWindow::createTrayIcon() {
     }
 
     // Set a valid icon (adjust path accordingly)
-    trayIcon->setIcon(QIcon(":/icons/app_icon.png"));
+#ifdef Q_OS_MAC
+    QString iconPath = QCoreApplication::applicationDirPath() + "/../Resources/MPIcon.png";
+    QIcon icon(iconPath);
+    // qDebug() << "Loading tray icon from:" << iconPath;
+    // qDebug() << "File exists:" << QFile::exists(iconPath);
+    // qDebug() << "Icon loaded successfully:" << !icon.isNull();
+    trayIcon->setIcon(icon);
+#endif
+
     trayIcon->setToolTip("Configuration Software Running");
 
     // Create tray menu actions
@@ -104,7 +103,6 @@ void MainWindow::createTrayIcon() {
     trayIcon->setContextMenu(trayMenu);
     trayIcon->show();
 }
-
 
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
@@ -135,6 +133,7 @@ void MainWindow::toggleDockIcon(bool show) {
         TransformProcessType(&psn, kProcessTransformToUIElementApplication);
     }
 #endif
+
 }
 
 // ===== WINDOWS IMPLEMENTATION =====
@@ -221,8 +220,10 @@ HHOOK keyboardHook = NULL;
 //     return CallNextHookEx(NULL, nCode, wParam, lParam);
 // }
 
+//HHOOK MainWindow::keyboardHook = NULL;
 
-LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+
+LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam){
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
 
@@ -230,8 +231,8 @@ LRESULT CALLBACK MainWindow::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lPa
             int vkCode = kbdStruct->vkCode;
 
             // Check if the key has a registered action
-            auto it = hotkeyActions.find(vkCode);
-            if (it != hotkeyActions.end()) {
+            auto it = MainWindow::hotkeyActions.find(vkCode);
+            if (it != MainWindow::hotkeyActions.end()) {
                 it->second(); // Execute the stored action (macro)
                 return 1;  // Prevents default key behavior (optional)
             }
@@ -350,6 +351,8 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QStrin
 
 // ===== MACOS IMPLEMENTATION =====
 #ifdef __APPLE__
+#include <objc/NSObject.h>
+#include <objc/objc.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
 #include <QDebug>
@@ -391,12 +394,12 @@ bool isAppBundle(const QString &path) {
     return !files.isEmpty();  // Returns true if there is at least one executable file
 }
 
-OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
+OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData){
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
-    std::unique_ptr<Macro>& macro = profile.getMacro(hotKeyID.id);
+    QSharedPointer<Macro> macro = profileManager->getMacro(hotKeyID.id);
 
-    if (macro != nullptr) {
+    if (!macro.isNull()) {
         qDebug() << hotKeyID.id << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
 
         const QString& type = macro->getType();
@@ -404,7 +407,7 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
 
         if (macro->getType() == "keystroke") {
 
-        } else if (macro->getType() == "program") {
+        } else if (macro->getType() == "executable") {
             if (isAppBundle(content)) {
                 QProcess::startDetached("open", {"-a", content});
             } else {
@@ -417,6 +420,8 @@ OSStatus MainWindow::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef ev
 }
 
 void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
+    qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
+
     EventTypeSpec eventType;
     eventType.eventClass = kEventClassKeyboard;
     eventType.eventKind = kEventHotKeyPressed;
@@ -468,3 +473,4 @@ void MainWindow::registerGlobalHotkey() {
     listenForHotkeys();
 }
 #endif
+
