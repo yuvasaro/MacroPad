@@ -19,6 +19,7 @@
 class HotkeyHandler {
 public:
     static void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
+    static Profile* profileManager;
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);

@@ -10,6 +10,8 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 
+
+Profile* HotkeyHandler::profileManager = new Profile("General");
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
 std::unordered_map<UINT, std::function<void()>> HotkeyHandler::hotkeyActions;
@@ -94,21 +96,37 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     case 7: vkCode = 0x37; break;
     case 8: vkCode = 0x38; break;
     case 9: vkCode = 0x39; break;
-    default: std::cerr << "Invalid key number specified.\n"; return;
+    default:
+        std::cerr << "Invalid key number specified.\n";
+        return;
     }
-    if (type == "executable") {
-        QString fixedPath = content;
-        if (fixedPath.startsWith("/")) fixedPath = fixedPath.mid(1);
-        std::wstring wcontent = QDir::toNativeSeparators(fixedPath).toStdWString();
-        hotkeyActions[vkCode] = [wcontent]() {
-            OutputDebugStringW((L"Trying to launch executable: " + wcontent + L"\n").c_str());
-            HINSTANCE result = ShellExecuteW(NULL, L"open", wcontent.c_str(), NULL, NULL, SW_SHOWNORMAL);
-            if ((INT_PTR)result <= 32) {
-                OutputDebugStringW(L"ShellExecuteW failed.\n");
-            }
-        };
-    } else if (type == "keystroke") {
-        hotkeyActions[vkCode] = [content]() {
+
+    // ⚠️ Save the profile pointer for future runtime access
+    HotkeyHandler::profileManager = profile;
+
+    // Register a runtime lookup lambda
+    hotkeyActions[vkCode] = [keyNum]() {
+        if (!HotkeyHandler::profileManager) {
+            OutputDebugStringW(L"No active profile.\n");
+            return;
+        }
+
+        QSharedPointer<Macro> macro = HotkeyHandler::profileManager->getMacro(keyNum);
+        if (macro.isNull()) {
+            OutputDebugStringW(L"Macro not found.\n");
+            return;
+        }
+
+        const QString type = macro->getType();
+        const QString content = macro->getContent();
+
+        if (type == "executable") {
+            QString fixedPath = content;
+            if (fixedPath.startsWith("/")) fixedPath = fixedPath.mid(1);
+            std::wstring wcontent = QDir::toNativeSeparators(fixedPath).toStdWString();
+            OutputDebugStringW((L"Launching executable: " + wcontent + L"\n").c_str());
+            ShellExecuteW(NULL, L"open", wcontent.c_str(), NULL, NULL, SW_SHOWNORMAL);
+        } else if (type == "keystroke") {
             std::thread([content]() {
                 QMap<QString, int> keyMap = {
                     {"Cmd", VK_LWIN}, {"Shift", VK_SHIFT}, {"Ctrl", VK_CONTROL}, {"Alt", VK_MENU},
@@ -117,20 +135,21 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
                 };
                 for (char c = '0'; c <= '9'; ++c) keyMap[QString(c)] = c;
                 for (char c = 'A'; c <= 'Z'; ++c) keyMap[QString(c)] = c;
+
                 QStringList keySequence = content.split("+");
                 std::vector<int> keyCodes;
                 for (const QString& key : keySequence) {
                     if (keyMap.contains(key)) keyCodes.push_back(keyMap[key]);
                 }
+
                 for (int key : keyCodes) keybd_event(key, 0, 0, 0);
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 for (auto it = keyCodes.rbegin(); it != keyCodes.rend(); ++it)
                     keybd_event(*it, 0, KEYEVENTF_KEYUP, 0);
             }).detach();
-        };
-    } else {
-        std::cerr << "Unsupported action type.\n";
-    }
+        }
+    };
+
     if (!keyboardHook) {
         keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, hotkeyCallback, GetModuleHandle(NULL), 0);
         if (!keyboardHook) {
@@ -139,6 +158,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
             OutputDebugStringW(L"Keyboard hook set.\n");
         }
     }
+
     profile->setMacro(keyNum, type, content);
 #elif __APPLE__
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
