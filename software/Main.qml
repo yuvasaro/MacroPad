@@ -8,6 +8,7 @@ Rectangle {
     height: 480
     color: "black"
 
+
     ProfileManager {
         id: profileManager
     }
@@ -117,11 +118,12 @@ Rectangle {
             onAccepted: {
                 console.log("Selected executable:", selectedFile)
                 profileManager.setApp(selectedFile.toString().replace("file://", ""));
-
+                exetext.text = ((selectedFile.toString().replace("file://", "")).replace(".exe", "")).split("/").pop();
             }
         }
 
         Button {
+            id: exebutton
             width: 100
             height: 40
             text: "Select Executable"
@@ -131,6 +133,19 @@ Rectangle {
             anchors.rightMargin: 10
             visible: profileSelector.currentText !== "General"
             onClicked: fileDialog.open()
+        }
+
+        Button {
+            id:exetext
+            width: 100
+            height: 40
+            anchors.top: exebutton.bottom
+            anchors.topMargin: 10
+            anchors.right: exebutton.right
+            visible: profileSelector.currentText !== "General"
+            ToolTip.visible: hovered
+                ToolTip.text: text
+                ToolTip.delay: 500
         }
     }
 

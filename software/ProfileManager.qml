@@ -116,7 +116,7 @@ Item {
         console.log("app changed");
         var profile = profiles[profileSelector.currentIndex];
         profile.application = app;
-        profileInstance.setApp(app);
+        //profileInstance.setApp(app);
     }
 
 

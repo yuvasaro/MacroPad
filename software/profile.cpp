@@ -33,7 +33,6 @@ void Profile::setApp(const QString& newApp) {
     if (application != newApp) {
         application = newApp;
         emit appChanged();
-        std::cout << "worked";
     }
 }
 
