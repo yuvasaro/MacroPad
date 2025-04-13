@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QQuickItem>
 #include <iostream>
+#include <qdir.h>
 #include <qfileinfo.h>
 #include <thread>
 #include "profile.h"
@@ -200,7 +201,12 @@ void MainWindow::registerGlobalHotkey(Profile* profile, int keyNum, const QStrin
 
     // Register the hotkey based on the type
     if (type == "executable") {
-        std::wstring wcontent = content.toStdWString();
+        qDebug() << &"key pressed"[keyNum];
+        QString fixedPath = content;
+        if (fixedPath.startsWith("/")) {
+            fixedPath = fixedPath.mid(1); // Remove leading slash
+        }
+        std::wstring wcontent = QDir::toNativeSeparators(fixedPath).toStdWString();
         hotkeyActions[vkCode] = [wcontent]() {
             ShellExecuteW(NULL, L"open", wcontent.c_str(), NULL, NULL, SW_SHOWNORMAL);
         };
