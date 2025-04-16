@@ -1,6 +1,5 @@
 // mainwindow.cpp (refactored)
 #include "mainwindow.h"
-#include "config.h"
 #include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
@@ -17,7 +16,7 @@
 #include <QDir>
 #include <QFileInfo>
 
-Profile* MainWindow::profileManager = new Profile(nullptr);
+//Profile* MainWindow::profileManager = new Profile(nullptr);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
@@ -35,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
-    qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", profileManager);
+    qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
 

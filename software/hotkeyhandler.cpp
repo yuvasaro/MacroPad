@@ -138,7 +138,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
 
                 QStringList keySequence = content.split("+");
                 std::vector<int> keyCodes;
-                for (const QString& key : keySequence) {
+                for (const QString& key : std::as_const(keySequence)) {
                     if (keyMap.contains(key)) keyCodes.push_back(keyMap[key]);
                 }
 
