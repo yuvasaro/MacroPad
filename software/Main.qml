@@ -7,6 +7,11 @@ Rectangle {
     height: 480
     color: "black"
 
+    Component.onCompleted: {
+        var num = mainWindow.profiles.length;
+        console.log("Number of profiles from mainwindow:", num);
+    }
+
     ProfileManager {
         id: profileManager
     }

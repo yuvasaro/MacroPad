@@ -20,6 +20,7 @@ HHOOK MainWindow::keyboardHook = nullptr;
 #endif
 
 Profile* MainWindow::profileManager = new Profile(NULL);
+QList<Profile*> profiles;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
@@ -36,12 +37,14 @@ MainWindow::MainWindow(QWidget *parent)
     qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
 
+    initializeProfiles();
     // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
     qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
 
     QObject *root = qmlWidget->rootObject();
     // if (root) {
@@ -61,12 +64,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     createTrayIcon();
 
-
-
-    initializeProfiles();
-
-
-
     QObject::connect(&appTracker, &AppTracker::appChanged, this, &MainWindow::switchCurrentProfile);
 
 }
@@ -76,23 +73,44 @@ MainWindow::~MainWindow() {
         UnhookWindowsHookEx(keyboardHook);
         keyboardHook = nullptr;
     } */
+
+    qDeleteAll(profiles);
+    profiles.clear();
 }
 
-/*QList<QObject*> MainWindow::getProfiles() const {
-    return profiles;
-}*/
+// required profileCount function for QML_PROPERTY
+qsizetype MainWindow::profileCount(QQmlListProperty<Profile> *list) {
+    auto profiles = static_cast<QList<Profile*>*>(list->data);
+    return profiles->size();
+}
+
+// required profileAt function for QML_PROPERTY
+Profile *MainWindow::profileAt(QQmlListProperty<Profile> *list, qsizetype index) {
+    auto profiles = static_cast<QList<Profile*>*>(list->data);
+    return profiles->at(index);
+}
+
+// getter for QML to access profiles
+QQmlListProperty<Profile> MainWindow::getProfiles() {
+    return QQmlListProperty<Profile>(
+        this,
+        &profiles, // use MainWindow instance as the data object
+        &MainWindow::profileCount,
+        &MainWindow::profileAt
+        );
+}
 
 void MainWindow::initializeProfiles() {
-    profiles[0] = new Profile("Default", "");
-    profiles[1] = new Profile("1", "Google Chrome");
-    profiles[2] = new Profile("2", "Qt Creator");
-    profiles[3] = new Profile("3", "MacroPad");
-    profiles[4] = new Profile("4", "Discord");
-    profiles[5] = new Profile("5", "Spotify");
+    QString names[6] = {"Default", "1", "2", "3", "4", "5"};
+    QString apps[6] = {"", "Google Chrome", "Qt Creator", "MacroPad", "Discord", "Spotify"};
 
-    for (int i = 0; i < 6; i++) {
-        profiles[i]->saveProfile();
-        profiles[i]->loadProfile(profiles[i]->getName());
+    for (int i = 0; i < 6; ++i) {
+        Profile* profile = new Profile(this);  // Create dynamically
+        profile->setName(names[i]);
+        profile->setApp(apps[i]);
+        profile->saveProfile();
+        profile->loadProfile(profile->getName());
+        profiles.append(profile);
     }
 
     currentProfile = profiles[0];
@@ -100,9 +118,9 @@ void MainWindow::initializeProfiles() {
 
 void MainWindow::switchCurrentProfile(const QString& appName) {
     qDebug() << "Current app:" << appName;
-    for (int i = 0; i < 6; ++i) {
-        if (profiles[i]->getApp() == appName) {
-            currentProfile = profiles[i];  // Set the current profile to the matching profile
+    for (Profile* profile : profiles) {
+        if (profile->getApp() == appName) {
+            currentProfile = profile;
             qDebug() << "Current profile set to:" << currentProfile->getName();
             return;
         }

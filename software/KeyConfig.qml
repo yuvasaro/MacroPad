@@ -13,6 +13,7 @@ Dialog {
     property string keystroke: ""
     property string executable: ""
 
+    // this is to just make sure mainwindow profiles is
     Component.onCompleted: {
         console.log("Initializing KeyConfig Dialog for Key:", keyIndex);
         keystrokeInput.text = keystroke;

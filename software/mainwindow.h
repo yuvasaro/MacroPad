@@ -10,6 +10,7 @@
 #include <QQuickWidget>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQmlListProperty>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -32,13 +33,16 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
-    // Q_PROPERTY(QList<QObject*> profiles READ profiles NOTIFY profilesChanged) // Property allows QML to access profiles list
+    Q_PROPERTY(QQmlListProperty<Profile> profiles READ getProfiles)
 
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    // QList<QObject*> getProfiles() const; // getter so QML can access profiles list
+    Q_INVOKABLE QQmlListProperty<Profile> getProfiles();
+
+    static qsizetype profileCount(QQmlListProperty<Profile> *list);
+    static Profile* profileAt(QQmlListProperty<Profile> *list, qsizetype index);
 
 #ifdef _WIN32
     void doTasks(std::vector<INPUT>& inputs);
@@ -61,22 +65,18 @@ private:
 
     AppTracker appTracker;
 
-    //QList<QObject*> profiles;
-    //QObject* currentProfile;
 
-    Profile* profiles[6];
+    QList<Profile*> profiles;
     Profile* currentProfile;
 
 
     void initializeProfiles();
     void switchCurrentProfile(const QString& appName);
 
-   // QSharedPointer<Profile> currentProfile;
-   // QList<QSharedPointer<Profile>> profiles;
-
 QQuickWidget *qmlWidget;
 QSystemTrayIcon *trayIcon;
 QMenu *trayMenu;
+
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
@@ -89,4 +89,6 @@ QMenu *trayMenu;
 #endif
 
 };
+
+
 #endif // MAINWINDOW_H
