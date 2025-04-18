@@ -33,6 +33,7 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
+    // expose
     Q_PROPERTY(QQmlListProperty<Profile> profiles READ getProfiles)
 
 public:
