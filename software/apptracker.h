@@ -10,6 +10,7 @@ class AppTracker : public QObject {
 public:
     AppTracker(QObject *parent = nullptr);
     ~AppTracker();
+    Q_INVOKABLE QString getAppIconPath(const QString& appPath);
 
 signals:
     void appChanged(const QString &appName);  // Signal emitted when the active app changes

@@ -39,3 +39,26 @@ void AppTracker::stopTracking() {
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     [[workspace notificationCenter] removeObserver:(id)this];
 }
+
+QString AppTracker::getAppIconPath(const QString& appPath) {
+    NSString *nsAppPath = appPath.toNSString();
+
+    // 1. Try to get bundle icon
+    NSBundle *appBundle = [NSBundle bundleWithPath:nsAppPath];
+    if (appBundle) {
+        NSString *iconName = [[appBundle infoDictionary] objectForKey:@"CFBundleIconFile"];
+        if (iconName) {
+            if (![iconName hasSuffix:@".icns"]) {
+                iconName = [iconName stringByAppendingString:@".icns"];
+            }
+            NSString *iconPath = [appBundle pathForResource:[iconName stringByDeletingPathExtension]
+                                                    ofType:@"icns"];
+            if (iconPath) {
+                return QString::fromNSString(iconPath);
+            }
+        }
+    }
+
+    // 2. Fallback to generic executable icon
+    return "";
+}

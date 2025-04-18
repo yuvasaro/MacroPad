@@ -39,8 +39,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         config.h config.cpp
         fileio.h fileio.cpp
         ${APPTRACKER_SOURCES}
-        hotkeyhandler.h
-        hotkeyhandler.cpp
+        imagecache.h imagecache.cpp
 
     )
     qt_add_resources(MacroPad "resources"
@@ -49,6 +48,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
             Main.qml
             KeyConfig.qml
             ProfileManager.qml
+            keystroke.png
+            executable.png
     )
 
 else()

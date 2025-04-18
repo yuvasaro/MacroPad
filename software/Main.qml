@@ -27,11 +27,33 @@ Rectangle {
                 border.color: "white"
                 radius: 10
 
-                Text {
-                    text: "Key " + (index + 1)
-                    anchors.centerIn: parent
-                    color: "black"
-                }
+                Item {
+                            anchors.fill: parent
+                            anchors.margins: 5
+
+                            Image {
+                                id: keyImage
+                                anchors.centerIn: parent
+                                width: parent.width - 10
+                                height: parent.height - 10
+                                fillMode: Image.PreserveAspectFit
+                                source: {
+                                    var profile = profileManager.profiles[profileSelector.currentIndex];
+                                    if (profile && profile.keys[index] && profile.keys[index].image) {
+                                        return profile.keys[index].image;
+                                    }
+                                    return "";
+                                }
+                                visible: source !== ""
+                            }
+
+                            Text {
+                                text: "Key " + (index + 1)
+                                anchors.centerIn: parent
+                                color: "black"
+                                visible: !keyImage.visible
+                            }
+                        }
 
                 MouseArea {
                     anchors.fill: parent
@@ -55,13 +77,9 @@ Rectangle {
 
                                 profileManager.setKeyConfig(
                                     keyConfigInstance.keyIndex,
-                                    "keystroke",
-                                    keyConfigInstance.keystroke
-                                );
-                                profileManager.setKeyConfig(
-                                    keyConfigInstance.keyIndex,
-                                    "executable",
-                                    keyConfigInstance.executable
+                                    keyConfigInstance.executable !== "" ? "executable" : "keystroke",
+                                    keyConfigInstance.executable !== "" ? keyConfigInstance.executable : keyConfigInstance.keystroke,
+                                    keyConfigInstance.customImage
                                 );
 
                                 keyConfigInstance.destroy();

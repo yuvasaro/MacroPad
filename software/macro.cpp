@@ -4,8 +4,8 @@
 
 Macro::Macro(QObject* parent) : QObject(parent), type("defaultType"), content("defaultContent") {}
 
-Macro::Macro(const QString& userType, const QString& userContent, QObject* parent)
-    : QObject(parent), type(userType), content(userContent) {}
+Macro::Macro(const QString& userType, const QString& userContent, const QString& userImagePath, QObject* parent)
+    : QObject(parent), type(userType), content(userContent), imagePath(userImagePath) {}
 
 Macro::~Macro() {}
 
@@ -23,6 +23,13 @@ void Macro::setContent(const QString& newContent) {
     }
 }
 
+void Macro::setImagePath(const QString& path) {
+    if (imagePath != path) {
+        imagePath = path;
+        emit imagePathChanged();
+    }
+}
+
 QString Macro::getType() const {
     return type;
 }
@@ -30,5 +37,10 @@ QString Macro::getType() const {
 QString Macro::getContent() const {
     return content;
 }
+
+QString Macro::getImagePath() const {
+    return imagePath;
+}
+
 
 
