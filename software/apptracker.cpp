@@ -13,23 +13,36 @@ static HWINEVENTHOOK winEventHook = nullptr;
 void CALLBACK handleWinEvent(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, DWORD, DWORD) {
     if (!instance || !hwnd) return;
 
-    // 1) Get the PID for this window
+    // 1) only track visible windows with a caption bar
+    if (!IsWindowVisible(hwnd))                return;
+    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+    if ((style & WS_CAPTION) == 0)             return;
+
+    // 2) get the process ID
     DWORD pid = 0;
     GetWindowThreadProcessId(hwnd, &pid);
-    if (pid == 0) return;
+    if (pid == 0)                              return;
 
-    // 2) Open the process with query rights
-    HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-    if (!hProc) return;
+    // 3) open the process
+    HANDLE hProc = OpenProcess(
+        PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ,
+        FALSE, pid
+        );
+    if (!hProc)                                return;
 
-    // 3) Query the full image name
+    // 4) get the full path and close handle
     char exePath[MAX_PATH];
     DWORD size = MAX_PATH;
     BOOL ok = QueryFullProcessImageNameA(hProc, 0, exePath, &size);
     CloseHandle(hProc);
-    if (!ok) return;
+    if (!ok)                                   return;
 
-    // 4) Extract just the base name (no path, no extension)
+    // 5) skip explorer.exe
+    QString fullName = QFileInfo(QString::fromLocal8Bit(exePath)).fileName();  // e.g. "notepad.exe"
+    if (fullName.compare("explorer.exe", Qt::CaseInsensitive) == 0)
+        return;
+
+    // 6) emit just the base name
     QString appName = QFileInfo(QString::fromLocal8Bit(exePath)).completeBaseName();
     if (!appName.isEmpty()) {
         emit instance->appChanged(appName);
