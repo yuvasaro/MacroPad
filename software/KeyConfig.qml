@@ -103,17 +103,19 @@ Dialog {
 
                 if (keystrokeValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
-                    mainWindow.registerGlobalHotkey(profileInstance, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
+                    mainWindow.callHotkeyHandler(profileInstance, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
                 }
 
                 if (executableValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue);
-                    mainWindow.registerGlobalHotkey(profileInstance, keyConfigDialog.keyIndex, "executable", executableValue);
+                    mainWindow.callHotkeyHandler(profileInstance, keyConfigDialog.keyIndex, "executable", executableValue);
                 }
+
 
                 keyConfigDialog.accept();
             }
         }
+
 
         Button {
             text: "Cancel"
