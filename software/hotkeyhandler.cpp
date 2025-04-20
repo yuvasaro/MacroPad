@@ -11,7 +11,7 @@
 #include <QFileInfoList>
 
 
-Profile* HotkeyHandler::profileManager = new Profile("General");
+Profile* HotkeyHandler::profileManager = new Profile("General", "MacroPad", nullptr);
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
 std::unordered_map<UINT, std::function<void()>> HotkeyHandler::hotkeyActions;
