@@ -43,9 +43,11 @@ Rectangle {
                     onClicked: {
                         var component = Qt.createComponent("KeyConfig.qml");
                         if (component.status === Component.Ready) {
-                            var profile = profileManager.profiles[profileSelector.currentIndex];
-
-                            var existingKey = profile.keys[index] || { keystroke: "", executable: "" };
+                            var profile = mainWindow.profileInstance;
+                            var macro = profile.getMacro(index + 1);
+                            var existingKey = macro ? { keystroke: macro.type === "keystroke" ? macro.content : "",
+                                                        executable: macro.type === "executable" ? macro.content: "" }
+                                                    : { keystroke: "", executable: ""};
 
                             var keyConfigInstance = component.createObject(root, {
                                 keyIndex: index + 1,
@@ -94,7 +96,8 @@ Rectangle {
             anchors.top: parent.top
             anchors.topMargin: 20
             anchors.horizontalCenter: parent.horizontalCenter
-            model: profileManager.profileNames
+            model: mainWindow.profiles
+            textRole: "name"
             background: Rectangle {
                     color: "lightgray"
                     radius: 5
@@ -107,7 +110,7 @@ Rectangle {
                         verticalAlignment: Text.AlignVCenter
                     }
             onCurrentIndexChanged: {
-                profileManager.loadProfile(currentIndex)
+                mainWindow.profileInstance = mainWindow.profiles[currentIndex];
             }
         }
     }

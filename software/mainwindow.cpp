@@ -39,8 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     initializeProfiles();
-    // Register with QML
 
+    // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
     qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
