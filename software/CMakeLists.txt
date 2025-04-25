@@ -39,6 +39,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         config.h config.cpp
         fileio.h fileio.cpp
         ${APPTRACKER_SOURCES}
+        hotkeyhandler.h
+        hotkeyhandler.cpp
 
     )
     qt_add_resources(MacroPad "resources"

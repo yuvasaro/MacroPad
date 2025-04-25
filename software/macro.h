@@ -25,8 +25,6 @@ public:
 
     QString getContent() const;
     void setContent(const QString& newContent);
-    static std::vector<WORD> translateKeys(const std::string& content);
-
 
 signals:
     void typeChanged();
