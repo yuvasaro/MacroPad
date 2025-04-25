@@ -87,19 +87,23 @@ QQmlListProperty<Profile> MainWindow::getProfiles() {
         );
 }
 
+void MainWindow::setProfileInstance(Profile* profile) {
+    if (profileInstance != profile) {
+        profileInstance = profile;
+        emit profileInstanceChanged();
+    }
+}
+
 void MainWindow::initializeProfiles() {
     QString names[6] = {"Default", "1", "2", "3", "4", "5"};
     QString apps[6] = {"", "Google Chrome", "Qt Creator", "MacroPad", "Discord", "Spotify"};
 
     for (int i = 0; i < 6; ++i) {
-        Profile* profile = new Profile(this);  // Create dynamically
-        profile->setName(names[i]);
-        profile->setApp(apps[i]);
-        profile->saveProfile();
-        profile->loadProfile(profile->getName());
+        Profile* profile = Profile::loadProfile(names[i]);
         profiles.append(profile);
     }
 
+    profileInstance = profiles[0];
     currentProfile = profiles[0];
 }
 

@@ -13,7 +13,6 @@ Dialog {
     property string keystroke: ""
     property string executable: ""
 
-    // this is to just make sure mainwindow profiles is
     Component.onCompleted: {
         console.log("Initializing KeyConfig Dialog for Key:", keyIndex);
         keystrokeInput.text = keystroke;
@@ -103,12 +102,12 @@ Dialog {
 
                 if (keystrokeValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
-                    mainWindow.callHotkeyHandler(profileInstance, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
+                    mainWindow.callHotkeyHandler(mainWindow.profileInstance, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
                 }
 
                 if (executableValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue);
-                    mainWindow.callHotkeyHandler(profileInstance, keyConfigDialog.keyIndex, "executable", executableValue);
+                    mainWindow.callHotkeyHandler(mainWindow.profileInstance, keyConfigDialog.keyIndex, "executable", executableValue);
                 }
 
 

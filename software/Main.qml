@@ -110,7 +110,11 @@ Rectangle {
                         verticalAlignment: Text.AlignVCenter
                     }
             onCurrentIndexChanged: {
-                mainWindow.profileInstance = mainWindow.profiles[currentIndex];
+                onCurrentIndexChanged: {
+                    mainWindow.profileInstance = mainWindow.profiles[currentIndex];
+                }
+                console.log("Selected profile:", mainWindow.profileInstance.name);
+
             }
         }
     }
