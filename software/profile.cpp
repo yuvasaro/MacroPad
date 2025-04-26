@@ -33,7 +33,13 @@ void Profile::setApp(const QString& newApp) {
 }
 
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
-    macros[keyNum] = QSharedPointer<Macro>::create(type, content);
+    if (!macros.contains(keyNum)) {
+        macros[keyNum] = QSharedPointer<Macro>::create();
+    }
+
+    macros[keyNum]->setType(type);
+    macros[keyNum]->setContent(content);
+
 }
 
 
@@ -46,6 +52,8 @@ QSharedPointer<Macro> Profile::getMacro(int keyNum) {
 }
 
 void Profile::saveProfile() {
+    qDebug() << "Saving profile. Current macros:";
+    this->printMacros();
     QString configDir = Config::getConfigDir();
     QString filePath = configDir + "/" + name + ".txt";
 
@@ -56,7 +64,7 @@ void Profile::saveProfile() {
         out << "App: " << app << "\n";
 
         for (auto it = macros.begin(); it != macros.end(); ++it) {
-            out << it.key() << ":\n";
+            out << it.key() << "\n";
             out << "type: " << it.value()->getType() << "\n";
             out << "content: " << it.value()->getContent() << "\n";
         }
@@ -68,6 +76,8 @@ void Profile::saveProfile() {
 }
 
 Profile* Profile::loadProfile(const QString& nameLookUp) {
+
+    qDebug() << "Loading profile: " << nameLookUp;
     QString filePath = Config::getConfigDir() + "/" + nameLookUp + ".txt";
     QFile inFile(filePath);
 
@@ -111,6 +121,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
                 macroContent = line.mid(9);
                 if (keyNum != -1) {
                     userProfile->setMacro(keyNum, macroType, macroContent);
+                    userProfile->printMacros();
                     keyNum = -1;
                 }
             }
