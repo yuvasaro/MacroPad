@@ -12,6 +12,7 @@
 
 
 Profile* HotkeyHandler::profileManager = new Profile("General", "MacroPad", nullptr);
+QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
 std::unordered_map<UINT, std::function<void()>> HotkeyHandler::hotkeyActions;
@@ -162,6 +163,14 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     profile->setMacro(keyNum, type, content);
 #elif __APPLE__
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
+
+    // Check if already registered
+    if (registeredHotkeys.contains(keyNum)) {
+        qDebug() << "Hotkey already registered, unregistering first.";
+        UnregisterEventHotKey(registeredHotkeys[keyNum]);
+        registeredHotkeys.remove(keyNum);
+    }
+
     EventTypeSpec eventType = { kEventClassKeyboard, kEventHotKeyPressed };
     EventHotKeyRef hotkeyRef;
     EventHotKeyID hotkeyID = { 0, static_cast<UInt32>(keyNum) };
@@ -172,6 +181,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
         qDebug() << "Failed to register hotkey. Error code:" << status;
     } else {
         qDebug() << "Hotkey registered successfully!";
+        registeredHotkeys[keyNum] = hotkeyRef;
     }
     profile->setMacro(keyNum, type, content);
 #elif __linux__

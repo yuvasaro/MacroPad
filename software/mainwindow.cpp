@@ -95,11 +95,17 @@ void MainWindow::setProfileInstance(Profile* profile) {
 }
 
 void MainWindow::initializeProfiles() {
-    QString names[6] = {"Default", "1", "2", "3", "4", "5"};
+    QString names[6] = {"General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"};
     QString apps[6] = {"", "Google Chrome", "Qt Creator", "MacroPad", "Discord", "Spotify"};
 
     for (int i = 0; i < 6; ++i) {
         Profile* profile = Profile::loadProfile(names[i]);
+        if (!profile) {
+            profile = new Profile(this);
+            profile->setName(names[i]);
+            profile->setApp(apps[i]);
+            profile->saveProfile();
+        }
         profiles.append(profile);
     }
 

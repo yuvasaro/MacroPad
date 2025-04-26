@@ -29,7 +29,7 @@ public:
     Profile& operator=(Profile&&) = delete;
 
 
-    // Profile() = default;
+    Profile() = default;
 
     Q_INVOKABLE QString getName() const;
     Q_INVOKABLE QString getApp() const;
@@ -40,7 +40,7 @@ public:
     Q_INVOKABLE QSharedPointer<Macro> getMacro(int keyNum);
     Q_INVOKABLE void saveProfile();
     Q_INVOKABLE static Profile* loadProfile(const QString& nameLookUp);
-
+    Q_INVOKABLE void printMacros();
 signals:
     void nameChanged();
     void appChanged();

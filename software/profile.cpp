@@ -121,8 +121,13 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
 
     } else {
         qWarning() << "Unable to open file for reading:" << filePath;
-        return new Profile("", "", nullptr);
+        return nullptr;
     }
 
 }
 
+void Profile::printMacros() {
+    for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) {
+        qDebug() << "Key:" << it.key() << "Macro:" << it.value()->toString();
+    }
+}
