@@ -41,6 +41,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${APPTRACKER_SOURCES}
         hotkeyhandler.h
         hotkeyhandler.cpp
+        serialhandler.cpp
+        serialhandler.h
 
     )
     qt_add_resources(MacroPad "resources"

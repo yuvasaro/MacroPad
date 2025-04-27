@@ -11,7 +11,7 @@
 #include <QVBoxLayout>
 #include <QMenu>
 #include <QQuickItem>
-#include <QQuickWidget>
+#include <QQuickWidget>z
 #include <QMessageBox>
 #include <QDir>
 #include <QFileInfo>
@@ -19,7 +19,7 @@
 //Profile* MainWindow::profileManager = new Profile(nullptr);
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
+    : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this), m_serialHandler(new SerialHandler(this)) {
 
     setWindowTitle("MacroPad - Configuration");
 
@@ -45,6 +45,10 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(centralWidget);
 
     createTrayIcon();
+
+    connect(m_serialHandler, &SerialHandler::dataReceived,
+            this, &MainWindow::onDataReceived);
+    QObject::connect(&appTracker, &AppTracker::appChanged, this, &MainWindow::switchCurrentProfile);
 }
 
 MainWindow::~MainWindow() {}
