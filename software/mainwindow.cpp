@@ -99,26 +99,17 @@ void MainWindow::initializeProfiles() {
     QString apps[6] = {"", "Google Chrome", "Qt Creator", "MacroPad", "Discord", "Spotify"};
 
     for (int i = 0; i < 6; ++i) {
-        bool profileExists = false;
-        for (Profile* profile : profiles) {
-            if (profile && profile->getName() == names[i]) {
-                profileExists = true;
-                break;
-            }
+
+        Profile* profile = Profile::loadProfile(names[i]);
+
+        if (!profile) {
+            profile = new Profile(this);
+            profile->setName(names[i]);
+            profile->setApp(apps[i]);
+            profile->saveProfile();
         }
-
-        if (!profileExists) {
-            Profile* profile = Profile::loadProfile(names[i]);
-
-            if (!profile) {
-                profile = new Profile(this);
-                profile->setName(names[i]);
-                profile->setApp(apps[i]);
-                profile->saveProfile();
-            }
 
             profiles.append(profile);
-        }
     }
 
     profileInstance = profiles[0];

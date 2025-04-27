@@ -64,7 +64,7 @@ void Profile::saveProfile() {
         out << "App: " << app << "\n";
 
         for (auto it = macros.begin(); it != macros.end(); ++it) {
-            out << it.key() << "\n";
+            out << it.key() << ":\n";
             out << "type: " << it.value()->getType() << "\n";
             out << "content: " << it.value()->getContent() << "\n";
         }
@@ -112,7 +112,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
             line = in.readLine();
 
             if (line[0].isDigit()) {
-                keyNum = line.toInt();
+                keyNum = line[0].digitValue();
             }
             else if (line.startsWith("type: ")) {
                 macroType = line.mid(6);
