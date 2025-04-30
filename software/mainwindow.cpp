@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent):
 
     connect(m_serialHandler, &SerialHandler::dataReceived,
             this, &MainWindow::onDataReceived);
+    //app switch currently in progress
     QObject::connect(&appTracker, &AppTracker::appChanged, this, &MainWindow::switchCurrentProfile);
 }
 

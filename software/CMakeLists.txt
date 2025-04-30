@@ -38,6 +38,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         profile.h profile.cpp
         config.h config.cpp
         fileio.h fileio.cpp
+        serialhandler.h serialhandler.cpp
         ${APPTRACKER_SOURCES}
         hotkeyhandler.h
         hotkeyhandler.cpp
