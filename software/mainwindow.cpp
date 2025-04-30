@@ -4,6 +4,7 @@
 #include "profile.h"
 #include "hotkeyhandler.h"
 #include "serialhandler.h"
+#include "apptracker.h"
 
 #include <QApplication>
 #include <QQmlEngine>
@@ -17,8 +18,9 @@
 #include <QDir>
 #include <QFileInfo>
 
-//Profile* MainWindow::profileManager = new Profile(nullptr);
+
 QList<Profile*> profiles;
+
 
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
@@ -37,11 +39,16 @@ MainWindow::MainWindow(QWidget *parent):
     qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
 
+
+    initializeProfiles();
+
+    // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
     qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
+
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -51,19 +58,80 @@ MainWindow::MainWindow(QWidget *parent):
 
     createTrayIcon();
 
+
     connect(m_serialHandler, &SerialHandler::dataReceived,
             this, &MainWindow::onDataReceived);
     //app switch currently in progress
     QObject::connect(&appTracker, &AppTracker::appChanged, this, &MainWindow::switchCurrentProfile);
+
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+    qDeleteAll(profiles);
+    profiles.clear();
+}
+
+// required profileCount function for QML_PROPERTY
+qsizetype MainWindow::profileCount(QQmlListProperty<Profile> *list) {
+    auto profiles = static_cast<QList<Profile*>*>(list->data);
+    return profiles->size();
+}
+
+// required profileAt function for QML_PROPERTY
+Profile *MainWindow::profileAt(QQmlListProperty<Profile> *list, qsizetype index) {
+    auto profiles = static_cast<QList<Profile*>*>(list->data);
+    return profiles->at(index);
+}
+
+// getter for QML to access profiles
+QQmlListProperty<Profile> MainWindow::getProfiles() {
+    return QQmlListProperty<Profile>(
+        this,
+        &profiles, // use MainWindow instance as the data object
+        &MainWindow::profileCount,
+        &MainWindow::profileAt
+        );
+}
+
+void MainWindow::setProfileInstance(Profile* profile) {
+    if (profileInstance != profile) {
+        profileInstance = profile;
+        emit profileInstanceChanged();
+    }
+}
+
+void MainWindow::initializeProfiles() {
+    QString names[6] = {"General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"};
+    QString apps[6] = {"", "Google Chrome", "Qt Creator", "MacroPad", "Discord", "Spotify"};
+
+    for (int i = 0; i < 6; ++i) {
+
+        Profile* profile = Profile::loadProfile(names[i]);
+
+        if (!profile) {
+            profile = new Profile(this);
+            profile->setName(names[i]);
+            profile->setApp(apps[i]);
+            profile->saveProfile();
+        }
+
+            profiles.append(profile);
+    }
+
+    profileInstance = profiles[0];
+    currentProfile = profiles[0];
+}
 
 void MainWindow::switchCurrentProfile(const QString& appName) {
-    //qDebug() << "Current app:" << appName;
-    //dummy function for now
+    qDebug() << "Current app:" << appName;
+    for (Profile* profile : profiles) {
+        if (profile->getApp() == appName) {
+            currentProfile = profile;
+            qDebug() << "Current profile set to:" << currentProfile->getName();
+            return;
+        }
+    }
 }
-
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::warning(this, "Warning", "System tray is not available!");
@@ -261,3 +329,4 @@ void MainWindow::toggleDockIcon(bool show) {
     }
 #endif
 }
+
