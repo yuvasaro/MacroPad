@@ -1,5 +1,6 @@
 #include "serialhandler.h"
-#include <QSerialPortInfo>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 
 SerialHandler::SerialHandler(QObject *parent)

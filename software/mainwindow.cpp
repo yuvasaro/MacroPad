@@ -3,6 +3,7 @@
 #include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
+#include "serialhandler.h"
 
 #include <QApplication>
 #include <QQmlEngine>
@@ -11,15 +12,19 @@
 #include <QVBoxLayout>
 #include <QMenu>
 #include <QQuickItem>
-#include <QQuickWidget>z
+#include <QQuickWidget>
 #include <QMessageBox>
 #include <QDir>
 #include <QFileInfo>
 
 //Profile* MainWindow::profileManager = new Profile(nullptr);
+QList<Profile*> profiles;
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this), m_serialHandler(new SerialHandler(this)) {
+MainWindow::MainWindow(QWidget *parent):
+    QMainWindow(parent),
+    trayIcon(new QSystemTrayIcon(this)),
+    trayMenu(new QMenu(this)),
+    m_serialHandler(new SerialHandler(this)) {
 
     setWindowTitle("MacroPad - Configuration");
 
@@ -53,11 +58,17 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {}
 
+void MainWindow::switchCurrentProfile(const QString& appName) {
+    //qDebug() << "Current app:" << appName;
+    //dummy function for now
+}
+
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::warning(this, "Warning", "System tray is not available!");
         return;
     }
+
 
 #ifdef Q_OS_MAC
     QString iconPath = QCoreApplication::applicationDirPath() + "/../Resources/MPIcon.png";
@@ -91,6 +102,135 @@ void MainWindow::callHotkeyHandler(Profile* profile, int keyNum, const QString& 
     HotkeyHandler::registerGlobalHotkey(profile, keyNum, type, content);
 }
 
+static void volumeUp()
+{
+#ifdef _WIN32
+    qDebug() << "volumeUp called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_UP;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_UP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    MainWindow::macVolume = (MainWindow::macVolume >= 100) ? MainWindow::macVolume : MainWindow::macVolume + 6;
+    setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+static void volumeDown()
+{
+#ifdef _WIN32
+    qDebug() << "volumeDown called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    MainWindow::macVolume = (MainWindow::macVolume <= 0) ? MainWindow::macVolume : MainWindow::macVolume - 6;
+    setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+static void mute()
+{
+#ifdef _WIN32
+    qDebug() << "mute called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    toggleMuteSystem();
+#endif
+}
+
+
+// Scroll functions
+
+static void scrollUp()
+{
+#ifdef _WIN32
+    // qDebug() << "scrollUp called on Windows";
+    // QScrollArea* scrollArea = ui->scrollArea;
+    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
+    // if (vScrollBar) {
+    //     vScrollBar->setValue(vScrollBar->value() - 50);
+    // }
+#endif
+
+#ifdef __APPLE__
+    // qDebug() << "scrollUp called on macOS";
+    // QScrollArea* scrollArea = ui->scrollArea;
+    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
+    // if (vScrollBar) {
+    //     vScrollBar->setValue(vScrollBar->value() - 50);
+    // }
+#endif
+}
+
+static void scrollDown()
+{
+#ifdef _WIN32
+    // qDebug() << "scrollDown called on Windows";
+    // QScrollArea* scrollArea = ui->scrollArea;
+    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
+    // if (vScrollBar) {
+    //     vScrollBar->setValue(vScrollBar->value() + 50);
+    // }
+#endif
+
+#ifdef __APPLE__
+    // qDebug() << "scrollDown called on macOS";
+    // QScrollArea* scrollArea = ui->scrollArea;
+    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
+    // if (vScrollBar) {
+    //     vScrollBar->setValue(vScrollBar->value() + 50);
+    // }
+#endif
+}
+
+
+
+// std::string pathNotion = "C:\\Users\\aarav\\AppData\\Local\\Programs\\Notion\\Notion.exe";
+// std::wstring wpathNotion(pathNotion.begin(), pathNotion.end());
+
+
+void MainWindow::onDataReceived(int number)
+{
+    // qDebug() << "onDataReceived: " << number;
+    // if (number > 10 && number < 20)
+    // {
+    //     profile = number - 10;
+    //     qDebug() << "Profile switched to " << profile;
+    // }
+
+    //Volume Control
+    if (number > 70 && number < 80)
+    {
+        if (number == 72)
+            volumeUp();
+        else if (number == 71)
+            volumeDown();
+        else if (number == 73)
+            mute();
+        return;
+    }
+    //if (number > 0 && number < 10) executeHotkey(number);
+}
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
         hide();

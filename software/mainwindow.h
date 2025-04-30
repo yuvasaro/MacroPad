@@ -2,6 +2,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "apptracker.h"
+#include "serialhandler.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>
@@ -38,16 +40,21 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
+    void onDataReceived(int number);
+
     void showWindow();
     void exitApplication();
     void toggleDockIcon(bool show);
 
 private:
     void createTrayIcon();
-
     QQuickWidget *qmlWidget;
     QSystemTrayIcon *trayIcon;
     QMenu *trayMenu;
+    SerialHandler *m_serialHandler;
+    AppTracker appTracker;
+
+    void switchCurrentProfile(const QString& appName);
 
 #ifdef __linux__
     Display *display;

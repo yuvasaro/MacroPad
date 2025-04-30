@@ -21,6 +21,17 @@ void Profile::setName(const QString& newName) {
     }
 }
 
+QString Profile::getApp() const {
+    return application;
+}
+
+void Profile::setApp(const QString& newApp) {
+    if (application != newApp) {
+        application = newApp;
+        emit appChanged();
+    }
+}
+
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
     macros[keyNum] = QSharedPointer<Macro>::create(type, content);
 }

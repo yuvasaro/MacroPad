@@ -101,7 +101,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
         return;
     }
 
-    // ⚠️ Save the profile pointer for future runtime access
+    //Save the profile pointer for future runtime access
     HotkeyHandler::profileManager = profile;
 
     // Register a runtime lookup lambda

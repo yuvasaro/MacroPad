@@ -1,6 +1,6 @@
 // AppTracker.cpp
 
-#include "AppTracker.h"
+#include "apptracker.h"
 #include <windows.h>
 #include <Psapi.h>              // for GetModuleFileNameExA
 #include <QFileInfo>

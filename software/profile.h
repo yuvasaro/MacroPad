@@ -10,6 +10,7 @@
 class Profile : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
+    QString application;
 
 private:
 
@@ -36,9 +37,12 @@ public:
     Q_INVOKABLE QSharedPointer<Macro> getMacro(int keyNum);
     Q_INVOKABLE void saveProfile();
     Q_INVOKABLE static Profile* loadProfile(const QString& nameLookUp);
+    Q_INVOKABLE QString getApp() const;
+    Q_INVOKABLE void setApp(const QString& newApp);
 
 signals:
     void nameChanged();
+    void appChanged();
 
 };
 
