@@ -30,6 +30,8 @@ Item {
                         profiles.push(currentProfile);
                     }
                     currentProfile = { name: line.substring(6).trim(), keys: [] };
+                } else if (line.startsWith("Application:")){
+                    currentProfile.application = line.substring(13);
                 } else if (line.match(/^\d+:/)) {
                     var keyIndex = parseInt(line.split(":")[0].trim());
                     var type = lines[i + 1].split(":")[1].trim();
@@ -117,6 +119,7 @@ Item {
         var profile = profiles[profileSelector.currentIndex];
         profile.application = app;
         //profileInstance.setApp(app);
+        saveProfiles();
     }
 
 
