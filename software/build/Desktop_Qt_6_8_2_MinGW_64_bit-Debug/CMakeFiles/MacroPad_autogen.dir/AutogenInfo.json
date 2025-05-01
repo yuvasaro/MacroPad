@@ -895,6 +895,12 @@
 			null
 		],
 		[
+			"C:/Users/dakot/MacroPad/software/hotkeyhandler.h",
+			"MU",
+			"EWIEGA46WW/moc_hotkeyhandler.cpp",
+			null
+		],
+		[
 			"C:/Users/dakot/MacroPad/software/macro.h",
 			"MU",
 			"EWIEGA46WW/moc_macro.cpp",
@@ -1008,6 +1014,7 @@
 		[ "C:/Users/dakot/MacroPad/software/apptracker.cpp", "MU", null ],
 		[ "C:/Users/dakot/MacroPad/software/config.cpp", "MU", null ],
 		[ "C:/Users/dakot/MacroPad/software/fileio.cpp", "MU", null ],
+		[ "C:/Users/dakot/MacroPad/software/hotkeyhandler.cpp", "MU", null ],
 		[ "C:/Users/dakot/MacroPad/software/macro.cpp", "MU", null ],
 		[ "C:/Users/dakot/MacroPad/software/main.cpp", "MU", null ],
 		[ "C:/Users/dakot/MacroPad/software/mainwindow.cpp", "MU", null ],
