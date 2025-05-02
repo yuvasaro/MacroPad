@@ -20,6 +20,7 @@ class HotkeyHandler {
 public:
     static void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
     static Profile* profileManager;
+    static Profile* currentProfile;
 private:
     static QMap<int, EventHotKeyRef> registeredHotkeys;
 #ifdef _WIN32

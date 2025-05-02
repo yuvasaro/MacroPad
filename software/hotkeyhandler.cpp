@@ -12,6 +12,8 @@
 
 
 Profile* HotkeyHandler::profileManager = new Profile("General", "MacroPad", nullptr);
+Profile* HotkeyHandler::currentProfile = new Profile("General", "MacroPad", nullptr);
+
 QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;

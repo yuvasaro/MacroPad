@@ -22,7 +22,7 @@ Item {
 
     function setApp(app) {
         console.log("app changed");
-        profileInstance.setApp(app);
+        mainWindow.profileInstance.setApp(app);
         mainWindow.profileInstance.saveProfile();
     }
 

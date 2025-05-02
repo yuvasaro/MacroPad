@@ -130,6 +130,7 @@ Rectangle {
                 console.log("Selected executable:", selectedFile)
                 profileManager.setApp(selectedFile.toString().replace("file://", ""));
                 exetext.text = ((selectedFile.toString().replace("file://", "")).replace(".exe", "")).split("/").pop();
+                // profileInstance.saveProfile();
             }
         }
 

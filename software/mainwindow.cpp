@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
     qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
+    qmlWidget->engine()->rootContext()->setContextProperty("currentProfile", HotkeyHandler::currentProfile);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
 
