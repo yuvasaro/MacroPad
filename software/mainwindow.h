@@ -47,6 +47,7 @@ public:
     static Profile* profileManager;
     Q_INVOKABLE void callHotkeyHandler(Profile* profile, int keyNum, const QString& type, const QString& content);
 
+
 signals:
     void profilesChanged();
     void profileInstanceChanged();
@@ -60,6 +61,7 @@ private slots:
     void showWindow();
     void exitApplication();
     void toggleDockIcon(bool show);
+
 
 private:
     void createTrayIcon();
