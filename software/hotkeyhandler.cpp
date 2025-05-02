@@ -168,6 +168,7 @@ void HotkeyHandler::listenForHotkeys() {
 
 void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
 #ifdef _WIN32
+#ifdef DEBUG
     UINT vkCode = 0;
     switch (keyNum) {
     case 1: vkCode = 0x31; break;
@@ -241,7 +242,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
             OutputDebugStringW(L"Keyboard hook set.\n");
         }
     }
-
+#endif
     profile->setMacro(keyNum, type, content);
 #elif __APPLE__
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
@@ -278,7 +279,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
 
 //key triggering behavior helper functions
 
-static void volumeUp()
+void HotkeyHandler::volumeUp()
 {
 #ifdef _WIN32
     qDebug() << "volumeUp called";
@@ -297,7 +298,7 @@ static void volumeUp()
 #endif
 }
 
-static void volumeDown()
+void HotkeyHandler:: volumeDown()
 {
 #ifdef _WIN32
     qDebug() << "volumeDown called";
@@ -316,7 +317,7 @@ static void volumeDown()
 #endif
 }
 
-static void mute()
+void HotkeyHandler:: mute()
 {
 #ifdef _WIN32
     qDebug() << "mute called";
@@ -337,7 +338,7 @@ static void mute()
 
 // Scroll functions
 
-static void scrollUp()
+void HotkeyHandler:: scrollUp()
 {
 #ifdef _WIN32
     // qDebug() << "scrollUp called on Windows";
@@ -358,7 +359,7 @@ static void scrollUp()
 #endif
 }
 
-static void scrollDown()
+void HotkeyHandler:: scrollDown()
 {
 #ifdef _WIN32
     // qDebug() << "scrollDown called on Windows";
