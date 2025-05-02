@@ -3,6 +3,7 @@
 #include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
+#include "serialhandler.h"
 #include "apptracker.h"
 
 #include <QApplication>
@@ -18,13 +19,14 @@
 #include <QFileInfo>
 
 
-
-// Profile* MainWindow::profileManager = new Profile(NULL);
 QList<Profile*> profiles;
 
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
+MainWindow::MainWindow(QWidget *parent):
+    QMainWindow(parent),
+    trayIcon(new QSystemTrayIcon(this)),
+    trayMenu(new QMenu(this)),
+    m_serialHandler(new SerialHandler(this)) {
 
     setWindowTitle("MacroPad - Configuration");
 
@@ -56,6 +58,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     createTrayIcon();
 
+
+    connect(m_serialHandler, &SerialHandler::dataReceived,
+            this, &MainWindow::onDataReceived);
+    //app switch currently in progress
     QObject::connect(&appTracker, &AppTracker::appChanged, this, &MainWindow::switchCurrentProfile);
 
 }
@@ -126,12 +132,12 @@ void MainWindow::switchCurrentProfile(const QString& appName) {
         }
     }
 }
-
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::warning(this, "Warning", "System tray is not available!");
         return;
     }
+
 
 #ifdef Q_OS_MAC
     QString iconPath = QCoreApplication::applicationDirPath() + "/../Resources/MPIcon.png";
@@ -165,6 +171,25 @@ void MainWindow::callHotkeyHandler(Profile* profile, int keyNum, const QString& 
     HotkeyHandler::registerGlobalHotkey(profile, keyNum, type, content);
 }
 
+void MainWindow::onDataReceived(int number)
+{
+    //Volume Knob
+    if (number > 70 && number < 80)
+    {
+        if (number == 72)
+            HotkeyHandler::volumeUp();
+        else if (number == 71)
+            HotkeyHandler::volumeDown();
+        else if (number == 73)
+            HotkeyHandler::mute();
+        return;
+    }
+
+    //MacroKey triggering
+    if (number>0 && number<10) {
+        HotkeyHandler::executeHotkey(number, profileInstance);
+    }
+}
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
         hide();

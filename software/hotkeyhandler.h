@@ -20,13 +20,26 @@ class HotkeyHandler {
 public:
     static void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
     static Profile* profileManager;
+    static void executeHotkey(int hotKeyNum, Profile* profileInstance);
+
+    //helper functions
+    static void volumeUp();
+    static void volumeDown();
+    static void mute();
+    static void scrollUp();
+    static void scrollDown();
+
+
 private:
-    static QMap<int, EventHotKeyRef> registeredHotkeys;
+
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
     static HHOOK keyboardHook;
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+    static std::wstring wpathExec;
+
 #elif __APPLE__
+    static QMap<int, EventHotKeyRef> registeredHotkeys;
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
 #elif __linux__
     static void listenForHotkeys();

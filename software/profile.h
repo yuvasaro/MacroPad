@@ -10,6 +10,7 @@
 class Profile : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
+    QString application;
 
 private:
 

@@ -2,6 +2,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "apptracker.h"
+#include "serialhandler.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>
@@ -45,6 +47,7 @@ public:
     static Profile* profileManager;
     Q_INVOKABLE void callHotkeyHandler(Profile* profile, int keyNum, const QString& type, const QString& content);
 
+
 signals:
     void profilesChanged();
     void profileInstanceChanged();
@@ -53,9 +56,12 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
+    void onDataReceived(int number);
+
     void showWindow();
     void exitApplication();
     void toggleDockIcon(bool show);
+
 
 private:
     void createTrayIcon();
@@ -63,10 +69,8 @@ private:
     Profile* profileInstance;
     AppTracker appTracker;
 
-
     QList<Profile*> profiles;
     Profile* currentProfile;
-
 
     void initializeProfiles();
     void switchCurrentProfile(const QString& appName);
@@ -74,6 +78,7 @@ private:
     QQuickWidget *qmlWidget;
     QSystemTrayIcon *trayIcon;
     QMenu *trayMenu;
+    SerialHandler *m_serialHandler;
 
 
 #ifdef __linux__
