@@ -245,6 +245,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
 #endif
     profile->setMacro(keyNum, type, content);
 #elif __APPLE__
+#ifdef DEBUG
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
 
     // Check if already registered
@@ -266,6 +267,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
         qDebug() << "Hotkey registered successfully!";
         registeredHotkeys[keyNum] = hotkeyRef;
     }
+#endif
     profile->setMacro(keyNum, type, content);
 #elif __linux__
     display = XOpenDisplay(NULL);
