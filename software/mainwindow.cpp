@@ -177,9 +177,11 @@ void MainWindow::onDataReceived(int number)
     if (number > 70 && number < 80)
     {
         if (number == 72)
-            HotkeyHandler::volumeUp();
+            //HotkeyHandler::volumeUp();
+            HotkeyHandler::scrollUp();
         else if (number == 71)
-            HotkeyHandler::volumeDown();
+            //HotkeyHandler::volumeDown();
+            HotkeyHandler::scrollDown();
         else if (number == 73)
             HotkeyHandler::mute();
         return;

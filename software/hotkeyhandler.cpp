@@ -13,8 +13,6 @@
 
 Profile* HotkeyHandler::profileManager = new Profile("General", "MacroPad", nullptr);
 
-
-
 #ifdef __APPLE__
 QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
 #endif
@@ -343,12 +341,13 @@ void HotkeyHandler:: mute()
 void HotkeyHandler:: scrollUp()
 {
 #ifdef _WIN32
-    // qDebug() << "scrollUp called on Windows";
-    // QScrollArea* scrollArea = ui->scrollArea;
-    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
-    // if (vScrollBar) {
-    //     vScrollBar->setValue(vScrollBar->value() - 50);
-    // }
+    qDebug() << "scrollUp called on Windows";
+    // Simulate one notch of wheel up (WHEEL_DELTA = +120)
+    INPUT input = {};
+    input.type             = INPUT_MOUSE;
+    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
+    input.mi.mouseData     = WHEEL_DELTA;
+    SendInput(1, &input, sizeof(input));
 #endif
 
 #ifdef __APPLE__
@@ -364,12 +363,13 @@ void HotkeyHandler:: scrollUp()
 void HotkeyHandler:: scrollDown()
 {
 #ifdef _WIN32
-    // qDebug() << "scrollDown called on Windows";
-    // QScrollArea* scrollArea = ui->scrollArea;
-    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
-    // if (vScrollBar) {
-    //     vScrollBar->setValue(vScrollBar->value() + 50);
-    // }
+    qDebug() << "scrollDown called on Windows";
+    // Simulate one notch of wheel down (–120)
+    INPUT input = {};
+    input.type             = INPUT_MOUSE;
+    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
+    input.mi.mouseData     = -WHEEL_DELTA;
+    SendInput(1, &input, sizeof(input));
 #endif
 
 #ifdef __APPLE__
