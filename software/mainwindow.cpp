@@ -171,24 +171,24 @@ void MainWindow::callHotkeyHandler(Profile* profile, int keyNum, const QString& 
     HotkeyHandler::registerGlobalHotkey(profile, keyNum, type, content);
 }
 
-void MainWindow::onDataReceived(int number)
-{
-    //Volume Knob
-    if (number > 70 && number < 80)
-    {
-        if (number == 72)
-            HotkeyHandler::volumeUp();
-        else if (number == 71)
-            HotkeyHandler::volumeDown();
-        else if (number == 73)
-            HotkeyHandler::mute();
-        return;
-    }
+ void MainWindow::onDataReceived(int number)
+ {
+//     //Volume Knob
+//     if (number > 70 && number < 80)
+//     {
+//         if (number == 72)
+//             HotkeyHandler::volumeUp();
+//         else if (number == 71)
+//             HotkeyHandler::volumeDown();
+//         else if (number == 73)
+//             HotkeyHandler::mute();
+//         return;
+//     }
 
-    //MacroKey triggering
-    if (number>0 && number<10) {
-        HotkeyHandler::executeHotkey(number, profileInstance);
-    }
+//     //MacroKey triggering
+//     if (number>0 && number<10) {
+//         HotkeyHandler::executeHotkey(number, profileInstance);
+//     }
 }
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
