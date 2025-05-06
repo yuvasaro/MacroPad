@@ -6,28 +6,28 @@ import Macro 1.0
 
 Item {
     id: profileManager
-    property var profiles: mainWindow.profiles
+    property var profiles: hotkeyHandler.profiles
 
     function setKeyConfig(keyIndex, type, value) {
         console.log("Updating key:", keyIndex, "Type:", type, "Value:", value);
 
         if (type === "keystroke" && value !== "") {
-            mainWindow.profileInstance.setMacro(keyIndex, "keystroke", value);
+            hotkeyHandler.profileManager.setMacro(keyIndex, "keystroke", value);
         } else if (type === "executable" && value !== "") {
-            mainWindow.profileInstance.setMacro(keyIndex, "executable", value);
+            hotkeyHandler.profileManager.setMacro(keyIndex, "executable", value);
         }
 
-        mainWindow.profileInstance.saveProfile();
+        hotkeyHandler.profileManager.saveProfile();
     }
 
     function setApp(app) {
         console.log("app changed");
-        mainWindow.profileInstance.setApp(app);
-        mainWindow.profileInstance.saveProfile();
+        hotkeyHandler.profileManager.setApp(app);
+        hotkeyHandler.profileManager.saveProfile();
     }
 
 
     Component.onCompleted: {
-        mainWindow.profileInstance.saveProfile();
+        hotkeyHandler.profileManager.saveProfile();
     }
 }

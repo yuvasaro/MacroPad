@@ -20,7 +20,7 @@
 
 
 // Profile* MainWindow::profileManager = new Profile(NULL);
-QList<Profile*> profiles;
+//QList<Profile*> profiles;
 
 
 
@@ -39,13 +39,15 @@ MainWindow::MainWindow(QWidget *parent)
     qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
 
 
-    initializeProfiles();
+    hotkeyHandler = new HotkeyHandler(this);
+    hotkeyHandler->initializeProfiles();
 
     // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
-    qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
+    //qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("currentProfile", HotkeyHandler::currentProfile);
+    qmlWidget->engine()->rootContext()->setContextProperty("hotkeyHandler", hotkeyHandler);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
 
@@ -58,15 +60,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     createTrayIcon();
 
-    QObject::connect(&appTracker, &AppTracker::appChanged, this, &MainWindow::switchCurrentProfile);
+    QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile);
 
 }
 
 MainWindow::~MainWindow() {
-    qDeleteAll(profiles);
-    profiles.clear();
 }
-
+/*
 // required profileCount function for QML_PROPERTY
 qsizetype MainWindow::profileCount(QQmlListProperty<Profile> *list) {
     auto profiles = static_cast<QList<Profile*>*>(list->data);
@@ -87,18 +87,18 @@ QQmlListProperty<Profile> MainWindow::getProfiles() {
         &MainWindow::profileCount,
         &MainWindow::profileAt
         );
-}
+} */
 
-void MainWindow::setProfileInstance(Profile* profile) {
+/* void MainWindow::setProfileInstance(Profile* profile) {
     if (profileInstance != profile) {
         profileInstance = profile;
         emit profileInstanceChanged();
     }
-}
+} */
 
-void MainWindow::initializeProfiles() {
+/* void MainWindow::initializeProfiles() {
     QString names[6] = {"General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"};
-    QString apps[6] = {"", "Google Chrome", "Qt Creator", "MacroPad", "Discord", "Spotify"};
+    QString apps[6] = {"", "", "", "", "", ""};
 
     for (int i = 0; i < 6; ++i) {
 
@@ -127,7 +127,7 @@ void MainWindow::switchCurrentProfile(const QString& appName) {
             return;
         }
     }
-}
+} */
 
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {

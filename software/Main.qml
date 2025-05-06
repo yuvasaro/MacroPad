@@ -9,7 +9,7 @@ Rectangle {
     color: "black"
 
     Component.onCompleted: {
-        var num = mainWindow.profiles.length;
+        var num = hotkeyHandler.profiles.length;
         console.log("Number of profiles from mainwindow:", num);
     }
 
@@ -44,7 +44,7 @@ Rectangle {
                     onClicked: {
                         var component = Qt.createComponent("KeyConfig.qml");
                         if (component.status === Component.Ready) {
-                            var profile = mainWindow.profileInstance;
+                            var profile = hotkeyHandler.profileManager;
                             var macro = profile.getMacro(index + 1);
                             var existingKey = macro ? { keystroke: macro.type === "keystroke" ? macro.content : "",
                                                         executable: macro.type === "executable" ? macro.content: "" }
@@ -97,7 +97,7 @@ Rectangle {
             anchors.top: parent.top
             anchors.topMargin: 20
             anchors.horizontalCenter: parent.horizontalCenter
-            model: mainWindow.profiles
+            model: hotkeyHandler.profiles
             textRole: "name"
             background: Rectangle {
                     color: "lightgray"
@@ -112,9 +112,9 @@ Rectangle {
                     }
             onCurrentIndexChanged: {
                 onCurrentIndexChanged: {
-                    mainWindow.profileInstance = mainWindow.profiles[currentIndex];
+                    hotkeyHandler.profileManager= hotkeyHandler.profiles[currentIndex];
                 }
-                console.log("Selected profile:", mainWindow.profileInstance.name);
+                console.log("Selected profile:", hotkeyHandler.profileManager.name);
 
             }
         }
@@ -128,8 +128,10 @@ Rectangle {
 
             onAccepted: {
                 console.log("Selected executable:", selectedFile)
-                profileManager.setApp(selectedFile.toString().replace("file://", ""));
-                exetext.text = ((selectedFile.toString().replace("file://", "")).replace(".exe", "")).split("/").pop();
+                let fullPath = selectedFile.toString().replace("file://", "");
+                let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
+                profileManager.setApp(appName);
+                exetext.text = appName;
                 // profileInstance.saveProfile();
             }
         }

@@ -102,12 +102,12 @@ Dialog {
 
                 if (keystrokeValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
-                    mainWindow.callHotkeyHandler(mainWindow.profileInstance, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
+                    mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
                 }
 
                 if (executableValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue);
-                    mainWindow.callHotkeyHandler(mainWindow.profileInstance, keyConfigDialog.keyIndex, "executable", executableValue);
+                    mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "executable", executableValue);
                 }
 
 
