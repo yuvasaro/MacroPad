@@ -1,0 +1,5 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"D1, D2, D4, D5",Diode_DO-35,4,Diode,
+"J1, J2, J3, J4",PinHeader_1x07_P2.54mm_Vertical,4,Conn_01x07_Pin,
+"S1, S2, S3, S4",MX_PCB_1.00u,4,Keyswitch,
+"SW1, SW2",RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm,2,RotaryEncoder_Switch,
