@@ -381,3 +381,154 @@ void HotkeyHandler:: scrollDown()
     // }
 #endif
 }
+
+void HotkeyHandler::autoScrollToggle() {
+#ifdef   _WIN32
+    qDebug() << "AutoScrollToggle called";
+    // two events: middle-button down, then up
+    INPUT inputs[2] = {};
+
+    // middle-button down
+    inputs[0].type               = INPUT_MOUSE;
+    inputs[0].mi.dwFlags         = MOUSEEVENTF_MIDDLEDOWN;
+
+    // middle-button up
+    inputs[1].type               = INPUT_MOUSE;
+    inputs[1].mi.dwFlags         = MOUSEEVENTF_MIDDLEUP;
+
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+}
+
+
+
+#ifdef _WIN32
+// Increase screen brightness by 10%
+void HotkeyHandler::brightnessUp()
+{
+    qDebug() << "brightnessUp called";
+    QProcess::execute("powershell", QStringList() << "-Command"
+                                                  << "$b = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness); "
+                                                     "$c = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightnessMethods); "
+                                                     "$level = $b.CurrentBrightness + 10; "
+                                                     "if ($level -gt 100) { $level = 100 }; "
+                                                     "$c.WmiSetBrightness(1, $level)");
+}
+
+void HotkeyHandler::brightnessDown()
+{
+    qDebug() << "brightnessDown called";
+    QProcess::execute("powershell", QStringList() << "-Command"
+                                                  << "$b = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness); "
+                                                     "$c = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightnessMethods); "
+                                                     "$level = $b.CurrentBrightness - 10; "
+                                                     "if ($level -lt 0) { $level = 0 }; "
+                                                     "$c.WmiSetBrightness(1, $level)");
+}
+
+void HotkeyHandler:: brightnessToggle()
+{
+    qDebug() << "brightnessToggle called";
+    QProcess::execute("powershell", QStringList() << "-Command"
+                                                  << "$b = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness); "
+                                                     "$c = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightnessMethods); "
+                                                     "if ($b.CurrentBrightness -gt 10) { $c.WmiSetBrightness(1, 0) } else { $c.WmiSetBrightness(1, 70) }");
+}
+
+
+#define WIN_KEY VK_LWIN
+#define TAB_KEY VK_TAB
+#define ENTER_KEY VK_RETURN
+#define LEFT_ARROW VK_LEFT
+#define RIGHT_ARROW VK_RIGHT
+
+bool HotkeyHandler:: appSwitcherActive = false;
+
+// Sends a single keypress (down + up)
+void HotkeyHandler:: sendSingleKey(WORD key) {
+    INPUT inputs[2] = {};
+
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = key;
+
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = key;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(2, inputs, sizeof(INPUT));
+}
+
+// Sends a key combo (modifier + key), e.g. Win + Tab
+void HotkeyHandler:: sendKeyCombo(WORD modifier, WORD key) {
+    INPUT inputs[4] = {};
+
+    // Press modifier
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = modifier;
+
+    // Press key
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = key;
+
+    // Release key
+    inputs[2].type = INPUT_KEYBOARD;
+    inputs[2].ki.wVk = key;
+    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // Release modifier
+    inputs[3].type = INPUT_KEYBOARD;
+    inputs[3].ki.wVk = modifier;
+    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(4, inputs, sizeof(INPUT));
+}
+
+// Press encoder → open Task View or confirm selection
+void HotkeyHandler:: activateAppSwitcher() {
+    if (!appSwitcherActive) {
+        qDebug() << "activateAppSwitcher: opening Win+Tab";
+        sendKeyCombo(WIN_KEY, TAB_KEY);
+        appSwitcherActive = true;
+    } else {
+        qDebug() << "activateAppSwitcher: selecting with Enter";
+        sendSingleKey(ENTER_KEY);
+        appSwitcherActive = false;
+    }
+}
+
+// Rotate encoder right → move right in Task View
+void HotkeyHandler::switchAppRight() {
+    if (appSwitcherActive) {
+        qDebug() << "switchAppRight: moving right";
+        sendSingleKey(RIGHT_ARROW);
+    }
+}
+
+// Rotate encoder left → move left in Task View
+void HotkeyHandler::switchAppLeft() {
+    if (appSwitcherActive) {
+        qDebug() << "switchAppLeft: moving left";
+        sendSingleKey(LEFT_ARROW);
+    }
+}
+
+
+// Zoom in (Ctrl + Numpad '+')
+void HotkeyHandler::zoomIn() {
+    qDebug() << "zoomIn called";
+    sendKeyCombo(VK_CONTROL, VK_ADD);
+}
+
+// Zoom out (Ctrl + Numpad '-')
+void HotkeyHandler::zoomOut() {
+    qDebug() << "zoomOut called";
+    sendKeyCombo(VK_CONTROL, VK_SUBTRACT);
+}
+
+// Reset zoom to default (Ctrl + '0')
+void HotkeyHandler::zoomReset() {
+    qDebug() << "zoomReset called";
+    sendKeyCombo(VK_CONTROL, '0');
+}
+
+#endif

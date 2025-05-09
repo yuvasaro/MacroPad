@@ -178,12 +178,21 @@ void MainWindow::onDataReceived(int number)
     {
         if (number == 72)
             //HotkeyHandler::volumeUp();
-            HotkeyHandler::scrollUp();
+            //HotkeyHandler::scrollUp();
+            //HotkeyHandler::brightnessUp();
+            //HotkeyHandler::switchAppLeft();
+            HotkeyHandler::zoomIn();
         else if (number == 71)
             //HotkeyHandler::volumeDown();
-            HotkeyHandler::scrollDown();
+            //HotkeyHandler::scrollDown();
+            //HotkeyHandler::brightnessDown();
+            //HotkeyHandler::switchAppRight();
+            HotkeyHandler::zoomOut();
         else if (number == 73)
-            HotkeyHandler::mute();
+            //HotkeyHandler::mute();
+            //HotkeyHandler::autoScrollToggle();
+            //HotkeyHandler::activateAppSwitcher();
+            HotkeyHandler::zoomReset();
         return;
     }
 
