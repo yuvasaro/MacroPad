@@ -531,4 +531,16 @@ void HotkeyHandler::zoomReset() {
     sendKeyCombo(VK_CONTROL, '0');
 }
 
+// Move to the next tab (Ctrl + Page Down)
+void HotkeyHandler::nextTab() {
+    qDebug() << "nextTab called";
+    sendKeyCombo(VK_CONTROL, VK_NEXT);
+}
+
+// Move to the previous tab (Ctrl + Page Up)
+void HotkeyHandler::previousTab() {
+    qDebug() << "previousTab called";
+    sendKeyCombo(VK_CONTROL, VK_PRIOR);
+}
+
 #endif

@@ -48,6 +48,10 @@ public:
     static void zoomOut();
     static void zoomReset();
 
+    //browser tab switching controls
+    static void nextTab();
+    static void previousTab();
+
 
 private:
     // Low‐level key injection

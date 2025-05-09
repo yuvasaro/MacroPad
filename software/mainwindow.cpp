@@ -181,18 +181,20 @@ void MainWindow::onDataReceived(int number)
             //HotkeyHandler::scrollUp();
             //HotkeyHandler::brightnessUp();
             //HotkeyHandler::switchAppLeft();
-            HotkeyHandler::zoomIn();
+            //HotkeyHandler::zoomIn();
+            HotkeyHandler::nextTab();
         else if (number == 71)
             //HotkeyHandler::volumeDown();
             //HotkeyHandler::scrollDown();
             //HotkeyHandler::brightnessDown();
             //HotkeyHandler::switchAppRight();
-            HotkeyHandler::zoomOut();
+            //HotkeyHandler::zoomOut();
+            HotkeyHandler::previousTab();
         else if (number == 73)
             //HotkeyHandler::mute();
             //HotkeyHandler::autoScrollToggle();
             //HotkeyHandler::activateAppSwitcher();
-            HotkeyHandler::zoomReset();
+            //HotkeyHandler::zoomReset();
         return;
     }
 
