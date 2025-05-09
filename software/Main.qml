@@ -3,8 +3,8 @@ import QtQuick.Controls
 
 Rectangle {
     id: root
-    width: 640
-    height: 480
+    width: 940
+    height: 850
     color: "black"
 
     Component.onCompleted: {
@@ -21,7 +21,9 @@ Rectangle {
         id: keyGrid
         columns: 3
         spacing: 10
-        anchors.centerIn: parent
+        anchors.top: encoderConfigBox.bottom
+        anchors.topMargin: 40
+        anchors.horizontalCenter: parent.horizontalCenter
 
         Repeater {
             model: 9
@@ -117,5 +119,47 @@ Rectangle {
 
             }
         }
+        GroupBox {
+                    id: encoderConfigBox
+                    title: "Rotary Encoder Actions"
+                    anchors.top: profileSelector.bottom
+                    anchors.topMargin: 20
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: 400
+
+                    Column {
+                        spacing: 10
+                        padding: 10
+
+                        Row {
+                            spacing: 10
+                            Text { text: "Encoder 1:"; width: 100; color: "white" }
+
+                            ComboBox {
+                                id: encoder1Combo
+                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
+                                width: 200
+                                onCurrentTextChanged: {
+                                    profileManager.setKeyConfig(-1, "encoder1", currentText);
+                                }
+                            }
+                        }
+
+                        Row {
+                            spacing: 10
+                            Text { text: "Encoder 2:"; width: 100; color: "white" }
+
+                            ComboBox {
+                                id: encoder2Combo
+                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
+                                width: 200
+                                onCurrentTextChanged: {
+                                    profileManager.setKeyConfig(-2, "encoder2", currentText);
+                                }
+                            }
+                        }
+                    }
+                }
+
     }
 

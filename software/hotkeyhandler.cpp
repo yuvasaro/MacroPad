@@ -123,29 +123,29 @@ OSStatus HotkeyHandler::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef
         }
     }
     return noErr;
+}
 
-    void MainWindow::executeHotkey(int hotKeyNum, Profile* profileInstance) {
-        QSharedPointer<Macro> macro = profileInstance->getMacro(hotKeyNum);
+void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
+    QSharedPointer<Macro> macro = profileInstance->getMacro(hotKeyNum);
 
-        if (!macro.isNull()) {
-            qDebug() << hotKeyNum << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
+    if (!macro.isNull()) {
+        qDebug() << hotKeyNum << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
 
-            const QString& type = macro->getType();
-            const QString& content = macro->getContent();
+        const QString& type = macro->getType();
+        const QString& content = macro->getContent();
 
-            if (macro->getType() == "keystroke") {
+        if (macro->getType() == "keystroke") {
 
-            } else if (macro->getType() == "executable") {
-                if (isAppBundle(content)) {
-                    QProcess::startDetached("open", {"-a", content});
-                } else {
-                    QProcess::startDetached(content);
-                }
+        } else if (macro->getType() == "executable") {
+            if (isAppBundle(content)) {
+                QProcess::startDetached("open", {"-a", content});
+            } else {
+                QProcess::startDetached(content);
             }
         }
     }
-
 }
+
 #endif
 
 
@@ -278,7 +278,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
 }
 
 //key triggering behavior helper functions
-
+/*
 void HotkeyHandler::volumeUp()
 {
 #ifdef _WIN32
@@ -334,7 +334,7 @@ void HotkeyHandler:: mute()
     toggleMuteSystem();
 #endif
 }
-
+*/
 
 // Scroll functions
 
