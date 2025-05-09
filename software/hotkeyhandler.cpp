@@ -398,14 +398,17 @@ void HotkeyHandler::autoScrollToggle() {
 
     SendInput(2, inputs, sizeof(INPUT));
 #endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 
-
-#ifdef _WIN32
 // Increase screen brightness by 10%
 void HotkeyHandler::brightnessUp()
 {
+#ifdef   _WIN32
     qDebug() << "brightnessUp called";
     QProcess::execute("powershell", QStringList() << "-Command"
                                                   << "$b = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness); "
@@ -413,10 +416,16 @@ void HotkeyHandler::brightnessUp()
                                                      "$level = $b.CurrentBrightness + 10; "
                                                      "if ($level -gt 100) { $level = 100 }; "
                                                      "$c.WmiSetBrightness(1, $level)");
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 void HotkeyHandler::brightnessDown()
 {
+#ifdef   _WIN32
     qDebug() << "brightnessDown called";
     QProcess::execute("powershell", QStringList() << "-Command"
                                                   << "$b = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness); "
@@ -424,15 +433,26 @@ void HotkeyHandler::brightnessDown()
                                                      "$level = $b.CurrentBrightness - 10; "
                                                      "if ($level -lt 0) { $level = 0 }; "
                                                      "$c.WmiSetBrightness(1, $level)");
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 void HotkeyHandler:: brightnessToggle()
 {
+#ifdef  _WIN32
     qDebug() << "brightnessToggle called";
     QProcess::execute("powershell", QStringList() << "-Command"
                                                   << "$b = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness); "
                                                      "$c = (Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightnessMethods); "
                                                      "if ($b.CurrentBrightness -gt 10) { $c.WmiSetBrightness(1, 0) } else { $c.WmiSetBrightness(1, 70) }");
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 
@@ -446,6 +466,7 @@ bool HotkeyHandler:: appSwitcherActive = false;
 
 // Sends a single keypress (down + up)
 void HotkeyHandler:: sendSingleKey(WORD key) {
+#ifdef _WIN32
     INPUT inputs[2] = {};
 
     inputs[0].type = INPUT_KEYBOARD;
@@ -456,10 +477,16 @@ void HotkeyHandler:: sendSingleKey(WORD key) {
     inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
 
     SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Sends a key combo (modifier + key), e.g. Win + Tab
 void HotkeyHandler:: sendKeyCombo(WORD modifier, WORD key) {
+#ifdef _WIN32
     INPUT inputs[4] = {};
 
     // Press modifier
@@ -481,10 +508,16 @@ void HotkeyHandler:: sendKeyCombo(WORD modifier, WORD key) {
     inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
 
     SendInput(4, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Press encoder → open Task View or confirm selection
 void HotkeyHandler:: activateAppSwitcher() {
+#ifdef _WIN32
     if (!appSwitcherActive) {
         qDebug() << "activateAppSwitcher: opening Win+Tab";
         sendKeyCombo(WIN_KEY, TAB_KEY);
@@ -494,53 +527,99 @@ void HotkeyHandler:: activateAppSwitcher() {
         sendSingleKey(ENTER_KEY);
         appSwitcherActive = false;
     }
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Rotate encoder right → move right in Task View
 void HotkeyHandler::switchAppRight() {
+#ifdef _WIN32
     if (appSwitcherActive) {
         qDebug() << "switchAppRight: moving right";
         sendSingleKey(RIGHT_ARROW);
     }
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Rotate encoder left → move left in Task View
 void HotkeyHandler::switchAppLeft() {
+#ifdef _WIN32
     if (appSwitcherActive) {
         qDebug() << "switchAppLeft: moving left";
         sendSingleKey(LEFT_ARROW);
     }
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 
 // Zoom in (Ctrl + Numpad '+')
 void HotkeyHandler::zoomIn() {
+#ifdef _WIN32
     qDebug() << "zoomIn called";
     sendKeyCombo(VK_CONTROL, VK_ADD);
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Zoom out (Ctrl + Numpad '-')
 void HotkeyHandler::zoomOut() {
+#ifdef _WIN32
     qDebug() << "zoomOut called";
     sendKeyCombo(VK_CONTROL, VK_SUBTRACT);
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Reset zoom to default (Ctrl + '0')
 void HotkeyHandler::zoomReset() {
+#ifdef _WIN32
     qDebug() << "zoomReset called";
     sendKeyCombo(VK_CONTROL, '0');
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Move to the next tab (Ctrl + Page Down)
 void HotkeyHandler::nextTab() {
+#ifdef _WIN32
     qDebug() << "nextTab called";
     sendKeyCombo(VK_CONTROL, VK_NEXT);
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
 // Move to the previous tab (Ctrl + Page Up)
 void HotkeyHandler::previousTab() {
+#ifdef _WIN32
     qDebug() << "previousTab called";
     sendKeyCombo(VK_CONTROL, VK_PRIOR);
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
 
-#endif
