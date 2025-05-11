@@ -5,6 +5,7 @@
 #include "profile.h"
 #include "apptracker.h"
 #include <QQmlListProperty>
+#include "serialhandler.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -33,6 +34,8 @@ public:
     void initializeProfiles();
     void switchCurrentProfile(const QString& appName);
 
+     void setSerialHandler(SerialHandler *s) { serialHandler = s; }
+
     Q_INVOKABLE QQmlListProperty<Profile> getProfiles();
     static qsizetype profileCount(QQmlListProperty<Profile> *list);
     static Profile* profileAt(QQmlListProperty<Profile> *list, qsizetype index);
@@ -47,6 +50,7 @@ signals:
 
 private:
     QList<Profile*> profiles;
+    SerialHandler *serialHandler {nullptr};
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
