@@ -1,5 +1,7 @@
 // hotkeyhandler.cpp
 #include "hotkeyhandler.h"
+#include "profile.h"
+#include "apptracker.h"
 #include <QDir>
 #include <QDebug>
 #include <QMap>
@@ -10,12 +12,92 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 
+#define DEBUG
 
-Profile* HotkeyHandler::profileManager = new Profile("General", "MacroPad", nullptr);
+Profile* HotkeyHandler::profileManager;
+Profile* HotkeyHandler::currentProfile;
+QList<Profile*> profiles;
 
-#ifdef __APPLE__
+HotkeyHandler::HotkeyHandler(QObject* parent)
+    : QObject(parent){}
+
+HotkeyHandler::~HotkeyHandler(){
+    qDeleteAll(profiles);
+    profiles.clear();
+}
+
+// required profileCount function for QML_PROPERTY
+qsizetype HotkeyHandler::profileCount(QQmlListProperty<Profile> *list) {
+    auto profiles = static_cast<QList<Profile*>*>(list->data);
+    return profiles->size();
+}
+
+// required profileAt function for QML_PROPERTY
+Profile *HotkeyHandler::profileAt(QQmlListProperty<Profile> *list, qsizetype index) {
+    auto profiles = static_cast<QList<Profile*>*>(list->data);
+    return profiles->at(index);
+}
+
+// getter for QML to access profiles
+QQmlListProperty<Profile> HotkeyHandler::getProfiles() {
+    return QQmlListProperty<Profile>(
+        this,
+        &profiles, // use MainWindow instance as the data object
+        &HotkeyHandler::profileCount,
+        &HotkeyHandler::profileAt
+        );
+}
+
+void HotkeyHandler::initializeProfiles() {
+    QString names[6] = {"General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"};
+    QString apps[6] = {"", "", "", "", "", ""};
+
+    for (int i = 0; i < 6; ++i) {
+
+        Profile* profile = Profile::loadProfile(names[i]);
+
+        if (!profile) {
+            profile = new Profile("","");
+            profile->setName(names[i]);
+            profile->setApp(apps[i]);
+            profile->saveProfile();
+        }
+
+        for (int keyNum = 1; keyNum <= 9; ++keyNum) {
+            QSharedPointer<Macro> macro = profile->getMacro(keyNum);
+            if (!macro.isNull()) {
+                registerGlobalHotkey(profile, keyNum, macro->getType(), macro->getContent());
+            }
+        }
+
+        profiles.append(profile);
+    }
+
+    profileManager = profiles[0];
+    currentProfile = profiles[0];
+}
+
+void HotkeyHandler::switchCurrentProfile(const QString& appName) {
+    qDebug() << "Current app:" << appName;
+    for (Profile* profile : profiles) {
+        if (profile->getApp() == appName) {
+            currentProfile = profile;
+            qDebug() << "Current profile set to:" << currentProfile->getName();
+            return;
+        }
+    }
+    currentProfile = profiles[0];
+    qDebug() << "No profile with this app. Set to General";
+}
+
+void HotkeyHandler::setProfileManager(Profile* profile) {
+    if (profileManager != profile) {
+        profileManager = profile;
+        emit profileManagerChanged();
+    }
+}
+
 QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
-#endif
 
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
@@ -108,7 +190,7 @@ bool isAppBundle(const QString &path) {
 OSStatus HotkeyHandler::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
-    QSharedPointer<Macro> macro = HotkeyHandler::profileManager->getMacro(hotKeyID.id);
+    QSharedPointer<Macro> macro = currentProfile->getMacro(hotKeyID.id);
     if (!macro.isNull()) {
         const QString& type = macro->getType();
         const QString& content = macro->getContent();
@@ -278,7 +360,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
 }
 
 //key triggering behavior helper functions
-/*
+
 void HotkeyHandler::volumeUp()
 {
 #ifdef _WIN32
@@ -293,8 +375,8 @@ void HotkeyHandler::volumeUp()
 #endif
 
 #ifdef __APPLE__
-    MainWindow::macVolume = (MainWindow::macVolume >= 100) ? MainWindow::macVolume : MainWindow::macVolume + 6;
-    setSystemVolume(MainWindow::macVolume);
+    // MainWindow::macVolume = (MainWindow::macVolume >= 100) ? MainWindow::macVolume : MainWindow::macVolume + 6;
+    // setSystemVolume(MainWindow::macVolume);
 #endif
 }
 
@@ -312,8 +394,8 @@ void HotkeyHandler:: volumeDown()
 #endif
 
 #ifdef __APPLE__
-    MainWindow::macVolume = (MainWindow::macVolume <= 0) ? MainWindow::macVolume : MainWindow::macVolume - 6;
-    setSystemVolume(MainWindow::macVolume);
+    // MainWindow::macVolume = (MainWindow::macVolume <= 0) ? MainWindow::macVolume : MainWindow::macVolume - 6;
+    // setSystemVolume(MainWindow::macVolume);
 #endif
 }
 
@@ -331,14 +413,13 @@ void HotkeyHandler:: mute()
 #endif
 
 #ifdef __APPLE__
-    toggleMuteSystem();
+    // toggleMuteSystem();
 #endif
 }
-*/
 
 // Scroll functions
 
-void HotkeyHandler:: scrollUp()
+void HotkeyHandler::scrollUp()
 {
 #ifdef _WIN32
     qDebug() << "scrollUp called on Windows";
@@ -360,7 +441,7 @@ void HotkeyHandler:: scrollUp()
 #endif
 }
 
-void HotkeyHandler:: scrollDown()
+void HotkeyHandler::scrollDown()
 {
 #ifdef _WIN32
     qDebug() << "scrollDown called on Windows";

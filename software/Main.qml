@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 
 Rectangle {
     id: root
@@ -8,7 +9,7 @@ Rectangle {
     color: "black"
 
     Component.onCompleted: {
-        var num = mainWindow.profiles.length;
+        var num = hotkeyHandler.profiles.length;
         console.log("Number of profiles from mainwindow:", num);
     }
 
@@ -45,7 +46,7 @@ Rectangle {
                     onClicked: {
                         var component = Qt.createComponent("KeyConfig.qml");
                         if (component.status === Component.Ready) {
-                            var profile = mainWindow.profileInstance;
+                            var profile = hotkeyHandler.profileManager;
                             var macro = profile.getMacro(index + 1);
                             var existingKey = macro ? { keystroke: macro.type === "keystroke" ? macro.content : "",
                                                         executable: macro.type === "executable" ? macro.content: "" }
@@ -98,7 +99,7 @@ Rectangle {
             anchors.top: parent.top
             anchors.topMargin: 20
             anchors.horizontalCenter: parent.horizontalCenter
-            model: mainWindow.profiles
+            model: hotkeyHandler.profiles
             textRole: "name"
             background: Rectangle {
                     color: "lightgray"
@@ -113,12 +114,55 @@ Rectangle {
                     }
             onCurrentIndexChanged: {
                 onCurrentIndexChanged: {
-                    mainWindow.profileInstance = mainWindow.profiles[currentIndex];
+                    hotkeyHandler.profileManager= hotkeyHandler.profiles[currentIndex];
                 }
-                console.log("Selected profile:", mainWindow.profileInstance.name);
+                console.log("Selected profile:", hotkeyHandler.profileManager.name);
 
             }
         }
+
+        FileDialog {
+            id: fileDialog
+            title: "Select an Executable File"
+            fileMode: FileDialog.OpenFile
+            nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
+
+            onAccepted: {
+                console.log("Selected executable:", selectedFile)
+                let fullPath = selectedFile.toString().replace("file://", "");
+                let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
+                profileManager.setApp(appName);
+                exetext.text = appName;
+                // profileInstance.saveProfile();
+            }
+        }
+
+        Button {
+            id: exebutton
+            width: 100
+            height: 40
+            text: "Select Executable"
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 10
+            anchors.rightMargin: 10
+            visible: profileSelector.currentText !== "General"
+            onClicked: fileDialog.open()
+        }
+
+        Button {
+            id:exetext
+            width: 100
+            height: 40
+            anchors.top: exebutton.bottom
+            anchors.topMargin: 10
+            anchors.right: exebutton.right
+            visible: profileSelector.currentText !== "General"
+            ToolTip.visible: hovered
+                ToolTip.text: text
+                ToolTip.delay: 500
+        }
+
         GroupBox {
                     id: encoderConfigBox
                     title: "Rotary Encoder Actions"
@@ -160,6 +204,5 @@ Rectangle {
                         }
                     }
                 }
-
     }
 

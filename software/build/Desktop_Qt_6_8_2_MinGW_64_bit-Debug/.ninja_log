@@ -1,0 +1,20 @@
+# ninja log v6
+24	256	7668798157093640	MacroPad_autogen/timestamp	9c595b9823e4a461
+3592	12930	7658800777561436	CMakeFiles/MacroPad.dir/main.cpp.obj	26be66118a385771
+24	256	7668798157093640	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/timestamp	9c595b9823e4a461
+24	256	7668798157093640	MacroPad_autogen/mocs_compilation.cpp	9c595b9823e4a461
+3586	13906	7658800777501943	CMakeFiles/MacroPad.dir/MacroPad_autogen/mocs_compilation.cpp.obj	54176f70fb04cfa1
+3597	14834	7658800777611447	CMakeFiles/MacroPad.dir/mainwindow.cpp.obj	5a5c70ddd108961f
+24	256	7668798157093640	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/MacroPad_autogen/mocs_compilation.cpp	9c595b9823e4a461
+323	1711	7677782399681957	MacroPad.exe	1d0b8199c9307977
+3271	11620	7657574523102277	CMakeFiles/MacroPad.dir/macro.cpp.obj	8e097ecd6cb6e95
+354	3905	7662747290921700	CMakeFiles/MacroPad.dir/profile.cpp.obj	5d1cef9904bef2e0
+8	818	7677799541527214	build.ninja	6c02f2200151d932
+9212	24196	7624943505104096	CMakeFiles/MacroPad.dir/config.cpp.obj	ac58d93bf9595f10
+142	1440	7624936870516054	.qt/qml_imports/MacroPad_build.cmake	47b78eb4dd19fd0d
+142	1440	7624936870516054	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/.qt/qml_imports/MacroPad_build.cmake	47b78eb4dd19fd0d
+78	183	7677782398188237	.qt/rcc/qrc_resources.cpp	b15e1caf0eae24fb
+78	183	7677782398188237	C:/Users/dakot/MacroPad/software/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/.qt/rcc/qrc_resources.cpp	b15e1caf0eae24fb
+184	322	7677782398294306	CMakeFiles/MacroPad.dir/build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/.qt/rcc/qrc_resources.cpp.obj	6a38b64ceeb38a4a
+9219	18251	7624943505173933	CMakeFiles/MacroPad.dir/fileio.cpp.obj	34a911fb3068d110
+257	2768	7668798159437205	CMakeFiles/MacroPad.dir/apptracker.cpp.obj	8fd9a55049022525
