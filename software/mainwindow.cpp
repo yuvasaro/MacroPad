@@ -3,6 +3,7 @@
 #include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
+#include "knobhandler.h"
 #include "serialhandler.h"
 #include "apptracker.h"
 
@@ -107,13 +108,24 @@ void MainWindow::onDataReceived(int number)
     if (number > 70 && number < 80)
     {
         if (number == 72)
-            //HotkeyHandler::volumeUp();
-            HotkeyHandler::scrollUp();
+            //KnobHandler::volumeUp();
+            //KnobHandler::scrollUp();
+            //KnobHandler::brightnessUp();
+            KnobHandler::switchAppLeft();
+            //KnobHandler::zoomIn();
+            //KnobHandler::nextTab();
         else if (number == 71)
-            //HotkeyHandler::volumeDown();
-            HotkeyHandler::scrollDown();
+            //KnobHandler::volumeDown();
+            //KnobHandler::scrollDown();
+            //KnobHandler::brightnessDown();
+            KnobHandler::switchAppRight();
+            //KnobHandler::zoomOut();
+            //KnobHandler::previousTab();
         else if (number == 73)
-            HotkeyHandler::mute();
+            //KnobHandler::mute();
+            //KnobHandler::autoScrollToggle();
+            KnobHandler::activateAppSwitcher();
+            //KnobHandler::zoomReset();
         return;
     }
 

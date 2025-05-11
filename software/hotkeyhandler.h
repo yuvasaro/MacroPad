@@ -41,12 +41,6 @@ public:
     void setProfileManager(Profile* profile);
     static void executeHotkey(int hotKeyNum, Profile* profileInstance);
 
-    static void volumeUp();
-    static void volumeDown();
-    static void mute();
-    static void scrollUp();
-    static void scrollDown();
-
 signals:
     void profilesChanged();
     void profileManagerChanged();
@@ -61,6 +55,7 @@ private:
     static std::wstring wpathExec;
 
 #elif __APPLE__
+    static QMap<int, EventHotKeyRef> registeredHotkeys;
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
     static QMap<int, EventHotKeyRef> registeredHotkeys;
 #elif __linux__
