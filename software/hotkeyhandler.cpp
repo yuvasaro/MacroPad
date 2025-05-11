@@ -97,8 +97,6 @@ void HotkeyHandler::setProfileManager(Profile* profile) {
     }
 }
 
-
-
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
 std::unordered_map<UINT, std::function<void()>> HotkeyHandler::hotkeyActions;
