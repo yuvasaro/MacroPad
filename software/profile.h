@@ -12,12 +12,10 @@ class Profile : public QObject {
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
 
 private:
-
     QString name;
     QString app;
     QMap<int, QSharedPointer<Macro>> macros;
     QString application;
-
 
 public:
     explicit Profile(QObject* parent = nullptr);

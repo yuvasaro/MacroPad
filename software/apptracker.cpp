@@ -1,6 +1,6 @@
 // AppTracker.cpp
 
-#include "AppTracker.h"
+#include "apptracker.h"
 #include <windows.h>
 <<<<<<< HEAD
 #include <psapi.h>  // for GetModuleBaseName

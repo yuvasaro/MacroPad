@@ -12,6 +12,5 @@ int main(int argc, char *argv[])
 
     AppTracker appTracker;
 
-
     return a.exec();
 }

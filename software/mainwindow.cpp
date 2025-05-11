@@ -3,6 +3,7 @@
 #include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
+#include "serialhandler.h"
 #include "apptracker.h"
 
 #include <QApplication>
@@ -18,14 +19,11 @@
 #include <QFileInfo>
 
 
-
-// Profile* MainWindow::profileManager = new Profile(NULL);
-//QList<Profile*> profiles;
-
-
-
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), trayIcon(new QSystemTrayIcon(this)), trayMenu(new QMenu(this)) {
+MainWindow::MainWindow(QWidget *parent):
+    QMainWindow(parent),
+    trayIcon(new QSystemTrayIcon(this)),
+    trayMenu(new QMenu(this)),
+    m_serialHandler(new SerialHandler(this)) {
 
     setWindowTitle("MacroPad - Configuration");
 
@@ -61,73 +59,9 @@ MainWindow::MainWindow(QWidget *parent)
     createTrayIcon();
 
     QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile);
-
 }
 
-MainWindow::~MainWindow() {
-}
-/*
-// required profileCount function for QML_PROPERTY
-qsizetype MainWindow::profileCount(QQmlListProperty<Profile> *list) {
-    auto profiles = static_cast<QList<Profile*>*>(list->data);
-    return profiles->size();
-}
-
-// required profileAt function for QML_PROPERTY
-Profile *MainWindow::profileAt(QQmlListProperty<Profile> *list, qsizetype index) {
-    auto profiles = static_cast<QList<Profile*>*>(list->data);
-    return profiles->at(index);
-}
-
-// getter for QML to access profiles
-QQmlListProperty<Profile> MainWindow::getProfiles() {
-    return QQmlListProperty<Profile>(
-        this,
-        &profiles, // use MainWindow instance as the data object
-        &MainWindow::profileCount,
-        &MainWindow::profileAt
-        );
-} */
-
-/* void MainWindow::setProfileInstance(Profile* profile) {
-    if (profileInstance != profile) {
-        profileInstance = profile;
-        emit profileInstanceChanged();
-    }
-} */
-
-/* void MainWindow::initializeProfiles() {
-    QString names[6] = {"General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"};
-    QString apps[6] = {"", "", "", "", "", ""};
-
-    for (int i = 0; i < 6; ++i) {
-
-        Profile* profile = Profile::loadProfile(names[i]);
-
-        if (!profile) {
-            profile = new Profile(this);
-            profile->setName(names[i]);
-            profile->setApp(apps[i]);
-            profile->saveProfile();
-        }
-
-            profiles.append(profile);
-    }
-
-    profileInstance = profiles[0];
-    currentProfile = profiles[0];
-}
-
-void MainWindow::switchCurrentProfile(const QString& appName) {
-    qDebug() << "Current app:" << appName;
-    for (Profile* profile : profiles) {
-        if (profile->getApp() == appName) {
-            currentProfile = profile;
-            qDebug() << "Current profile set to:" << currentProfile->getName();
-            return;
-        }
-    }
-} */
+MainWindow::~MainWindow() {}
 
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
@@ -167,6 +101,27 @@ void MainWindow::callHotkeyHandler(Profile* profile, int keyNum, const QString& 
     HotkeyHandler::registerGlobalHotkey(profile, keyNum, type, content);
 }
 
+void MainWindow::onDataReceived(int number)
+{
+    //Volume Knob
+    if (number > 70 && number < 80)
+    {
+        if (number == 72)
+            //HotkeyHandler::volumeUp();
+            HotkeyHandler::scrollUp();
+        else if (number == 71)
+            //HotkeyHandler::volumeDown();
+            HotkeyHandler::scrollDown();
+        else if (number == 73)
+            HotkeyHandler::mute();
+        return;
+    }
+
+    //MacroKey triggering
+    if (number>0 && number<10) {
+        HotkeyHandler::executeHotkey(number, profileInstance);
+    }
+}
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
         hide();

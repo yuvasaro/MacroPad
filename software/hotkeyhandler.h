@@ -22,6 +22,7 @@ class HotkeyHandler : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<Profile> profiles READ getProfiles NOTIFY profilesChanged)
     Q_PROPERTY(Profile* profileManager READ getProfileManager WRITE setProfileManager NOTIFY profileManagerChanged)
+
 public:
     explicit HotkeyHandler(QObject* parent = nullptr);
     ~HotkeyHandler();
@@ -38,6 +39,13 @@ public:
 
     Profile* getProfileManager() { return profileManager; };
     void setProfileManager(Profile* profile);
+    static void executeHotkey(int hotKeyNum, Profile* profileInstance);
+
+    static void volumeUp();
+    static void volumeDown();
+    static void mute();
+    static void scrollUp();
+    static void scrollDown();
 
 signals:
     void profilesChanged();
@@ -51,6 +59,8 @@ private:
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
     static HHOOK keyboardHook;
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
+    static std::wstring wpathExec;
+
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
 #elif __linux__

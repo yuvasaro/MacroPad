@@ -12,6 +12,8 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 
+#define DEBUG
+
 Profile* HotkeyHandler::profileManager;
 Profile* HotkeyHandler::currentProfile;
 QList<Profile*> profiles;
@@ -96,9 +98,11 @@ void HotkeyHandler::setProfileManager(Profile* profile) {
 }
 
 QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
+
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
 std::unordered_map<UINT, std::function<void()>> HotkeyHandler::hotkeyActions;
+std::wstring HotkeyHandler::wpathExec;
 
 LRESULT CALLBACK HotkeyHandler::hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
@@ -115,6 +119,57 @@ LRESULT CALLBACK HotkeyHandler::hotkeyCallback(int nCode, WPARAM wParam, LPARAM 
     }
     return CallNextHookEx(keyboardHook, nCode, wParam, lParam);
 }
+
+void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
+{
+    if (!profileInstance) {
+        qWarning() << "HotkeyHandler: no profile passed in!";
+        return;
+    }
+
+    auto macro = profileInstance->getMacro(hotKeyNum);
+    if (macro.isNull()) {
+        qDebug() << "No macro for key" << hotKeyNum;
+        return;
+    }
+
+    const QString type    = macro->getType();
+    const QString content = macro->getContent();
+
+    qDebug() << "Executing macro" << hotKeyNum << type << content;
+
+    if (type == "keystroke") {
+        std::thread([content]() {
+            QMap<QString,int> keyMap = {
+                {"Cmd", VK_LWIN}, {"Shift", VK_SHIFT},
+                {"Ctrl", VK_CONTROL}, {"Alt", VK_MENU},
+                {"Space", VK_SPACE}, {"Enter", VK_RETURN},
+                {"Backspace", VK_BACK}, {"Tab", VK_TAB},
+                {"Esc", VK_ESCAPE}
+            };
+            for (char c = '0'; c <= '9'; ++c) keyMap[QString(c)] = c;
+            for (char c = 'A'; c <= 'Z'; ++c) keyMap[QString(c)] = c;
+
+            auto keys = content.split("+");
+            std::vector<int> codes;
+            for (auto &k : keys)
+                if (keyMap.contains(k))
+                    codes.push_back(keyMap[k]);
+
+            for (int kc : codes) keybd_event(kc, 0, 0, 0);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            for (auto it = codes.rbegin(); it != codes.rend(); ++it)
+                keybd_event(*it, 0, KEYEVENTF_KEYUP, 0);
+        }).detach();
+    }
+    else if (type == "executable") {
+        QString fixed = content;
+        if (fixed.startsWith("/")) fixed.remove(0,1);
+        wpathExec = QDir::toNativeSeparators(fixed).toStdWString();
+        ShellExecuteW(NULL, L"open", wpathExec.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    }
+}
+
 #endif
 
 #ifdef __APPLE__
@@ -151,7 +206,31 @@ OSStatus HotkeyHandler::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef
     }
     return noErr;
 }
+
+void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
+    QSharedPointer<Macro> macro = profileInstance->getMacro(hotKeyNum);
+
+    if (!macro.isNull()) {
+        qDebug() << hotKeyNum << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
+
+        const QString& type = macro->getType();
+        const QString& content = macro->getContent();
+
+        if (macro->getType() == "keystroke") {
+
+        } else if (macro->getType() == "executable") {
+            if (isAppBundle(content)) {
+                QProcess::startDetached("open", {"-a", content});
+            } else {
+                QProcess::startDetached(content);
+            }
+        }
+    }
+}
+
 #endif
+
+
 
 #ifdef __linux__
 Display* HotkeyHandler::display = nullptr;
@@ -169,6 +248,7 @@ void HotkeyHandler::listenForHotkeys() {
 
 void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
 #ifdef _WIN32
+#ifdef DEBUG
     UINT vkCode = 0;
     switch (keyNum) {
     case 1: vkCode = 0x31; break;
@@ -185,7 +265,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
         return;
     }
 
-    // ⚠️ Save the profile pointer for future runtime access
+    //Save the profile pointer for future runtime access
     HotkeyHandler::profileManager = profile;
 
     // Register a runtime lookup lambda
@@ -242,9 +322,10 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
             OutputDebugStringW(L"Keyboard hook set.\n");
         }
     }
-
+#endif
     profile->setMacro(keyNum, type, content);
 #elif __APPLE__
+#ifdef DEBUG
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
 
     // Check if already registered
@@ -266,6 +347,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
         qDebug() << "Hotkey registered successfully!";
         registeredHotkeys[keyNum] = hotkeyRef;
     }
+#endif
     profile->setMacro(keyNum, type, content);
 #elif __linux__
     display = XOpenDisplay(NULL);
@@ -274,5 +356,109 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     KeyCode keycode = XKeysymToKeycode(display, XK_F5);
     XGrabKey(display, keycode, AnyModifier, root, True, GrabModeAsync, GrabModeAsync);
     listenForHotkeys();
+#endif
+}
+
+//key triggering behavior helper functions
+
+void HotkeyHandler::volumeUp()
+{
+#ifdef _WIN32
+    qDebug() << "volumeUp called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_UP;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_UP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    // MainWindow::macVolume = (MainWindow::macVolume >= 100) ? MainWindow::macVolume : MainWindow::macVolume + 6;
+    // setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+void HotkeyHandler:: volumeDown()
+{
+#ifdef _WIN32
+    qDebug() << "volumeDown called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    // MainWindow::macVolume = (MainWindow::macVolume <= 0) ? MainWindow::macVolume : MainWindow::macVolume - 6;
+    // setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+void HotkeyHandler:: mute()
+{
+#ifdef _WIN32
+    qDebug() << "mute called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    // toggleMuteSystem();
+#endif
+}
+
+// Scroll functions
+
+void HotkeyHandler::scrollUp()
+{
+#ifdef _WIN32
+    qDebug() << "scrollUp called on Windows";
+    // Simulate one notch of wheel up (WHEEL_DELTA = +120)
+    INPUT input = {};
+    input.type             = INPUT_MOUSE;
+    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
+    input.mi.mouseData     = WHEEL_DELTA;
+    SendInput(1, &input, sizeof(input));
+#endif
+
+#ifdef __APPLE__
+    // qDebug() << "scrollUp called on macOS";
+    // QScrollArea* scrollArea = ui->scrollArea;
+    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
+    // if (vScrollBar) {
+    //     vScrollBar->setValue(vScrollBar->value() - 50);
+    // }
+#endif
+}
+
+void HotkeyHandler::scrollDown()
+{
+#ifdef _WIN32
+    qDebug() << "scrollDown called on Windows";
+    // Simulate one notch of wheel down (–120)
+    INPUT input = {};
+    input.type             = INPUT_MOUSE;
+    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
+    input.mi.mouseData     = -WHEEL_DELTA;
+    SendInput(1, &input, sizeof(input));
+#endif
+
+#ifdef __APPLE__
+    // qDebug() << "scrollDown called on macOS";
+    // QScrollArea* scrollArea = ui->scrollArea;
+    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
+    // if (vScrollBar) {
+    //     vScrollBar->setValue(vScrollBar->value() + 50);
+    // }
 #endif
 }
