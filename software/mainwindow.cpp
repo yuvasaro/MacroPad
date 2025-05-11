@@ -60,6 +60,8 @@ MainWindow::MainWindow(QWidget *parent):
     createTrayIcon();
 
     QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile);
+
+    connect(m_serialHandler, &SerialHandler::dataReceived, this, &MainWindow::onDataReceived);
 }
 
 MainWindow::~MainWindow() {}

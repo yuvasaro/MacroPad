@@ -1,8 +1,9 @@
 #ifndef KNOBHANDLER_H
 #define KNOBHANDLER_H
 
+#ifdef _WIN32
 #include <minwindef.h>
-#endif // KNOBHANDLER_H
+#endif
 
 class KnobHandler{
 public:
@@ -37,10 +38,14 @@ public:
     static void previousTab();
 
 private:
+#ifdef _WIN32
     // Low‐level key injection
     static void sendSingleKey(WORD key);
     static void sendKeyCombo(WORD modifier, WORD key);
 
     // Tracks whether Task View is open
     static bool appSwitcherActive;
+#endif
 };
+
+#endif // KNOBHANDLER_H

@@ -1,9 +1,11 @@
 #include "knobhandler.h"
 #include <qdebug.h>
 #include <qlogging.h>
-#include <windows.h>
 #include <QProcess>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 void KnobHandler:: scrollUp()
 {
@@ -122,18 +124,19 @@ void KnobHandler:: brightnessToggle()
 #endif
 }
 
-
+#ifdef _WIN32
 #define WIN_KEY VK_LWIN
 #define TAB_KEY VK_TAB
 #define ENTER_KEY VK_RETURN
 #define LEFT_ARROW VK_LEFT
 #define RIGHT_ARROW VK_RIGHT
 
-bool KnobHandler:: appSwitcherActive = false;
+bool KnobHandler::appSwitcherActive = false;
+#endif
 
-// Sends a single keypress (down + up)
-void KnobHandler:: sendSingleKey(WORD key) {
 #ifdef _WIN32
+// Sends a single keypress (down + up)
+void KnobHandler::sendSingleKey(WORD key) {
     INPUT inputs[2] = {};
 
     inputs[0].type = INPUT_KEYBOARD;
@@ -144,16 +147,12 @@ void KnobHandler:: sendSingleKey(WORD key) {
     inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
 
     SendInput(2, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    //TODO: Mac implementation
-#endif
 }
+#endif
 
-// Sends a key combo (modifier + key), e.g. Win + Tab
-void KnobHandler:: sendKeyCombo(WORD modifier, WORD key) {
 #ifdef _WIN32
+// Sends a key combo (modifier + key), e.g. Win + Tab
+void KnobHandler::sendKeyCombo(WORD modifier, WORD key) {
     INPUT inputs[4] = {};
 
     // Press modifier
@@ -175,15 +174,11 @@ void KnobHandler:: sendKeyCombo(WORD modifier, WORD key) {
     inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
 
     SendInput(4, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    //TODO: Mac implementation
-#endif
 }
+#endif
 
 // Press encoder → open Task View or confirm selection
-void KnobHandler:: activateAppSwitcher() {
+void KnobHandler::activateAppSwitcher() {
 #ifdef _WIN32
     if (!appSwitcherActive) {
         qDebug() << "activateAppSwitcher: opening Win+Tab";
@@ -194,10 +189,6 @@ void KnobHandler:: activateAppSwitcher() {
         sendSingleKey(ENTER_KEY);
         appSwitcherActive = false;
     }
-#endif
-
-#ifdef __APPLE__
-    //TODO: Mac implementation
 #endif
 }
 
