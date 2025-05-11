@@ -1,4 +1,7 @@
 #include "profile.h"
+#include <iostream>
+#include <fstream>
+#include <memory>
 #include "config.h"
 #include <QString>
 #include <QFile>
@@ -41,7 +44,6 @@ void Profile::setMacro(int keyNum, const QString& type, const QString& content) 
     macros[keyNum]->setContent(content);
 
 }
-
 
 void Profile::deleteMacro(int keyNum) {
     macros.remove(keyNum);
@@ -107,6 +109,10 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         }
 
         Profile* userProfile = new Profile(profileName, profileApp);
+
+        if (line.startsWith("Application: ")){
+            profileApp = line.mid(13);
+        }
 
         while (!in.atEnd()) {
             line = in.readLine();
