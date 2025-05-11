@@ -133,7 +133,7 @@ void MainWindow::onDataReceived(int number)
 
     //MacroKey triggering
     if (number>0 && number<10) {
-        HotkeyHandler::executeHotkey(number, profileInstance);
+        HotkeyHandler::executeHotkey(number, HotkeyHandler::currentProfile);
     }
 }
 void MainWindow::closeEvent(QCloseEvent *event) {

@@ -189,20 +189,9 @@ bool isAppBundle(const QString &path) {
 OSStatus HotkeyHandler::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
-    QSharedPointer<Macro> macro = currentProfile->getMacro(hotKeyID.id);
-    if (!macro.isNull()) {
-        const QString& type = macro->getType();
-        const QString& content = macro->getContent();
-        if (type == "keystroke") {
-            // Implement macOS keystroke logic here
-        } else if (type == "executable") {
-            if (isAppBundle(content)) {
-                QProcess::startDetached("open", {"-a", content});
-            } else {
-                QProcess::startDetached(content);
-            }
-        }
-    }
+
+    executeHotkey(hotKeyID.id, currentProfile);
+
     return noErr;
 }
 
