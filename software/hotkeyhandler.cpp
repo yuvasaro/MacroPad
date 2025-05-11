@@ -97,8 +97,6 @@ void HotkeyHandler::setProfileManager(Profile* profile) {
     }
 }
 
-QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
-
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
 std::unordered_map<UINT, std::function<void()>> HotkeyHandler::hotkeyActions;
@@ -173,6 +171,7 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
 #endif
 
 #ifdef __APPLE__
+QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
 static EventHandlerUPP eventHandlerUPP;
 static const std::map<int, int> keyMap = {
     {1, kVK_ANSI_1}, {2, kVK_ANSI_2}, {3, kVK_ANSI_3}, {4, kVK_ANSI_4}, {5, kVK_ANSI_5},
