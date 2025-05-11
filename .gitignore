@@ -79,6 +79,6 @@ CMakeLists.txt.user*
 .pch/
 .rcc/
 .uic/
-build*/
-software/build*/
+build/*
+software/build/*
 !software/build/Qt_6_8_2_for_macOS-Debug/MacroPad.app/Contents/Info.plist
