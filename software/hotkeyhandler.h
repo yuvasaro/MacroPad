@@ -53,7 +53,6 @@ signals:
 
 private:
     QList<Profile*> profiles;
-    static QMap<int, EventHotKeyRef> registeredHotkeys;
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
@@ -63,6 +62,7 @@ private:
 
 #elif __APPLE__
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
+    static QMap<int, EventHotKeyRef> registeredHotkeys;
 #elif __linux__
     static void listenForHotkeys();
     static Display* display;

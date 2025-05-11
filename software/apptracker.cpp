@@ -2,23 +2,13 @@
 
 #include "apptracker.h"
 #include <windows.h>
-<<<<<<< HEAD
 #include <psapi.h>  // for GetModuleBaseName
 #pragma comment(lib, "psapi.lib")  // Link the PSAPI lib
-
-=======
 #include <Psapi.h>              // for GetModuleFileNameExA
 #include <QFileInfo>
->>>>>>> e63944b1453586822d78afc97d753fe6a74c2d43
-
-#pragma comment(lib, "Psapi.lib")
 
 static AppTracker *instance = nullptr;
 static HWINEVENTHOOK winEventHook = nullptr;
-
-
-#include <psapi.h>
-#pragma comment(lib, "psapi.lib")
 
 void CALLBACK handleWinEvent(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, DWORD, DWORD) {
     if (instance && hwnd) {
