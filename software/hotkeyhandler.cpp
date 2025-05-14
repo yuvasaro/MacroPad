@@ -86,11 +86,12 @@ void HotkeyHandler::switchCurrentProfile(const QString& appName) {
     //         return;
     //     }
     // }
-
+    boolean found = false;
     for(int i=0;i<profiles.size();i++)
     {
         if (profiles[i]->getApp() == appName)
         {
+            found = true;
             currentProfile = profiles[i];
             qDebug() << "Current profile set to:" << currentProfile->getName();
             if (serialHandler)
@@ -98,10 +99,15 @@ void HotkeyHandler::switchCurrentProfile(const QString& appName) {
             return;
         }
     }
-    currentProfile = profiles[0];
-    if (serialHandler)
-        serialHandler->sendProfile(10);
-    qDebug() << "No profile with this app. Set to General";
+    if(!found)
+    {
+        currentProfile = profiles[0];
+        if (serialHandler)
+            serialHandler->sendProfile(10);
+        qDebug() << "No profile with this app. Set to General";
+        return;
+    }
+    return;
 }
 
 void HotkeyHandler::setProfileManager(Profile* profile) {

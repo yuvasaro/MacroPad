@@ -113,20 +113,44 @@ void MainWindow::onDataReceived(int number)
     if (number > 70 && number < 80)
     {
         if (number == 72)
+            KnobHandler::volumeUp();
+            //KnobHandler::scrollUp();
+            //KnobHandler::brightnessUp();
+            //KnobHandler::switchAppLeft();
+            //KnobHandler::zoomIn();
+            //KnobHandler::nextTab();
+        else if (number == 71)
+            KnobHandler::volumeDown();
+            //KnobHandler::scrollDown();
+            //KnobHandler::brightnessDown();
+            //KnobHandler::switchAppRight();
+            //KnobHandler::zoomOut();
+            //KnobHandler::previousTab();
+        else if (number == 73)
+            KnobHandler::mute();
+            //KnobHandler::autoScrollToggle();
+            //KnobHandler::activateAppSwitcher();
+            //KnobHandler::zoomReset();
+        return;
+    }
+
+    if (number > 80 && number < 90)
+    {
+        if (number == 82)
             //KnobHandler::volumeUp();
             //KnobHandler::scrollUp();
             //KnobHandler::brightnessUp();
             KnobHandler::switchAppLeft();
             //KnobHandler::zoomIn();
             //KnobHandler::nextTab();
-        else if (number == 71)
+        else if (number == 81)
             //KnobHandler::volumeDown();
             //KnobHandler::scrollDown();
             //KnobHandler::brightnessDown();
             KnobHandler::switchAppRight();
             //KnobHandler::zoomOut();
             //KnobHandler::previousTab();
-        else if (number == 73)
+        else if (number == 83)
             //KnobHandler::mute();
             //KnobHandler::autoScrollToggle();
             KnobHandler::activateAppSwitcher();

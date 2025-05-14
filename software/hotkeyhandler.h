@@ -34,7 +34,7 @@ public:
     void initializeProfiles();
     void switchCurrentProfile(const QString& appName);
 
-     void setSerialHandler(SerialHandler *s) { serialHandler = s; }
+    void setSerialHandler(SerialHandler *s) { serialHandler = s; }
 
     Q_INVOKABLE QQmlListProperty<Profile> getProfiles();
     static qsizetype profileCount(QQmlListProperty<Profile> *list);
