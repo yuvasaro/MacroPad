@@ -78,6 +78,7 @@ void HotkeyHandler::initializeProfiles() {
 }
 
 void HotkeyHandler::switchCurrentProfile(const QString& appName) {
+    qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
     for (Profile* profile : profiles) {
         if (profile->getApp() == appName) {
@@ -134,7 +135,7 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
     const QString type    = macro->getType();
     const QString content = macro->getContent();
 
-    qDebug() << "Executing macro" << hotKeyNum << type << content;
+    qDebug() << "Executing macro from" << profileInstance->getName()<< hotKeyNum << type << content;
 
     if (type == "keystroke") {
         std::thread([content]() {
@@ -254,16 +255,15 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 
     //Save the profile pointer for future runtime access
-    HotkeyHandler::profileManager = profile;
 
     // Register a runtime lookup lambda
     hotkeyActions[vkCode] = [keyNum]() {
-        if (!HotkeyHandler::profileManager) {
+        if (!HotkeyHandler::currentProfile) {
             OutputDebugStringW(L"No active profile.\n");
             return;
         }
 
-        QSharedPointer<Macro> macro = HotkeyHandler::profileManager->getMacro(keyNum);
+        QSharedPointer<Macro> macro = HotkeyHandler::currentProfile->getMacro(keyNum);
         if (macro.isNull()) {
             OutputDebugStringW(L"Macro not found.\n");
             return;
