@@ -54,10 +54,10 @@ void CALLBACK handleWinEvent(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, DWORD,
             baseName.chop(4);
         qDebug() << "[AppTracker] Base name without extension:" << baseName;
 
-        // if (!baseName.isEmpty()) {
-        //     qDebug() << "[AppTracker] Emitting appChanged for:" << baseName;
-        //     emit instance->appChanged(baseName);
-        // }
+        if (!baseName.isEmpty()) {
+            qDebug() << "[AppTracker] Emitting appChanged for:" << baseName;
+            emit instance->appChanged(baseName);
+        }
     } else {
         qDebug() << "[AppTracker] GetModuleBaseNameA failed. Error:" << GetLastError();
     }
@@ -67,6 +67,7 @@ void CALLBACK handleWinEvent(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, DWORD,
 
 AppTracker::AppTracker(QObject *parent) : QObject(parent) {
     qDebug() << "[AppTracker] Constructor called.";
+    qDebug() << "[AppTracker] constructor this =" << this;
     instance = this;
     startTracking();
 }
