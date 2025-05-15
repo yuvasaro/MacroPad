@@ -78,6 +78,7 @@ void HotkeyHandler::initializeProfiles() {
 }
 
 void HotkeyHandler::switchCurrentProfile(const QString& appName) {
+    qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
     for (Profile* profile : profiles) {
         if (profile->getApp() == appName) {

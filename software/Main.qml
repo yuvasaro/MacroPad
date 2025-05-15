@@ -131,7 +131,9 @@ Rectangle {
                 console.log("Selected executable:", selectedFile)
                 let fullPath = selectedFile.toString().replace("file://", "");
                 let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
-                profileManager.setApp(appName);
+
+                hotkeyHandler.profileManager.setApp(appName);
+                console.log("setAppName", appName);
                 exetext.text = appName;
                 // profileInstance.saveProfile();
             }
