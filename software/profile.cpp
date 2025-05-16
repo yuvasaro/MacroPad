@@ -77,6 +77,7 @@ void Profile::saveProfile() {
     }
 }
 
+// reads the .txt file in config with the matching name and creates its profile and macro objects
 Profile* Profile::loadProfile(const QString& nameLookUp) {
 
     qDebug() << "Loading profile: " << nameLookUp;

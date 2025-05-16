@@ -115,12 +115,14 @@ Rectangle {
             onCurrentIndexChanged: {
                 onCurrentIndexChanged: {
                     hotkeyHandler.profileManager= hotkeyHandler.profiles[currentIndex];
+                    exetext.text = hotkeyHandler.profileManager.getApp();
                 }
                 console.log("Selected profile:", hotkeyHandler.profileManager.name);
 
             }
         }
 
+// ---------- app selection logic --------
         FileDialog {
             id: fileDialog
             title: "Select an Executable File"
@@ -130,15 +132,19 @@ Rectangle {
             onAccepted: {
                 console.log("Selected executable:", selectedFile)
                 let fullPath = selectedFile.toString().replace("file://", "");
+
+                // extract the app name from the full path so the app tracker can match it to just the name
                 let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
 
-                hotkeyHandler.profileManager.setApp(appName);
-                console.log("setAppName", appName);
-                exetext.text = appName;
-                // profileInstance.saveProfile();
+                // makes sure to set the appname of the selected profile and save it
+                profileManager.setApp(appName);
+
+                // displays the name of the app for the selected profile in the UI
+                exetext.text = hotkeyHandler.profileManager.getApp();
             }
         }
 
+        // button to select the app for the profile
         Button {
             id: exebutton
             width: 100
@@ -152,6 +158,7 @@ Rectangle {
             onClicked: fileDialog.open()
         }
 
+        // where the name of the selected app for the profile is displayed
         Button {
             id:exetext
             width: 100
@@ -164,6 +171,7 @@ Rectangle {
                 ToolTip.text: text
                 ToolTip.delay: 500
         }
+// -----------------------------------
 
         GroupBox {
                     id: encoderConfigBox
