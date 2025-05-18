@@ -118,8 +118,11 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         while (!in.atEnd()) {
             line = in.readLine();
 
-            if (line[0].isDigit()) {
-                keyNum = line[0].digitValue();
+            int colon = line.indexOf(':');
+            if (colon > 0) {
+                bool ok = false;
+                int num = line.left(colon).toInt(&ok);
+                if (ok) keyNum = num;
             }
             else if (line.startsWith("type: ")) {
                 macroType = line.mid(6);

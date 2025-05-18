@@ -10,7 +10,5 @@ int main(int argc, char *argv[])
     MainWindow mainWindow;
     mainWindow.show();
 
-    //AppTracker appTracker;
-
     return a.exec();
 }

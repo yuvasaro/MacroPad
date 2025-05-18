@@ -5,8 +5,6 @@
 #include <minwindef.h>
 #include <windows.h>
 #endif
-#include <string>
-#include <functional>
 #include <QObject>
 #include <QString>
 
@@ -20,6 +18,7 @@ public:
     Macro(const QString& userType, const QString& userContent, QObject* parent = nullptr);
     ~Macro();
 
+    //Exisiting Types: executable, keystroke, encoder
     QString getType() const;
     void setType(const QString& newType);
 

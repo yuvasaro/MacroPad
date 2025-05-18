@@ -5,6 +5,7 @@
 #include <minwindef.h>
 #endif
 
+
 class KnobHandler{
 public:
     //volume controls

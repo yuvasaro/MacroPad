@@ -1,12 +1,5 @@
 // mainwindow.cpp (refactored)
 #include "mainwindow.h"
-#include "fileio.h"
-#include "profile.h"
-#include "hotkeyhandler.h"
-#include "knobhandler.h"
-#include "serialhandler.h"
-#include "apptracker.h"
-
 #include <QApplication>
 #include <QQmlEngine>
 #include <QIcon>
@@ -127,12 +120,7 @@ void MainWindow::onDataReceived(int number)
     if (number > 70 && number < 80)
     {
         if (number == 72)
-            //KnobHandler::volumeUp();
-            //KnobHandler::scrollUp();
-            //KnobHandler::brightnessUp();
-            KnobHandler::switchAppLeft();
-            //KnobHandler::zoomIn();
-            //KnobHandler::nextTab();
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile, 1);
         else if (number == 71)
             //KnobHandler::volumeDown();
             //KnobHandler::scrollDown();

@@ -1,7 +1,5 @@
 // hotkeyhandler.cpp
 #include "hotkeyhandler.h"
-#include "profile.h"
-#include "apptracker.h"
 #include <QDir>
 #include <QDebug>
 #include <QMap>
@@ -260,6 +258,35 @@ void HotkeyHandler::listenForHotkeys() {
     }
 }
 #endif
+
+/*This function will be called in onDataReceived for the two knobs
+Id: 1 for left, 2 for right, 3 for press down
+*/
+void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int id){
+#ifdef _WIN32
+    auto macro = profileInstance->getMacro(hotKeyNum);
+    if (macro.isNull() || macro->getType() != "encoder")
+        return;
+
+    const QString& content = macro->getContent();
+
+    if (content == "brightness") {
+        if(id == 1){
+            KnobHandler::volumeUp();
+        }else if(id==2){
+            KnobHandler::volumeDown();
+        }else if(id==3){
+            KnobHandler::mute();
+        }
+    }
+    //more to be added.
+#endif
+
+#ifdef __APPLE__
+//TODO
+#endif
+
+}
 
 void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
 #ifdef _WIN32

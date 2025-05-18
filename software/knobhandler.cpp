@@ -1,4 +1,3 @@
-
 #include "knobhandler.h"
 #include <qdebug.h>
 #include <qlogging.h>
@@ -7,6 +6,62 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+void KnobHandler::volumeUp()
+{
+#ifdef _WIN32
+    qDebug() << "volumeUp called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_UP;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_UP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    MainWindow::macVolume = (MainWindow::macVolume >= 100) ? MainWindow::macVolume : MainWindow::macVolume + 6;
+    setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+void KnobHandler::volumeDown()
+{
+#ifdef _WIN32
+    qDebug() << "volumeDown called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    MainWindow::macVolume = (MainWindow::macVolume <= 0) ? MainWindow::macVolume : MainWindow::macVolume - 6;
+    setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+void KnobHandler::mute()
+{
+#ifdef _WIN32
+    qDebug() << "mute called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    toggleMuteSystem();
+#endif
+}
 
 void KnobHandler:: scrollUp()
 {
