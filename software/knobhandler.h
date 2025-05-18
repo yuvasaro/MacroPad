@@ -7,10 +7,17 @@
 
 class KnobHandler{
 public:
+    // Store mac volume
+#ifdef __APPLE__
+    static int macVolume;
+    static int getSystemVolume();
+    static bool setSystemVolume(int volume);
+#endif
+
     //volume controls
     static void volumeUp();
     static void volumeDown();
-    static void mute();
+    static void toggleMute();
 
     //scrolling controls
     static void scrollUp();
