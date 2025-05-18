@@ -20,6 +20,11 @@
 #include <QFileInfo>
 
 
+#ifdef __APPLE__
+    int KnobHandler::macVolume = KnobHandler::getSystemVolume();
+#endif
+
+
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     trayIcon(new QSystemTrayIcon(this)),
@@ -144,7 +149,7 @@ void MainWindow::onDataReceived(int number)
             //KnobHandler::zoomOut();
             //KnobHandler::previousTab();
         else if (number == 73)
-            KnobHandler::mute();
+            KnobHandler::toggleMute();
             //KnobHandler::autoScrollToggle();
             //KnobHandler::activateAppSwitcher();
             //KnobHandler::zoomReset();
@@ -154,23 +159,23 @@ void MainWindow::onDataReceived(int number)
     if (number > 80 && number < 90)
     {
         if (number == 82)
-            //KnobHandler::volumeUp();
+            KnobHandler::volumeUp();
             //KnobHandler::scrollUp();
             //KnobHandler::brightnessUp();
-            KnobHandler::switchAppLeft();
+            //KnobHandler::switchAppLeft();
             //KnobHandler::zoomIn();
             //KnobHandler::nextTab();
         else if (number == 81)
-            //KnobHandler::volumeDown();
+            KnobHandler::volumeDown();
             //KnobHandler::scrollDown();
             //KnobHandler::brightnessDown();
-            KnobHandler::switchAppRight();
+            //KnobHandler::switchAppRight();
             //KnobHandler::zoomOut();
             //KnobHandler::previousTab();
         else if (number == 83)
-            //KnobHandler::mute();
+            KnobHandler::toggleMute();
             //KnobHandler::autoScrollToggle();
-            KnobHandler::activateAppSwitcher();
+            //KnobHandler::activateAppSwitcher();
             //KnobHandler::zoomReset();
         return;
     }
@@ -209,4 +214,3 @@ void MainWindow::toggleDockIcon(bool show) {
     }
 #endif
 }
-
