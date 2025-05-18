@@ -41,8 +41,8 @@ MainWindow::MainWindow(QWidget *parent):
     hotkeyHandler = new HotkeyHandler(this);
     hotkeyHandler->initializeProfiles();
 
-    serialHandler = new SerialHandler(this);
-    hotkeyHandler->setSerialHandler(serialHandler);
+    //serialHandler = new SerialHandler(this);
+    hotkeyHandler->setSerialHandler(m_serialHandler);
 
     // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
