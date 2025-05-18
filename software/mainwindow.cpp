@@ -62,7 +62,24 @@ MainWindow::MainWindow(QWidget *parent):
 
     createTrayIcon();
 
-    QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile);
+    qDebug() << "[MainWindow] &appTracker =" << &appTracker
+             << " QObject parent? =" << appTracker.parent()
+             << " hotkeyHandler =" << hotkeyHandler;
+
+    auto ok = QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile,Qt::DirectConnection);
+
+    QObject::connect(
+        &appTracker,
+        &AppTracker::appChanged,
+        this,  // or nullptr
+        [](const QString &appName){
+            qDebug() << "[Debug] appChanged signal EMITTED for:" << appName;
+        },
+        Qt::DirectConnection  // fire immediately, regardless of threads
+        );
+
+    //is connecting
+    qDebug() << "[Connect] success?" << bool(ok);
 
     connect(m_serialHandler, &SerialHandler::dataReceived, this, &MainWindow::onDataReceived);
 }
@@ -160,7 +177,7 @@ void MainWindow::onDataReceived(int number)
 
     //MacroKey triggering
     if (number>0 && number<10) {
-        HotkeyHandler::executeHotkey(number, profileInstance);
+        HotkeyHandler::executeHotkey(number, HotkeyHandler::currentProfile);
     }
 }
 void MainWindow::closeEvent(QCloseEvent *event) {

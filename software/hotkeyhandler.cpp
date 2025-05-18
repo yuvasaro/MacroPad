@@ -14,7 +14,10 @@
 
 #define DEBUG
 
+// profileManager in this file refers to the profile that is selected from the dropdown in the UI
 Profile* HotkeyHandler::profileManager;
+
+// currentProfile refers to the profile that matches the name of the application the user is on
 Profile* HotkeyHandler::currentProfile;
 QList<Profile*> profiles;
 
@@ -25,6 +28,8 @@ HotkeyHandler::~HotkeyHandler(){
     qDeleteAll(profiles);
     profiles.clear();
 }
+
+// ------- the following functions are required to expose the profiles list to QML -----
 
 // required profileCount function for QML_PROPERTY
 qsizetype HotkeyHandler::profileCount(QQmlListProperty<Profile> *list) {
@@ -48,6 +53,16 @@ QQmlListProperty<Profile> HotkeyHandler::getProfiles() {
         );
 }
 
+// ----------------------------------------------------------------------------------------
+
+
+/*
+ * This is the function that will load all the profiles that are saved in the user's config directory
+ * with the corresponding hotkeys and executables
+ *
+ * For first time users without preexisting profiles, new ones will be loaded and saved to config.
+ * From there, every time they run the application, their saved profiles will be loaded
+ */
 void HotkeyHandler::initializeProfiles() {
     QString names[6] = {"General", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"};
     QString apps[6] = {"", "", "", "", "", ""};
@@ -56,6 +71,7 @@ void HotkeyHandler::initializeProfiles() {
 
         Profile* profile = Profile::loadProfile(names[i]);
 
+        // if the profile with the corresponding name (e.g. "Profile 1") does not exist, create it
         if (!profile) {
             profile = new Profile("","");
             profile->setName(names[i]);
@@ -63,6 +79,7 @@ void HotkeyHandler::initializeProfiles() {
             profile->saveProfile();
         }
 
+        // for all macros of the current profile in the loop, we have to register the hotkey
         for (int keyNum = 1; keyNum <= 9; ++keyNum) {
             QSharedPointer<Macro> macro = profile->getMacro(keyNum);
             if (!macro.isNull()) {
@@ -77,7 +94,17 @@ void HotkeyHandler::initializeProfiles() {
     currentProfile = profiles[0];
 }
 
+
+/*
+ * This function encompasses our main profile-switching logic. In mainwindow.cpp, there is a line that connects the appTracker
+ * to this function, so that every time the user switches their app focus, this function is called
+ *
+ * It essentially loops through the list of 6 profiles and sets the currentProfile object to whichever
+ * profile matches the name of the app the user is focused on
+ *
+ */
 void HotkeyHandler::switchCurrentProfile(const QString& appName) {
+    qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
     // for (Profile* profile : profiles) {
     //     if (profile->getApp() == appName) {
@@ -154,7 +181,7 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
     const QString type    = macro->getType();
     const QString content = macro->getContent();
 
-    qDebug() << "Executing macro" << hotKeyNum << type << content;
+    qDebug() << "Executing macro from" << profileInstance->getName()<< hotKeyNum << type << content;
 
     if (type == "keystroke") {
         std::thread([content]() {
@@ -209,20 +236,9 @@ bool isAppBundle(const QString &path) {
 OSStatus HotkeyHandler::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
-    QSharedPointer<Macro> macro = currentProfile->getMacro(hotKeyID.id);
-    if (!macro.isNull()) {
-        const QString& type = macro->getType();
-        const QString& content = macro->getContent();
-        if (type == "keystroke") {
-            // Implement macOS keystroke logic here
-        } else if (type == "executable") {
-            if (isAppBundle(content)) {
-                QProcess::startDetached("open", {"-a", content});
-            } else {
-                QProcess::startDetached(content);
-            }
-        }
-    }
+
+    executeHotkey(hotKeyID.id, currentProfile);
+
     return noErr;
 }
 
@@ -285,16 +301,15 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 
     //Save the profile pointer for future runtime access
-    HotkeyHandler::profileManager = profile;
 
     // Register a runtime lookup lambda
     hotkeyActions[vkCode] = [keyNum]() {
-        if (!HotkeyHandler::profileManager) {
+        if (!HotkeyHandler::currentProfile) {
             OutputDebugStringW(L"No active profile.\n");
             return;
         }
 
-        QSharedPointer<Macro> macro = HotkeyHandler::profileManager->getMacro(keyNum);
+        QSharedPointer<Macro> macro = HotkeyHandler::currentProfile->getMacro(keyNum);
         if (macro.isNull()) {
             OutputDebugStringW(L"Macro not found.\n");
             return;
