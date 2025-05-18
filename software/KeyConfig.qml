@@ -34,7 +34,7 @@ Dialog {
 
             ComboBox {
                 id: modifier1
-                model: ["None", "Ctrl", "Alt", "Shift"]
+                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "fn", "option", "Caps Lock", "Del", "Enter", "Backspace", "esc", "delete", "return"]
                 currentIndex: 0
                 enabled: executablePath.text === ""
 
@@ -47,7 +47,7 @@ Dialog {
 
             ComboBox {
                 id: modifier2
-                model: ["None", "Ctrl", "Alt", "Shift"]
+                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "fn", "option", "Caps Lock", "Del", "Enter", "Backspace", "esc", "delete", "return"]
                 currentIndex: 0
                 enabled: executablePath.text === ""
 
@@ -60,7 +60,7 @@ Dialog {
 
             ComboBox {
                 id: keySelection
-                model: ["None", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"]
+                model: ["None", "_space_", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"]
                 currentIndex: 0
                 enabled: executablePath.text === ""
 
@@ -102,17 +102,19 @@ Dialog {
 
                 if (keystrokeValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
-                    mainWindow.registerGlobalHotkey(profileInstance, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
+                    mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
                 }
 
                 if (executableValue !== "") {
                     profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue);
-                    mainWindow.registerGlobalHotkey(profileInstance, keyConfigDialog.keyIndex, "executable", executableValue);
+                    mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "executable", executableValue);
                 }
+
 
                 keyConfigDialog.accept();
             }
         }
+
 
         Button {
             text: "Cancel"

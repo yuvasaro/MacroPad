@@ -1,6 +1,12 @@
 #ifndef MACRO_H
 #define MACRO_H
 
+#ifdef _WIN32
+#include <minwindef.h>
+#include <windows.h>
+#endif
+#include <string>
+#include <functional>
 #include <QObject>
 #include <QString>
 
@@ -20,13 +26,19 @@ public:
     QString getContent() const;
     void setContent(const QString& newContent);
 
+    QString toString() const;
+
 signals:
     void typeChanged();
     void contentChanged();
 
+    void runCallback();
+
+
 private:
     QString type;
     QString content;
+
 };
 
 #endif
