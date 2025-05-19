@@ -46,6 +46,9 @@ MainWindow::MainWindow(QWidget *parent):
     hotkeyHandler = new HotkeyHandler(this);
     hotkeyHandler->initializeProfiles();
 
+    //serialHandler = new SerialHandler(this);
+    hotkeyHandler->setSerialHandler(m_serialHandler);
+
     // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
@@ -150,6 +153,30 @@ void MainWindow::onDataReceived(int number)
             //KnobHandler::autoScrollToggle();
             //KnobHandler::activateAppSwitcher();
             KnobHandler::zoomReset();
+        return;
+    }
+
+    if (number > 80 && number < 90)
+    {
+        if (number == 82)
+            KnobHandler::volumeUp();
+            //KnobHandler::scrollUp();
+            //KnobHandler::brightnessUp();
+            //KnobHandler::switchAppLeft();
+            //KnobHandler::zoomIn();
+            //KnobHandler::nextTab();
+        else if (number == 81)
+            KnobHandler::volumeDown();
+            //KnobHandler::scrollDown();
+            //KnobHandler::brightnessDown();
+            //KnobHandler::switchAppRight();
+            //KnobHandler::zoomOut();
+            //KnobHandler::previousTab();
+        else if (number == 83)
+            KnobHandler::toggleMute();
+            //KnobHandler::autoScrollToggle();
+            //KnobHandler::activateAppSwitcher();
+            //KnobHandler::zoomReset();
         return;
     }
 

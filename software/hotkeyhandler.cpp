@@ -12,7 +12,7 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 
-#define DEBUG
+//#define DEBUG
 
 // profileManager in this file refers to the profile that is selected from the dropdown in the UI
 Profile* HotkeyHandler::profileManager;
@@ -106,15 +106,35 @@ void HotkeyHandler::initializeProfiles() {
 void HotkeyHandler::switchCurrentProfile(const QString& appName) {
     qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
-    for (Profile* profile : profiles) {
-        if (profile->getApp() == appName) {
-            currentProfile = profile;
+    // for (Profile* profile : profiles) {
+    //     if (profile->getApp() == appName) {
+    //         currentProfile = profile;
+    //         qDebug() << "Current profile set to:" << currentProfile->getName();
+    //         return;
+    //     }
+    // }
+    boolean found = false;
+    for(int i=0;i<profiles.size();i++)
+    {
+        if (profiles[i]->getApp() == appName)
+        {
+            found = true;
+            currentProfile = profiles[i];
             qDebug() << "Current profile set to:" << currentProfile->getName();
+            if (serialHandler)
+                serialHandler->sendProfile(i + 10);
             return;
         }
     }
-    currentProfile = profiles[0];
-    qDebug() << "No profile with this app. Set to General";
+    if(!found)
+    {
+        currentProfile = profiles[0];
+        if (serialHandler)
+            serialHandler->sendProfile(10);
+        qDebug() << "No profile with this app. Set to General";
+        return;
+    }
+    return;
 }
 
 void HotkeyHandler::setProfileManager(Profile* profile) {

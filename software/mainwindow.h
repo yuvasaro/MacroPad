@@ -23,6 +23,7 @@
 #include "profile.h"
 #include "apptracker.h"
 #include "hotkeyhandler.h"
+#include "serialhandler.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -63,6 +64,7 @@ private:
     QSystemTrayIcon *trayIcon;
     QMenu *trayMenu;
     SerialHandler *m_serialHandler;
+    SerialHandler *serialHandler;
 
 
 #ifdef __linux__

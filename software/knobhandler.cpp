@@ -110,6 +110,14 @@ bool KnobHandler::setSystemVolume(int volume) {
 void KnobHandler::volumeUp() {
 #ifdef _WIN32
     // TODO: Windows implementation
+    qDebug() << "volumeUp called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_UP;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_UP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
 #endif
 
 #ifdef __APPLE__
@@ -122,6 +130,14 @@ void KnobHandler::volumeUp() {
 void KnobHandler::volumeDown() {
 #ifdef _WIN32
     // TODO: Windows implementation
+    qDebug() << "volumeDown called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
 #endif
 
 #ifdef __APPLE__
@@ -134,6 +150,14 @@ void KnobHandler::volumeDown() {
 void KnobHandler::toggleMute() {
 #ifdef _WIN32
     // TODO: Windows implementation
+    qDebug() << "mute called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
 #endif
 
 #ifdef __APPLE__
