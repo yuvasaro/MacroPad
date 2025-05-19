@@ -41,6 +41,10 @@ public:
     void setProfileManager(Profile* profile);
     static void executeHotkey(int hotKeyNum, Profile* profileInstance);
 
+#ifdef __APPLE__
+    static void pressAndReleaseKeys(const QStringList& keys);
+#endif
+
 signals:
     void profilesChanged();
     void profileManagerChanged();

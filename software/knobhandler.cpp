@@ -1,4 +1,5 @@
 #include "knobhandler.h"
+#include "hotkeyhandler.h"
 #include <qdebug.h>
 #include <qlogging.h>
 #include <QProcess>
@@ -6,6 +7,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+bool KnobHandler::appSwitcherActive = false;
 
 void KnobHandler:: scrollUp()
 {
@@ -206,8 +209,6 @@ void KnobHandler:: brightnessToggle()
 #define ENTER_KEY VK_RETURN
 #define LEFT_ARROW VK_LEFT
 #define RIGHT_ARROW VK_RIGHT
-
-bool KnobHandler::appSwitcherActive = false;
 #endif
 
 #ifdef _WIN32
@@ -266,7 +267,21 @@ void KnobHandler::activateAppSwitcher() {
         appSwitcherActive = false;
     }
 #endif
+
+#ifdef __APPLE__
+    if (!appSwitcherActive) {
+        qDebug() << "activateAppSwitcher: opening Cmd+Tab";
+        QStringList keys = {"cmd", "tab"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+        appSwitcherActive = true;
+    } else {
+        qDebug() << "activateAppSwitcher: selecting with Return";
+        QStringList keys = {"return"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+        appSwitcherActive = false;
+    }
 }
+#endif
 
 // Rotate encoder right → move right in Task View
 void KnobHandler::switchAppRight() {
@@ -279,6 +294,10 @@ void KnobHandler::switchAppRight() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    if (appSwitcherActive) {
+        QStringList keys = {"cmd", "tab"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+    }
 #endif
 }
 
@@ -293,6 +312,10 @@ void KnobHandler::switchAppLeft() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    if (appSwitcherActive) {
+        QStringList keys = {"cmd", "shift", "tab"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+    }
 #endif
 }
 
@@ -306,6 +329,8 @@ void KnobHandler::zoomIn() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    QStringList keys = {"cmd", "="};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
@@ -318,6 +343,8 @@ void KnobHandler::zoomOut() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    QStringList keys = {"cmd", "shift", "-"};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
@@ -330,6 +357,8 @@ void KnobHandler::zoomReset() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    QStringList keys = {"cmd", "0"};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
