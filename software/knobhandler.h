@@ -49,10 +49,10 @@ private:
     // Low‐level key injection
     static void sendSingleKey(WORD key);
     static void sendKeyCombo(WORD modifier, WORD key);
+#endif
 
     // Tracks whether Task View is open
     static bool appSwitcherActive;
-#endif
 };
 
 #endif // KNOBHANDLER_H

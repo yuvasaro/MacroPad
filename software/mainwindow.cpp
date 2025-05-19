@@ -132,24 +132,24 @@ void MainWindow::onDataReceived(int number)
     if (number > 70 && number < 80)
     {
         if (number == 72)
-            KnobHandler::volumeUp();
+            //KnobHandler::volumeUp();
             //KnobHandler::scrollUp();
             //KnobHandler::brightnessUp();
-            //KnobHandler::switchAppLeft();
-            //KnobHandler::zoomIn();
+            //KnobHandler::switchAppRight();
+            KnobHandler::zoomIn();
             //KnobHandler::nextTab();
         else if (number == 71)
-            KnobHandler::volumeDown();
+            //KnobHandler::volumeDown();
             //KnobHandler::scrollDown();
             //KnobHandler::brightnessDown();
-            //KnobHandler::switchAppRight();
-            //KnobHandler::zoomOut();
+            //KnobHandler::switchAppLeft();
+            KnobHandler::zoomOut();
             //KnobHandler::previousTab();
         else if (number == 73)
-            KnobHandler::toggleMute();
+            //KnobHandler::toggleMute();
             //KnobHandler::autoScrollToggle();
             //KnobHandler::activateAppSwitcher();
-            //KnobHandler::zoomReset();
+            KnobHandler::zoomReset();
         return;
     }
 

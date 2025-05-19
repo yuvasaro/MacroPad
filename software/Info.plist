@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Basic app metadata -->
+    <key>CFBundleExecutable</key>
+    <string>MacroPad</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.example.MacroPad</string>
+
+    <key>CFBundleName</key>
+    <string>MacroPad</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>MacroPad</string>
+
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>0.1</string>
+
+    <key>CFBundleVersion</key>
+    <string>0.1</string>
+
+    <!-- Optional: High DPI support -->
+    <key>NSHighResolutionCapable</key>
+    <true/>
+
+    <!-- Icon file (without extension) -->
+    <key>CFBundleIconFile</key>
+    <string>MPIcon</string>
+
+    <!-- For using Apple Events / Accessibility API -->
+    <key>NSAppleEventsUsageDescription</key>
+    <string>MacroPad uses Apple Events to simulate input and control system features.</string>
+
+    <!-- If your app uses accessibility APIs like CGEventPost -->
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2025 Aarav Vidhawan, Yuvanand Saravanan</string>
+</dict>
+</plist>
