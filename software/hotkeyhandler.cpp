@@ -113,7 +113,7 @@ void HotkeyHandler::switchCurrentProfile(const QString& appName) {
     //         return;
     //     }
     // }
-    boolean found = false;
+    bool found = false;
     for(int i=0;i<profiles.size();i++)
     {
         if (profiles[i]->getApp() == appName)
