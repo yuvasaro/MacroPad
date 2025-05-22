@@ -126,24 +126,29 @@ void MainWindow::onDataReceived(int number)
     //Volume Knob
     if (number > 70 && number < 80)
     {
-        if (number == 72)
+        if (number == 72){
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,1);
+        qDebug("executeEncoder");
             //KnobHandler::volumeUp();
             //KnobHandler::scrollUp();
             //KnobHandler::brightnessUp();
-            KnobHandler::switchAppLeft();
+            //KnobHandler::switchAppLeft();
             //KnobHandler::zoomIn();
             //KnobHandler::nextTab();
+        }
         else if (number == 71)
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,1);
             //KnobHandler::volumeDown();
             //KnobHandler::scrollDown();
             //KnobHandler::brightnessDown();
-            KnobHandler::switchAppRight();
+            //KnobHandler::switchAppRight();
             //KnobHandler::zoomOut();
             //KnobHandler::previousTab();
         else if (number == 73)
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,1);
             //KnobHandler::mute();
             //KnobHandler::autoScrollToggle();
-            KnobHandler::activateAppSwitcher();
+            //KnobHandler::activateAppSwitcher();
             //KnobHandler::zoomReset();
         return;
     }

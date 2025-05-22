@@ -78,7 +78,7 @@ void HotkeyHandler::initializeProfiles() {
         }
 
         // for all macros of the current profile in the loop, we have to register the hotkey
-        for (int keyNum = 1; keyNum <= 9; ++keyNum) {
+        for (int keyNum = -2; keyNum <= 9; ++keyNum) {
             QSharedPointer<Macro> macro = profile->getMacro(keyNum);
             if (!macro.isNull()) {
                 registerGlobalHotkey(profile, keyNum, macro->getType(), macro->getContent());
@@ -262,38 +262,40 @@ void HotkeyHandler::listenForHotkeys() {
 /*This function will be called in onDataReceived for the two knobs
 Id: 1 for left, 2 for right, 3 for press down
 */
-// void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int id){
-// #ifdef _WIN32
-//     auto macro = profileInstance->getMacro(hotKeyNum);
-//     if (macro.isNull() || macro->getType() != "encoder")
-//         return;
+void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int id){
+#ifdef _WIN32
+    auto macro = profileInstance->getMacro(hotKeyNum);
+    if (macro.isNull() || macro->getType() != "encoder")
+        return;
 
-//     const QString& content = macro->getContent();
+    const QString& content = macro->getContent();
 
-//     if (content == "brightness") {
-//         if(id == 1){
-//             KnobHandler::volumeUp();
-//         }else if(id==2){
-//             KnobHandler::volumeDown();
-//         }else if(id==3){
-//             KnobHandler::mute();
-//         }
-//     }
-//     //more to be added.
-// #endif
+    if (content == "Volume") {
+        if(id == 1){
+            KnobHandler::volumeUp();
+        }else if(id==2){
+            KnobHandler::volumeDown();
+        }else if(id==3){
+            KnobHandler::mute();
+        }
+    }
+    //more to be added.
+#endif
 
-// #ifdef __APPLE__
-// //TODO
-// #endif
+#ifdef __APPLE__
+//TODO
+#endif
 
-// }
+}
 
 void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
 #ifdef _WIN32
 #ifdef DEBUG
     UINT vkCode = 0;
     switch (keyNum) {
-    case 1: vkCode = 0x31; break;
+    case -2:vkCode = 0xBD;break;
+    case -1:vkCode = 0xBD;break;
+    case 1: vkCode = 0xBB; break;
     case 2: vkCode = 0x32; break;
     case 3: vkCode = 0x33; break;
     case 4: vkCode = 0x34; break;

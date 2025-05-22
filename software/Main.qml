@@ -194,7 +194,7 @@ Rectangle {
                                 model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
                                 width: 200
                                 onCurrentTextChanged: {
-                                    profileManager.setKeyConfig(-1, "encoder1", currentText);
+                                    profileManager.setKeyConfig(-2, "encoder", currentText);
                                 }
                             }
                         }
@@ -208,7 +208,7 @@ Rectangle {
                                 model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
                                 width: 200
                                 onCurrentTextChanged: {
-                                    profileManager.setKeyConfig(-2, "encoder2", currentText);
+                                    profileManager.setKeyConfig(-1, "encoder", currentText);
                                 }
                             }
                         }
