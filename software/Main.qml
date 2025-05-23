@@ -123,6 +123,8 @@ Rectangle {
         }
 
 // ---------- app selection logic --------
+        property string fileDialogCaller: ""
+
         FileDialog {
             id: fileDialog
             title: "Select an Executable File"
@@ -130,8 +132,9 @@ Rectangle {
             nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
 
             onAccepted: {
-                console.log("Selected executable:", selectedFile)
                 let fullPath = selectedFile.toString().replace("file://", "");
+                if(fileDialogCaller==="exebutton"){
+                console.log("Selected executable:", selectedFile)
 
                 // extract the app name from the full path so the app tracker can match it to just the name
                 let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
@@ -141,6 +144,11 @@ Rectangle {
 
                 // displays the name of the app for the selected profile in the UI
                 exetext.text = hotkeyHandler.profileManager.getApp();
+                }
+                if(fileDialogCaller==="encoder1"){
+                    let volapp =
+                    profileManager.setKeyConfig(-1, "encoder1", "AppVolume:"+selectedFile);
+                }
             }
         }
 
@@ -155,7 +163,10 @@ Rectangle {
             anchors.topMargin: 10
             anchors.rightMargin: 10
             visible: profileSelector.currentText !== "General"
-            onClicked: fileDialog.open()
+            onClicked: {
+                fileDialogCaller = "exebutton"
+                fileDialog.open()
+            }
         }
 
         // where the name of the selected app for the profile is displayed
@@ -191,10 +202,22 @@ Rectangle {
 
                             ComboBox {
                                 id: encoder1Combo
-                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
+                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom", "App Volume"]
                                 width: 200
                                 onCurrentTextChanged: {
                                     profileManager.setKeyConfig(-1, "encoder1", currentText);
+                                }
+                            }
+
+                            Button {
+                                id: volButton1
+                                width: 50
+                                height: 20
+                                text: "Select Executable"
+                                visible: encoder1Combo.currentText === "App Volume"
+                                onClicked: {
+                                    fileDialogCaller = "encoder1"
+                                    fileDialog.open()
                                 }
                             }
                         }
@@ -205,10 +228,22 @@ Rectangle {
 
                             ComboBox {
                                 id: encoder2Combo
-                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
+                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom", "App Volume"]
                                 width: 200
                                 onCurrentTextChanged: {
                                     profileManager.setKeyConfig(-2, "encoder2", currentText);
+                                }
+                            }
+
+                            Button {
+                                id: volButton2
+                                width: 50
+                                height: 20
+                                text: "Select Executable"
+                                visible: encoder2Combo.currentText === "App Volume"
+                                onClicked: {
+                                    fileDialogCaller = "encoder2"
+                                    fileDialog.open()
                                 }
                             }
                         }

@@ -44,6 +44,10 @@ public:
     static void nextTab();
     static void previousTab();
 
+    //app volume
+    static void appVolumeUp();
+    static void appVolumeDown();
+
 private:
 #ifdef _WIN32
     // Low‐level key injection

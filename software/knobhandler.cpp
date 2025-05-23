@@ -6,6 +6,10 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <mmdeviceapi.h>
+#include <audiopolicy.h>
+#include <psapi.h>
+#include <comdef.h>
 #endif
 
 bool KnobHandler::appSwitcherActive = false;
@@ -304,8 +308,8 @@ void KnobHandler::activateAppSwitcher() {
         HotkeyHandler::pressAndReleaseKeys(keys);
         appSwitcherActive = false;
     }
-}
 #endif
+}
 
 // Rotate encoder right → move right in Task View
 void KnobHandler::switchAppRight() {
@@ -408,4 +412,74 @@ void KnobHandler::previousTab() {
 #ifdef __APPLE__
     //TODO: Mac implementation
 #endif
+}
+
+#ifdef _WIN32
+void adjustAppVolume(QString name, float volumeStep) {
+    const wchar_t* targetApp = reinterpret_cast<const wchar_t *>(name.utf16());
+    CoInitialize(nullptr);
+
+    IMMDeviceEnumerator* pEnumerator = nullptr;
+    IMMDevice* pDevice = nullptr;
+    IAudioSessionManager2* pSessionManager = nullptr;
+    IAudioSessionEnumerator* pSessionEnumerator = nullptr;
+
+    if (FAILED(CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&pEnumerator)))) return;
+    if (FAILED(pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice))) return;
+    if (FAILED(pDevice->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, nullptr, (void**)&pSessionManager))) return;
+    if (FAILED(pSessionManager->GetSessionEnumerator(&pSessionEnumerator))) return;
+
+    int sessionCount = 0;
+    pSessionEnumerator->GetCount(&sessionCount);
+
+    for (int i = 0; i < sessionCount; ++i) {
+        IAudioSessionControl* pSessionControl = nullptr;
+        pSessionEnumerator->GetSession(i, &pSessionControl);
+
+        IAudioSessionControl2* pSessionControl2 = nullptr;
+        if (SUCCEEDED(pSessionControl->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&pSessionControl2))) {
+            DWORD processId;
+            pSessionControl2->GetProcessId(&processId);
+
+            HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+            if (hProcess) {
+                WCHAR processName[MAX_PATH];
+                if (GetModuleBaseNameW(hProcess, nullptr, processName, MAX_PATH) > 0) {
+                    if (_wcsicmp(processName, targetApp) == 0) {
+                        ISimpleAudioVolume* pVolume = nullptr;
+                        if (SUCCEEDED(pSessionControl2->QueryInterface(__uuidof(ISimpleAudioVolume), (void**)&pVolume))) {
+                            float currentVolume = 0.0f;
+                            pVolume->GetMasterVolume(&currentVolume);
+
+                            float newVolume = currentVolume + volumeStep;
+                            if (newVolume < 0.0f) newVolume = 0.0f;
+                            if (newVolume > 1.0f) newVolume = 1.0f;
+
+                            pVolume->SetMasterVolume(newVolume, nullptr);
+                            pVolume->Release();
+                        }
+                    }
+                }
+                CloseHandle(hProcess);
+            }
+            pSessionControl2->Release();
+        }
+        pSessionControl->Release();
+    }
+
+    pSessionEnumerator->Release();
+    pSessionManager->Release();
+    pDevice->Release();
+    pEnumerator->Release();
+
+    CoUninitialize();
+}
+#endif
+
+
+void KnobHandler::appVolumeUp(){
+    adjustAppVolume("a", .01);
+}
+void KnobHandler::appVolumeDown(){
+    adjustAppVolume("a", -.01);
 }
