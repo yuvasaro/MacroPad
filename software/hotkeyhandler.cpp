@@ -476,6 +476,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
+    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __APPLE__
 #ifdef DEBUG
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
@@ -501,6 +502,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
+    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __linux__
     display = XOpenDisplay(NULL);
     if (!display) return;

@@ -45,6 +45,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hotkeyhandler.cpp
         knobhandler.h
         knobhandler.cpp
+        imagecache.h imagecache.cpp
+        iconextractor.h iconextractor.mm
 
     )
     qt_add_resources(MacroPad "resources"
@@ -53,6 +55,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
             Main.qml
             KeyConfig.qml
             ProfileManager.qml
+            keystroke.jpg
+            executable.png
     )
 
 else()
