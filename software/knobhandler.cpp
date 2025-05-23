@@ -1,5 +1,6 @@
 #include "knobhandler.h"
 #include "hotkeyhandler.h"
+#include <QtWidgets/qapplication.h>
 #include <qdebug.h>
 #include <qlogging.h>
 #include <QProcess>
@@ -191,7 +192,23 @@ void KnobHandler::brightnessUp()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    QString brightnessPath = QCoreApplication::applicationDirPath()
+                             + "/../Resources/brightness";
+    QStringList arguments;
+    arguments << "-l"; // or any brightness arguments you want
+
+    QProcess process;
+    process.start(brightnessPath, arguments);
+    if (!process.waitForStarted()) {
+        qWarning() << "Failed to start brightness";
+        return;
+    }
+    process.waitForFinished();
+
+    QString output = process.readAllStandardOutput();
+    QString errorOutput = process.readAllStandardError();
+    qDebug() << "Output:" << output;
+    qDebug() << "Error:" << errorOutput;
 #endif
 }
 
