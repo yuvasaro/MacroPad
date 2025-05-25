@@ -2,9 +2,7 @@
 
 #include "apptracker.h"
 #include <windows.h>
-#include <psapi.h>  // for GetModuleBaseName
-#pragma comment(lib, "psapi.lib")  // Link the PSAPI lib
-#include <Psapi.h>              // for GetModuleFileNameExA
+#include <psapi.h>
 #include <QFileInfo>
 #include <QDebug>
 

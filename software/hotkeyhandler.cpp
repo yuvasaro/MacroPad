@@ -259,7 +259,8 @@ void HotkeyHandler::listenForHotkeys() {
 }
 #endif
 
-/*This function will be called in onDataReceived for the two knobs
+/*
+ * This function will be called in onDataReceived for the two knobs
 Id: 1 for left, 2 for right, 3 for press down
 */
 void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int id){

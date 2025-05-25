@@ -1,6 +1,5 @@
 #include <QApplication>
 #include "mainwindow.h"
-#include "apptracker.h"
 
 
 int main(int argc, char *argv[])

@@ -193,9 +193,22 @@ Rectangle {
                                 id: encoder1Combo
                                 model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
                                 width: 200
-                                onCurrentTextChanged: {
-                                    profileManager.setKeyConfig(-2, "encoder", currentText);
+                                Component.onCompleted: {
+                                    if (hotkeyHandler && hotkeyHandler.profileManager) {
+                                                var macro = hotkeyHandler.profileManager.getMacro(-2);  // encoder1
+                                                console.log("[encoder1Combo] macro from profile:", macro);
+                                                if (macro && macro.type === "encoder") {
+                                                    var index = encoder1Combo.model.indexOf(macro.content);
+                                                    console.log("[encoder1Combo] matched index:", index);
+                                                    if (index >= 0) encoder1Combo.currentIndex = index;
+                                                }
+                                            } else {
+                                                console.log("[encoder1Combo] profileManager is null");
+                                            }
                                 }
+                                    onCurrentTextChanged: {
+                                        profileManager.setKeyConfig(-2, "encoder", currentText);
+                                    }
                             }
                         }
 
@@ -207,6 +220,20 @@ Rectangle {
                                 id: encoder2Combo
                                 model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
                                 width: 200
+                                Component.onCompleted: {
+                                    if (hotkeyHandler && hotkeyHandler.profileManager) {
+                                                var macro = hotkeyHandler.profileManager.getMacro(-1);  // encoder2
+                                                console.log("[encoder2Combo] macro from profile:", macro);
+                                                if (macro && macro.type === "encoder") {
+                                                    var index = encoder2Combo.model.indexOf(macro.content);
+                                                    console.log("[encoder1Combo] matched index:", index);
+                                                    if (index >= 0) encoder2Combo.currentIndex = index;
+                                                }
+                                            } else {
+                                                console.log("[encoder2Combo] profileManager is null");
+                                            }
+                                }
+
                                 onCurrentTextChanged: {
                                     profileManager.setKeyConfig(-1, "encoder", currentText);
                                 }

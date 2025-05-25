@@ -1,154 +1,158 @@
-#include "profile.h"
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include "config.h"
-#include <QString>
-#include <QFile>
-#include <QTextStream>
-#include <QDir>
+    #include "profile.h"
+    #include <iostream>
+    #include <fstream>
+    #include <memory>
+    #include "config.h"
+    #include <QString>
+    #include <QFile>
+    #include <QTextStream>
+    #include <QDir>
 
 
-Profile::Profile(QObject* parent) : QObject(parent) {}
+    Profile::Profile(QObject* parent) : QObject(parent) {}
 
-Profile::Profile(const QString& profileName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(profileName) {}
+    Profile::Profile(const QString& profileName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(profileName) {}
 
-QString Profile::getName() const {
-    return name;
-}
-
-QString Profile::getApp() const {
-    return app;
-}
-
-void Profile::setName(const QString& newName) {
-    if (name != newName) {
-        name = newName;
-        emit nameChanged();
-    }
-}
-
-void Profile::setApp(const QString& newApp) {
-    if (app != newApp) {
-        app = newApp;
-        emit appChanged();
-    }
-}
-
-void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
-    if (!macros.contains(keyNum)) {
-        macros[keyNum] = QSharedPointer<Macro>::create();
+    QString Profile::getName() const {
+        return name;
     }
 
-    macros[keyNum]->setType(type);
-    macros[keyNum]->setContent(content);
+    QString Profile::getApp() const {
+        return app;
+    }
 
-}
+    void Profile::setName(const QString& newName) {
+        if (name != newName) {
+            name = newName;
+            emit nameChanged();
+        }
+    }
 
-void Profile::deleteMacro(int keyNum) {
-    macros.remove(keyNum);
-}
+    void Profile::setApp(const QString& newApp) {
+        if (app != newApp) {
+            app = newApp;
+            emit appChanged();
+        }
+    }
 
-QSharedPointer<Macro> Profile::getMacro(int keyNum) {
-    return macros.value(keyNum, QSharedPointer<Macro>());
-}
-
-void Profile::saveProfile() {
-    qDebug() << "Saving profile. Current macros:";
-    this->printMacros();
-    QString configDir = Config::getConfigDir();
-    QString filePath = configDir + "/" + name + ".txt";
-
-    QFile outFile(filePath);
-    if (outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&outFile);
-        out << "Name: " << name << "\n";
-        out << "App: " << app << "\n";
-
-        for (auto it = macros.begin(); it != macros.end(); ++it) {
-            out << it.key() << ":\n";
-            out << "type: " << it.value()->getType() << "\n";
-            out << "content: " << it.value()->getContent() << "\n";
+    void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
+        if (!macros.contains(keyNum)) {
+            macros[keyNum] = QSharedPointer<Macro>::create();
         }
 
-        outFile.close();
-    } else {
-        qCritical() << "Unable to open file for writing:" << filePath;
+        macros[keyNum]->setType(type);
+        macros[keyNum]->setContent(content);
+
     }
-}
 
-// reads the .txt file in config with the matching name and creates its profile and macro objects
-Profile* Profile::loadProfile(const QString& nameLookUp) {
+    void Profile::deleteMacro(int keyNum) {
+        macros.remove(keyNum);
+    }
 
-    qDebug() << "Loading profile: " << nameLookUp;
-    QString filePath = Config::getConfigDir() + "/" + nameLookUp + ".txt";
-    QFile inFile(filePath);
+    QSharedPointer<Macro> Profile::getMacro(int keyNum) {
+        return macros.value(keyNum, QSharedPointer<Macro>());
+    }
 
-    if (inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&inFile);
-        QString line;
-        QString profileName;
-        QString profileApp;
-        QString macroType;
-        QString macroContent;
-        int keyNum = -1;
+    void Profile::saveProfile() {
+        qDebug() << "Saving profile. Current macros:";
+        this->printMacros();
+        QString configDir = Config::getConfigDir();
+        QString filePath = configDir + "/" + name + ".txt";
 
-        line = in.readLine();
-        if (line.startsWith("Name: ")) {
-            profileName = line.mid(6);
+        QFile outFile(filePath);
+        if (outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream out(&outFile);
+            out << "Name: " << name << "\n";
+            out << "App: " << app << "\n";
+
+            for (auto it = macros.begin(); it != macros.end(); ++it) {
+                out << it.key() << ":\n";
+                out << "type: " << it.value()->getType() << "\n";
+                out << "content: " << it.value()->getContent() << "\n";
+            }
+
+            outFile.close();
         } else {
-            qWarning() << "Missing profile name!";
-            return new Profile("", "", nullptr);
+            qCritical() << "Unable to open file for writing:" << filePath;
         }
+    }
 
-        line = in.readLine();
-        if (line.startsWith("App: ")) {
-            profileApp = line.mid(5);
-        } else {
-            qWarning() << "Missing profile name!";
-            return new Profile("", "", nullptr);            ;
-        }
+    // reads the .txt file in config with the matching name and creates its profile and macro objects
+    Profile* Profile::loadProfile(const QString& nameLookUp) {
 
-        Profile* userProfile = new Profile(profileName, profileApp);
+        qDebug() << "Loading profile: " << nameLookUp;
+        QString filePath = Config::getConfigDir() + "/" + nameLookUp + ".txt";
+        QFile inFile(filePath);
 
-        if (line.startsWith("Application: ")){
-            profileApp = line.mid(13);
-        }
+        if (inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&inFile);
+            QString line;
+            QString profileName;
+            QString profileApp;
+            QString macroType;
+            QString macroContent;
+            int keyNum = -1;
 
-        while (!in.atEnd()) {
             line = in.readLine();
+            if (line.startsWith("Name: ")) {
+                profileName = line.mid(6);
+            } else {
+                qWarning() << "Missing profile name!";
+                return new Profile("", "", nullptr);
+            }
 
-            int colon = line.indexOf(':');
-            if (colon > 0) {
-                bool ok = false;
-                int num = line.left(colon).toInt(&ok);
-                if (ok) keyNum = num;
+            line = in.readLine();
+            if (line.startsWith("App: ")) {
+                profileApp = line.mid(5);
+            } else {
+                qWarning() << "Missing profile name!";
+                return new Profile("", "", nullptr);            ;
             }
-            else if (line.startsWith("type: ")) {
-                macroType = line.mid(6);
+
+            Profile* userProfile = new Profile(profileName, profileApp);
+
+            if (line.startsWith("Application: ")){
+                profileApp = line.mid(13);
             }
-            else if (line.startsWith("content: ")) {
-                macroContent = line.mid(9);
-                if (keyNum != -1) {
-                    userProfile->setMacro(keyNum, macroType, macroContent);
-                    userProfile->printMacros();
+
+            while (!in.atEnd()) {
+                line = in.readLine().trimmed();
+
+                if (line.endsWith(":")) {
+                    bool ok = false;
+                    keyNum = line.left(line.length() - 1).toInt(&ok);
+                    if (!ok) keyNum = -1;
+                } else if (line.startsWith("type: ")) {
+                    macroType = line.mid(6).trimmed();
+                } else if (line.startsWith("content: ")) {
+                    macroContent = line.mid(9).trimmed();
+
+                    if (keyNum != -1 && !macroType.isEmpty() && !macroContent.isEmpty()) {
+                        userProfile->setMacro(keyNum, macroType, macroContent);
+                        qDebug() << "[Loaded Macro]" << keyNum << macroType << macroContent;
+                    } else {
+                        qWarning() << "[Malformed macro block] key:" << keyNum << "type:" << macroType << "content:" << macroContent;
+                    }
+
+                    // Reset state
                     keyNum = -1;
+                    macroType = "";
+                    macroContent = "";
                 }
             }
+
+            inFile.close();
+            return userProfile;
+
+        } else {
+            qWarning() << "Unable to open file for reading:" << filePath;
+            return nullptr;
         }
 
-        inFile.close();
-        return userProfile;
-
-    } else {
-        qWarning() << "Unable to open file for reading:" << filePath;
-        return nullptr;
     }
 
-}
-
-void Profile::printMacros() {
-    for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) {
-        qDebug() << "Key:" << it.key() << "Macro:" << it.value()->toString();
+    void Profile::printMacros() {
+        for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) {
+            qDebug() << "Key:" << it.key() << "Macro:" << it.value()->toString();
+        }
     }
-}
