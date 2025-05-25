@@ -19,5 +19,3 @@ We aim to create a physical MacroPad that will interact with the app we created.
 Mac OS  
 Windows 10
 
-## Third-Party Dependencies
-This project includes the [`brightness`](https://github.com/nriley/brightness) utility by Nicholas Riley, licensed under the BSD 2-Clause License.
