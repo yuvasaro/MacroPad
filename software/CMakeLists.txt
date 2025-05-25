@@ -114,6 +114,8 @@ if(APPLE)
         COMMAND codesign --force --deep --sign "${CODESIGN_IDENTITY}" "$<TARGET_BUNDLE_DIR:MacroPad>"
         COMMENT "Code signing MacroPad.app with identity: ${CODESIGN_IDENTITY}"
     )
+
+
 elseif(WIN32)
     target_link_libraries(MacroPad PRIVATE user32.lib)
     set_target_properties(MacroPad PROPERTIES WIN32_EXECUTABLE TRUE)

@@ -11,8 +11,9 @@
 #include <QProcess>
 #include <QFileInfo>
 #include <QFileInfoList>
+#include "knobhandler.h"
 
-//#define DEBUG
+#define DEBUG
 
 // profileManager in this file refers to the profile that is selected from the dropdown in the UI
 Profile* HotkeyHandler::profileManager;
@@ -371,6 +372,7 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
         if (type == "keystroke") {
             QStringList keys = content.toLower().split("+");
             pressAndReleaseKeys(keys);
+            //KnobHandler::brightnessUp();
         } else if (type == "executable") {
             if (isAppBundle(content)) {
                 QProcess::startDetached("open", {"-a", content});

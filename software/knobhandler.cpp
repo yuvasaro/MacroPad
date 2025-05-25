@@ -1,5 +1,6 @@
 #include "knobhandler.h"
 #include "hotkeyhandler.h"
+#include <QtWidgets/qapplication.h>
 #include <qdebug.h>
 #include <qlogging.h>
 #include <QProcess>
@@ -191,7 +192,9 @@ void KnobHandler::brightnessUp()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    HotkeyHandler::pressAndReleaseKeys({"f2"});
+    QProcess::execute("osascript", QStringList() << "-e"
+                                                 << "tell application \"System Events\" to key code 144");
 #endif
 }
 
@@ -208,7 +211,9 @@ void KnobHandler::brightnessDown()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    HotkeyHandler::pressAndReleaseKeys({"f1"});
+    QProcess::execute("osascript", QStringList() << "-e"
+                                                 << "tell application \"System Events\" to key code 145");
 #endif
 }
 
@@ -223,7 +228,7 @@ void KnobHandler:: brightnessToggle()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+
 #endif
 }
 
