@@ -111,12 +111,6 @@ if(APPLE)
         COMMENT "Code signing MacroPad.app with identity: ${CODESIGN_IDENTITY}"
     )
 
-    add_custom_command(TARGET MacroPad POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Copying brightness..."
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_SOURCE_DIR}/brightness
-            $<TARGET_BUNDLE_DIR:MacroPad>/Contents/MacOS/brightness
-    )
 
 elseif(WIN32)
     target_link_libraries(MacroPad PRIVATE user32.lib)
