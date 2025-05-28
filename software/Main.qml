@@ -193,22 +193,25 @@ Rectangle {
                                 id: encoder1Combo
                                 model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
                                 width: 200
+
+                                // Set ComboBox to the correct profile value at app start
                                 Component.onCompleted: {
-                                    if (hotkeyHandler && hotkeyHandler.profileManager) {
-                                                var macro = hotkeyHandler.profileManager.getMacro(-2);  // encoder1
-                                                console.log("[encoder1Combo] macro from profile:", macro);
-                                                if (macro && macro.type === "encoder") {
-                                                    var index = encoder1Combo.model.indexOf(macro.content);
-                                                    console.log("[encoder1Combo] matched index:", index);
-                                                    if (index >= 0) encoder1Combo.currentIndex = index;
-                                                }
-                                            } else {
-                                                console.log("[encoder1Combo] profileManager is null");
-                                            }
+                                    Qt.callLater(() => {
+                                        var macro = hotkeyHandler.profileManager.getMacro(-2);
+                                        if (macro && macro.type === "encoder") {
+                                            var idx = encoder1Combo.model.indexOf(macro.content);
+                                            if (idx >= 0) encoder1Combo.currentIndex = idx;
+                                            console.log("[encoder1Combo] initialized to:", macro.content);
+                                        }
+                                    });
                                 }
-                                    onCurrentTextChanged: {
-                                        profileManager.setKeyConfig(-2, "encoder", currentText);
+
+                                onCurrentIndexChanged: {
+                                    const val = encoder1Combo.model[encoder1Combo.currentIndex];
+                                    if (val !== "None") {
+                                        profileManager.setKeyConfig(-2, "encoder", val);
                                     }
+                                }
                             }
                         }
 
@@ -220,22 +223,23 @@ Rectangle {
                                 id: encoder2Combo
                                 model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom"]
                                 width: 200
+
                                 Component.onCompleted: {
-                                    if (hotkeyHandler && hotkeyHandler.profileManager) {
-                                                var macro = hotkeyHandler.profileManager.getMacro(-1);  // encoder2
-                                                console.log("[encoder2Combo] macro from profile:", macro);
-                                                if (macro && macro.type === "encoder") {
-                                                    var index = encoder2Combo.model.indexOf(macro.content);
-                                                    console.log("[encoder1Combo] matched index:", index);
-                                                    if (index >= 0) encoder2Combo.currentIndex = index;
-                                                }
-                                            } else {
-                                                console.log("[encoder2Combo] profileManager is null");
-                                            }
+                                    Qt.callLater(() => {
+                                        var macro = hotkeyHandler.profileManager.getMacro(-1);
+                                        if (macro && macro.type === "encoder") {
+                                            var idx = encoder2Combo.model.indexOf(macro.content);
+                                            if (idx >= 0) encoder2Combo.currentIndex = idx;
+                                            console.log("[encoder2Combo] initialized to:", macro.content);
+                                        }
+                                    });
                                 }
 
-                                onCurrentTextChanged: {
-                                    profileManager.setKeyConfig(-1, "encoder", currentText);
+                                onCurrentIndexChanged: {
+                                    const val = encoder2Combo.model[encoder2Combo.currentIndex];
+                                    if (val !== "None") {
+                                        profileManager.setKeyConfig(-1, "encoder", val);
+                                    }
                                 }
                             }
                         }
