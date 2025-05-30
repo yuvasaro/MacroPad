@@ -15,7 +15,8 @@ Item {
             hotkeyHandler.profileManager.setMacro(keyIndex, "keystroke", value);
         } else if (type === "executable" && value !== "") {
             hotkeyHandler.profileManager.setMacro(keyIndex, "executable", value);
-        } else if(type === "encoder" && value !== "None"){
+        } else if(type === "encoder" && value !== "None" && value !=="" && !(value === undefined)){
+            console.log("[setMacro to]",value);
             hotkeyHandler.profileManager.setMacro(keyIndex, "encoder", value);
         }
 

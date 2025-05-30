@@ -122,12 +122,12 @@ Rectangle {
 
                     onCurrentIndexChanged: {
                         // 2) grab the new profile object, assign it, then reload everything
-                        const prof = hotkeyHandler.profiles[currentIndex]
-                        hotkeyHandler.profileManager = prof
+                        const prof = hotkeyHandler.profileManager
                         exetext.text = prof.getApp()
 
                         // reload encoder1
                         const m1 = prof.getMacro(-2)
+                        console.log("[profile swtiching testing]",m1.content);
                         encoder1Combo.currentIndex = m1
                             ? encoder1Combo.model.indexOf(m1.content)
                             : 0
@@ -225,9 +225,9 @@ Rectangle {
                                     })
 
                                     onCurrentIndexChanged: {
-                                        console.log("[what is macro now]",hotkeyHandler.profileManager.getMacro(-2).content);
                                         const val = model[currentIndex]
-                                        profileManager.setKeyConfig(-2, "encoder", val!=="None" ? val : "")
+                                        profileManager.setKeyConfig(-2, "encoder",
+                                            val!=="None" ? val : "")
                                     }
                                 }
                         }
