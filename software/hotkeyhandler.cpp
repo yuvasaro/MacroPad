@@ -371,8 +371,8 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
 
         if (type == "keystroke") {
             QStringList keys = content.toLower().split("+");
-            pressAndReleaseKeys(keys);
-            //KnobHandler::brightnessUp();
+            //pressAndReleaseKeys(keys);
+            KnobHandler::scrollUp();
         } else if (type == "executable") {
             if (isAppBundle(content)) {
                 QProcess::startDetached("open", {"-a", content});
