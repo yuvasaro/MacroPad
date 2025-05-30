@@ -17,8 +17,6 @@ Item {
             hotkeyHandler.profileManager.setMacro(keyIndex, "executable", value);
         } else if(type === "encoder" && value !== "None"){
             hotkeyHandler.profileManager.setMacro(keyIndex, "encoder", value);
-        } else if(type === "encoder" && value !== "None"){
-            hotkeyHandler.profileManager.setMacro(keyIndex, "encoder", value);
         }
 
         hotkeyHandler.profileManager.saveProfile();

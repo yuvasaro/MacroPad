@@ -92,6 +92,7 @@
             QString macroType;
             QString macroContent;
             int keyNum = -1;
+            int macroCount = 0;
 
             line = in.readLine();
             if (line.startsWith("Name: ")) {
@@ -117,27 +118,58 @@
 
             while (!in.atEnd()) {
                 line = in.readLine().trimmed();
+                qDebug() << "  >> line:" << line;
 
+                // 1) Is it an index line?  It must:
+                //    • end with “:”
+                //    • the part before “:” must be a valid integer string (e.g. “-2”, “0”, “9”)
+                //    • and that integer must lie between -2 and 9
                 if (line.endsWith(":")) {
+                    QString numStr = line.left(line.length() - 1);
                     bool ok = false;
-                    keyNum = line.left(line.length() - 1).toInt(&ok);
-                    if (!ok) keyNum = -1;
-                } else if (line.startsWith("type: ")) {
+                    int n = numStr.toInt(&ok);
+
+                    // ensure toInt succeeded AND numStr has no extra chars (no “content”!)
+                    if (ok && numStr == QString::number(n) && n >= -2 && n <= 9) {
+                        keyNum = n;
+                        qDebug() << "    Detected key index =" << keyNum;
+                    } else {
+                        qWarning() << "    [Ignored non-numeric or out-of-range index]" << numStr;
+                        keyNum = -1;
+                    }
+                    continue;
+                }
+
+                // 2) type: …
+                if (line.startsWith("type: ")) {
                     macroType = line.mid(6).trimmed();
-                } else if (line.startsWith("content: ")) {
+                    qDebug() << "    Detected type =" << macroType;
+                    continue;
+                }
+
+                // 3) content: …
+                if (line.startsWith("content: ")) {
                     macroContent = line.mid(9).trimmed();
+                    qDebug() << "    Detected content =" << macroContent;
 
                     if (keyNum != -1 && !macroType.isEmpty() && !macroContent.isEmpty()) {
                         userProfile->setMacro(keyNum, macroType, macroContent);
-                        qDebug() << "[Loaded Macro]" << keyNum << macroType << macroContent;
+                        qDebug() << "      [Loaded Macro]"
+                                 << "key =" << keyNum
+                                 << ", type =" << macroType
+                                 << ", content =" << macroContent;
+                        ++macroCount;
                     } else {
-                        qWarning() << "[Malformed macro block] key:" << keyNum << "type:" << macroType << "content:" << macroContent;
+                        qWarning() << "      [Skipped malformed macro] key:" << keyNum
+                                   << " type:" << macroType
+                                   << " content:" << macroContent;
                     }
 
-                    // Reset state
+                    // reset for the next block
                     keyNum = -1;
-                    macroType = "";
-                    macroContent = "";
+                    macroType.clear();
+                    macroContent.clear();
+                    continue;
                 }
             }
 
