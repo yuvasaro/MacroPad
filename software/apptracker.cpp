@@ -2,9 +2,7 @@
 
 #include "apptracker.h"
 #include <windows.h>
-#include <psapi.h>  // for GetModuleBaseName
-#pragma comment(lib, "psapi.lib")  // Link the PSAPI lib
-#include <Psapi.h>              // for GetModuleFileNameExA
+#include <psapi.h>
 #include <QFileInfo>
 #include <QDebug>
 
@@ -52,28 +50,28 @@ void CALLBACK handleWinEvent(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, DWORD,
         QString baseName = QString::fromLocal8Bit(processName).trimmed();
         if (baseName.endsWith(".exe", Qt::CaseInsensitive))
             baseName.chop(4);
-        qDebug() << "[AppTracker] Base name without extension:" << baseName;
+        // qDebug() << "[AppTracker] Base name without extension:" << baseName;
 
         if (!baseName.isEmpty()) {
-            qDebug() << "[AppTracker] Emitting appChanged for:" << baseName;
+            //qDebug() << "[AppTracker] Emitting appChanged for:" << baseName;
             emit instance->appChanged(baseName);
         }
     } else {
-        qDebug() << "[AppTracker] GetModuleBaseNameA failed. Error:" << GetLastError();
+        //qDebug() << "[AppTracker] GetModuleBaseNameA failed. Error:" << GetLastError();
     }
 
     CloseHandle(hProcess);
 }
 
 AppTracker::AppTracker(QObject *parent) : QObject(parent) {
-    qDebug() << "[AppTracker] Constructor called.";
-    qDebug() << "[AppTracker] constructor this =" << this;
+    //qDebug() << "[AppTracker] Constructor called.";
+    //qDebug() << "[AppTracker] constructor this =" << this;
     instance = this;
     startTracking();
 }
 
 AppTracker::~AppTracker() {
-    qDebug() << "[AppTracker] Destructor called.";
+    //qDebug() << "[AppTracker] Destructor called.";
     stopTracking();
 }
 

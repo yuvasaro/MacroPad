@@ -13,9 +13,64 @@
 #include <comdef.h>
 #endif
 
-bool KnobHandler::appSwitcherActive = false;
+void KnobHandler::volumeUp()
+{
+#ifdef _WIN32
+    qDebug() << "volumeUp called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_UP;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_UP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
 
+#ifdef __APPLE__
+    MainWindow::macVolume = (MainWindow::macVolume >= 100) ? MainWindow::macVolume : MainWindow::macVolume + 6;
+    setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+void KnobHandler::volumeDown()
+{
+#ifdef _WIN32
+    qDebug() << "volumeDown called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    MainWindow::macVolume = (MainWindow::macVolume <= 0) ? MainWindow::macVolume : MainWindow::macVolume - 6;
+    setSystemVolume(MainWindow::macVolume);
+#endif
+}
+
+void KnobHandler::toggleMute()
+{
+#ifdef _WIN32
+    qDebug() << "mute called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    toggleMuteSystem();
+#endif
+}
+bool KnobHandler::appSwitcherActive = false;
 void KnobHandler:: scrollUp()
+
 {
 #ifdef _WIN32
     qDebug() << "scrollUp called on Windows";
@@ -128,60 +183,6 @@ bool KnobHandler::setSystemVolume(int volume) {
 // ================================
 #endif
 
-// Increase volume
-void KnobHandler::volumeUp() {
-#ifdef _WIN32
-    // TODO: Windows implementation
-    qDebug() << "volumeUp called";
-    INPUT inputs[2] = {};
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_UP;
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_UP;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(2, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    KnobHandler::macVolume = (KnobHandler::macVolume >= 100) ? KnobHandler::macVolume : KnobHandler::macVolume + 6;
-    setSystemVolume(KnobHandler::macVolume);
-#endif
-}
-
-// Increase volume
-void KnobHandler::volumeDown() {
-#ifdef _WIN32
-    // TODO: Windows implementation
-    qDebug() << "volumeDown called";
-    INPUT inputs[2] = {};
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_DOWN;
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_DOWN;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(2, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    KnobHandler::macVolume = (KnobHandler::macVolume <= 0) ? KnobHandler::macVolume : KnobHandler::macVolume - 6;
-    setSystemVolume(KnobHandler::macVolume);
-#endif
-}
-
-// Increase volume
-void KnobHandler::toggleMute() {
-#ifdef _WIN32
-    // TODO: Windows implementation
-    qDebug() << "mute called";
-    INPUT inputs[2] = {};
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_MUTE;
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_MUTE;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(2, inputs, sizeof(INPUT));
-#endif
-
 #ifdef __APPLE__
     FILE* pipe = popen("osascript -e 'output muted of (get volume settings)'", "r");
     if (!pipe) return;
@@ -197,7 +198,6 @@ void KnobHandler::toggleMute() {
     else
         std::system("osascript -e \"set volume with output muted\"");
 #endif
-}
 
 // Increase screen brightness by 10%
 void KnobHandler::brightnessUp()

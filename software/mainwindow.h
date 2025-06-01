@@ -4,6 +4,12 @@
 
 #include "apptracker.h"
 #include "serialhandler.h"
+#include "fileio.h"
+#include "profile.h"
+#include "hotkeyhandler.h"
+#include "knobhandler.h"
+#include "serialhandler.h"
+#include "apptracker.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>

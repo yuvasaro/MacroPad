@@ -1,7 +1,5 @@
 // hotkeyhandler.cpp
 #include "hotkeyhandler.h"
-#include "profile.h"
-#include "apptracker.h"
 #include <QDir>
 #include <QDebug>
 #include <QMap>
@@ -81,7 +79,7 @@ void HotkeyHandler::initializeProfiles() {
         }
 
         // for all macros of the current profile in the loop, we have to register the hotkey
-        for (int keyNum = 1; keyNum <= 9; ++keyNum) {
+        for (int keyNum = -2; keyNum <= 9; ++keyNum) {
             QSharedPointer<Macro> macro = profile->getMacro(keyNum);
             if (!macro.isNull()) {
                 registerGlobalHotkey(profile, keyNum, macro->getType(), macro->getContent());
@@ -401,12 +399,92 @@ void HotkeyHandler::listenForHotkeys() {
 }
 #endif
 
+/*
+ * This function will be called in onDataReceived for the two knobs
+Id: 1 for left, 2 for right, 3 for press down
+*/
+void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int id){
+#ifdef _WIN32
+        // Retrieve the macro for this encoder key
+        auto macro = profileInstance->getMacro(hotKeyNum);
+        if (macro.isNull() || macro->getType() != "encoder")
+            return;
+
+        const QString& content = macro->getContent();
+
+        // VOLUME: CW = volume up, CCW = volume down, press = mute/unmute
+        if (content == "Volume") {
+            if (id == 1) {
+                KnobHandler::volumeUp();
+            } else if (id == 2) {
+                KnobHandler::volumeDown();
+            } else if (id == 3) {
+                KnobHandler::toggleMute();
+            }
+
+            // SCROLL: CW = scroll up, CCW = scroll down, press = toggle auto‐scroll
+        } else if (content == "Scroll") {
+            if (id == 1) {
+                KnobHandler::scrollUp();
+            } else if (id == 2) {
+                KnobHandler::scrollDown();
+            } else if (id == 3) {
+                KnobHandler::autoScrollToggle();
+            }
+
+            // CHROME TABS: CW = next tab, CCW = previous tab (press does nothing)
+        } else if (content == "Chrome Tabs") {
+            if (id == 1) {
+                KnobHandler::nextTab();
+            } else if (id == 2) {
+                KnobHandler::previousTab();
+            }
+
+            // SWITCH APPS (Task View): press = open/confirm, CW = move right, CCW = move left
+        } else if (content == "Switch Apps") {
+            if (id == 3) {
+                KnobHandler::activateAppSwitcher();
+            } else if (id == 1) {
+                KnobHandler::switchAppRight();
+            } else if (id == 2) {
+                KnobHandler::switchAppLeft();
+            }
+
+            // BRIGHTNESS: CW = increase, CCW = decrease, press = toggle between low/medium
+        } else if (content == "Brightness") {
+            if (id == 1) {
+                KnobHandler::brightnessUp();
+            } else if (id == 2) {
+                KnobHandler::brightnessDown();
+            } else if (id == 3) {
+                KnobHandler::brightnessToggle();
+            }
+
+            // ZOOM: CW = zoom in, CCW = zoom out, press = reset zoom
+        } else if (content == "Zoom") {
+            if (id == 1) {
+                KnobHandler::zoomIn();
+            } else if (id == 2) {
+                KnobHandler::zoomOut();
+            } else if (id == 3) {
+                KnobHandler::zoomReset();
+            }
+        }
+#endif
+#ifdef __APPLE__
+//TODO
+#endif
+
+}
+
 void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
 #ifdef _WIN32
 #ifdef DEBUG
     UINT vkCode = 0;
     switch (keyNum) {
-    case 1: vkCode = 0x31; break;
+    case -2:vkCode = 0xBD;break;
+    case -1:vkCode = 0xBD;break;
+    case 1: vkCode = 0xBB; break;
     case 2: vkCode = 0x32; break;
     case 3: vkCode = 0x33; break;
     case 4: vkCode = 0x34; break;

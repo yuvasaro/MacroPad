@@ -3,7 +3,7 @@
 
 #include <QString>
 #include "profile.h"
-#include "apptracker.h"
+#include "knobhandler.h"
 #include <QQmlListProperty>
 #include "serialhandler.h"
 
@@ -25,24 +25,30 @@ class HotkeyHandler : public QObject {
     Q_PROPERTY(Profile* profileManager READ getProfileManager WRITE setProfileManager NOTIFY profileManagerChanged)
 
 public:
+
     explicit HotkeyHandler(QObject* parent = nullptr);
     ~HotkeyHandler();
 
-    static void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
+
     static Profile* profileManager;
     static Profile* currentProfile;
+
     void initializeProfiles();
     void switchCurrentProfile(const QString& appName);
 
-    void setSerialHandler(SerialHandler *s) { serialHandler = s; }
 
+    Profile* getProfileManager() { return profileManager; };
+    void setProfileManager(Profile* profile);
+    void setSerialHandler(SerialHandler *s) { serialHandler = s; }
+\
     Q_INVOKABLE QQmlListProperty<Profile> getProfiles();
     static qsizetype profileCount(QQmlListProperty<Profile> *list);
     static Profile* profileAt(QQmlListProperty<Profile> *list, qsizetype index);
 
-    Profile* getProfileManager() { return profileManager; };
-    void setProfileManager(Profile* profile);
     static void executeHotkey(int hotKeyNum, Profile* profileInstance);
+    static void executeEncoder(int hotKeyNum, Profile* profileInstance, int id);
+
+    static void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
 
 #ifdef __APPLE__
     static void pressAndReleaseKeys(const QStringList& keys);

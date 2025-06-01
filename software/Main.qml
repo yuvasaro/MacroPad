@@ -118,67 +118,64 @@ Rectangle {
         }
 
         ComboBox {
-            id: profileSelector
-            anchors.top: parent.top
-            anchors.topMargin: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            model: hotkeyHandler.profiles
-            textRole: "name"
-            background: Rectangle {
-                    color: "lightgray"
-                    radius: 5
-                    border.color: "white"
-                }
-            contentItem: Text {
-                        text: parent.displayText
-                        color: "black"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                    id: profileSelector
+                    anchors.top: parent.top
+                    anchors.topMargin: 20
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    model: hotkeyHandler.profiles
+                    textRole: "name"
+                    background: Rectangle {
+                            color: "lightgray"
+                            radius: 5
+                            border.color: "white"
+                        }
+                    contentItem: Text {
+                                text: parent.displayText
+                                color: "black"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                    onCurrentIndexChanged: {
+                            hotkeyHandler.profileManager= hotkeyHandler.profiles[currentIndex];
+                            exetext.text = hotkeyHandler.profileManager.getApp();
+                            console.log("Selected profile:", hotkeyHandler.profileManager.name);
                     }
-            onCurrentIndexChanged: {
-                    hotkeyHandler.profileManager= hotkeyHandler.profiles[currentIndex];
-                    exetext.text = hotkeyHandler.profileManager.getApp();
-                    console.log("Selected profile:", hotkeyHandler.profileManager.name);
-            }
-        }
-
-// ---------- app selection logic --------
-        property string fileDialogCaller: ""
-
-        FileDialog {
-            id: fileDialog
-            title: "Select an Executable File"
-            fileMode: FileDialog.OpenFile
-            nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
-
-            onAccepted: {
-                let fullPath = selectedFile.toString().replace("file://", "");
-                if(fileDialogCaller==="exebutton"){
-                console.log("Selected executable:", selectedFile)
-
-                // extract the app name from the full path so the app tracker can match it to just the name
-                let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
-
-                // makes sure to set the appname of the selected profile and save it
-                profileManager.setApp(appName);
-
-                // displays the name of the app for the selected profile in the UI
-                exetext.text = hotkeyHandler.profileManager.getApp();
-
-                let iconPath = iconExtractor.extractIconForApp(fullPath);
-                exeIconPath = iconPath !== "" ? "file:///" + iconPath : "";
-
-                }
-                if(fileDialogCaller==="encoder1"){
-                    let volapp =
-                    profileManager.setKeyConfig(-1, "encoder1", "AppVolume:"+selectedFile);
                 }
 
+        // ---------- app selection logic --------
+                property string fileDialogCaller: ""
 
+                FileDialog {
+                    id: fileDialog
+                    title: "Select an Executable File"
+                    fileMode: FileDialog.OpenFile
+                    nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
 
+                    onAccepted: {
+                        let fullPath = selectedFile.toString().replace("file://", "");
+                        if(fileDialogCaller==="exebutton"){
+                        console.log("Selected executable:", selectedFile)
 
-            }
-        }
+                        // extract the app name from the full path so the app tracker can match it to just the name
+                        let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
+
+                        // makes sure to set the appname of the selected profile and save it
+                        profileManager.setApp(appName);
+
+                        // displays the name of the app for the selected profile in the UI
+                        exetext.text = hotkeyHandler.profileManager.getApp();
+
+                        let iconPath = iconExtractor.extractIconForApp(fullPath);
+                        exeIconPath = iconPath !== "" ? "file:///" + iconPath : "";
+
+                        }
+                        if(fileDialogCaller==="encoder1"){
+                            let volapp =
+                            profileManager.setKeyConfig(-1, "encoder1", "AppVolume:"+selectedFile);
+                        }
+
+                    }
+                }
 
         // button to select the app for the profile
         Button {
@@ -241,13 +238,26 @@ Rectangle {
                             Text { text: "Encoder 1:"; width: 100; color: "white" }
 
                             ComboBox {
-                                id: encoder1Combo
-                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom", "App Volume"]
-                                width: 200
-                                onCurrentTextChanged: {
-                                    profileManager.setKeyConfig(-1, "encoder1", currentText);
+                                    id: encoder1Combo
+                                    model: ["None","Scroll","Volume","Chrome Tabs","Switch Apps","Brightness","Zoom"]
+                                    width: 200
+
+
+                                    Component.onCompleted: Qt.callLater(() => {
+                                        const macro = hotkeyHandler.profileManager.getMacro(-2)
+
+                                        if (macro && macro.type==="encoder") {
+                                            const i = encoder1Combo.model.indexOf(macro.content)
+                                            if (i>=0) encoder1Combo.currentIndex = i
+                                        }
+                                    })
+
+                                    onCurrentIndexChanged: {
+                                        const val = model[currentIndex]
+                                        profileManager.setKeyConfig(-2, "encoder",
+                                            val!=="None" ? val : "")
+                                    }
                                 }
-                            }
 
                             Button {
                                 id: volButton1
@@ -270,9 +280,22 @@ Rectangle {
                                 id: encoder2Combo
                                 model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom", "App Volume"]
                                 width: 200
-                                onCurrentTextChanged: {
-                                    profileManager.setKeyConfig(-2, "encoder2", currentText);
-                                }
+
+                                Component.onCompleted: Qt.callLater(() => {
+                                       const macro = hotkeyHandler.profileManager.getMacro(-1)
+                                        console.log(macro.content);
+                                       if (macro && macro.type==="encoder") {
+                                           const i = encoder2Combo.model.indexOf(macro.content)
+                                           if (i>=0) encoder2Combo.currentIndex = i
+                                       }
+                                   })
+
+                               onCurrentIndexChanged: {
+                                   const val = model[currentIndex]
+                                   profileManager.setKeyConfig(-1, "encoder",
+                                       val!=="None" ? val : "")
+                               }
+
                             }
 
                             Button {

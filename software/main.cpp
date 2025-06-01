@@ -1,6 +1,5 @@
 #include <QApplication>
 #include "mainwindow.h"
-#include "apptracker.h"
 
 
 int main(int argc, char *argv[])
@@ -9,8 +8,6 @@ int main(int argc, char *argv[])
 
     MainWindow mainWindow;
     mainWindow.show();
-
-    //AppTracker appTracker;
 
     return a.exec();
 }

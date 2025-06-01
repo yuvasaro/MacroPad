@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent):
     });
 
 
+    //Initialize hotkeyHandler and profile
     hotkeyHandler = new HotkeyHandler(this);
     hotkeyHandler->initializeProfiles();
 
@@ -74,30 +75,17 @@ MainWindow::MainWindow(QWidget *parent):
 
     createTrayIcon();
 
-    qDebug() << "[MainWindow] &appTracker =" << &appTracker
-             << " QObject parent? =" << appTracker.parent()
-             << " hotkeyHandler =" << hotkeyHandler;
-
-    auto ok = QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile,Qt::DirectConnection);
-
-    QObject::connect(
-        &appTracker,
-        &AppTracker::appChanged,
-        this,  // or nullptr
-        [](const QString &appName){
-            qDebug() << "[Debug] appChanged signal EMITTED for:" << appName;
-        },
-        Qt::DirectConnection  // fire immediately, regardless of threads
-        );
-
-    //is connecting
-    qDebug() << "[Connect] success?" << bool(ok);
-
+    //Connecting apptracker signals to switchProfile.
+    QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile,Qt::DirectConnection);
+    //Connecting Macropad with SerialHandler.
     connect(m_serialHandler, &SerialHandler::dataReceived, this, &MainWindow::onDataReceived);
 }
 
 MainWindow::~MainWindow() {}
 
+/*
+ * Loading the Icon for the app.
+ */
 void MainWindow::createTrayIcon() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::warning(this, "Warning", "System tray is not available!");
@@ -132,34 +120,36 @@ void MainWindow::createTrayIcon() {
     trayIcon->show();
 }
 
+
+/*
+ * Nesting registerGlobalHotkey() into a MainWindow function, because qml can't get it from hotkeyhandler.
+ */
 void MainWindow::callHotkeyHandler(Profile* profile, int keyNum, const QString& type, const QString& content) {
     HotkeyHandler::registerGlobalHotkey(profile, keyNum, type, content);
 }
 
+
+/*
+ * Function that connects with Macropad
+ */
 void MainWindow::onDataReceived(int number)
 {
-    //Volume Knob
+    /*We currently only have 1 knob:
+     * Rotate Left: 71
+     * Rotate Right: 72
+     * Press Down: 73
+    */
     if (number > 70 && number < 80)
     {
+        //Manually Set to the Encoder 1 (macro key -2)
         if (number == 72)
-            //KnobHandler::volumeUp();
-            KnobHandler::scrollDown();
-            //KnobHandler::brightnessUp();
-            //KnobHandler::switchAppRight();
-            //KnobHandler::zoomIn();
-            //KnobHandler::nextTab();
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,1);
         else if (number == 71)
-            //KnobHandler::volumeDown();
-            KnobHandler::scrollUp();
-            //KnobHandler::brightnessDown();
-            //KnobHandler::switchAppLeft();
-            //KnobHandler::zoomOut();
-            //KnobHandler::previousTab();
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,2);
         else if (number == 73)
-            //KnobHandler::toggleMute();
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,3);
+            //KnobHandler::mute();
             //KnobHandler::autoScrollToggle();
-            //KnobHandler::activateAppSwitcher();
-            KnobHandler::zoomReset();
         return;
     }
 
@@ -192,6 +182,9 @@ void MainWindow::onDataReceived(int number)
         HotkeyHandler::executeHotkey(number, HotkeyHandler::currentProfile);
     }
 }
+
+// ----------------------------------------------------------------------------------------
+
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
         hide();
