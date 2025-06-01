@@ -95,74 +95,54 @@ Rectangle {
         }
 
         ComboBox {
-            id: profileSelector
-            anchors.top: parent.top
-            anchors.topMargin: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-            model: hotkeyHandler.profiles
-            textRole: "name"
-            background: Rectangle {
-                    color: "lightgray"
-                    radius: 5
-                    border.color: "white"
-                }
-            contentItem: Text {
-                        text: parent.displayText
-                        color: "black"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-            // 1) on startup, choose the profile you just loaded from disk:
-                    Component.onCompleted: Qt.callLater(() => {
-                        const names = hotkeyHandler.profiles.map(p => p.name)
-                        const idx   = names.indexOf(hotkeyHandler.profileManager.name)
-                        if (idx >= 0) profileSelector.currentIndex = idx
-                    })
-
+                    id: profileSelector
+                    anchors.top: parent.top
+                    anchors.topMargin: 20
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    model: hotkeyHandler.profiles
+                    textRole: "name"
+                    background: Rectangle {
+                            color: "lightgray"
+                            radius: 5
+                            border.color: "white"
+                        }
+                    contentItem: Text {
+                                text: parent.displayText
+                                color: "black"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                     onCurrentIndexChanged: {
-                        // 2) grab the new profile object, assign it, then reload everything
-                        const prof = hotkeyHandler.profileManager
-                        exetext.text = prof.getApp()
-
-                        // reload encoder1
-                        const m1 = prof.getMacro(-2)
-                        console.log("[profile swtiching testing]",m1.content);
-                        encoder1Combo.currentIndex = m1
-                            ? encoder1Combo.model.indexOf(m1.content)
-                            : 0
-
-                        // reload encoder2
-                        const m2 = prof.getMacro(-1)
-                        encoder2Combo.currentIndex = m2
-                            ? encoder2Combo.model.indexOf(m2.content)
-                            : 0
-
-                        console.log("Switched to profile:", prof.name)
+                            hotkeyHandler.profileManager= hotkeyHandler.profiles[currentIndex];
+                            exetext.text = hotkeyHandler.profileManager.getApp();
+                            console.log("Selected profile:", hotkeyHandler.profileManager.name);
                     }
-        }
+                }
 
-// ---------- app selection logic --------
-        FileDialog {
-            id: fileDialog
-            title: "Select an Executable File"
-            fileMode: FileDialog.OpenFile
-            nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
+        // ---------- app selection logic --------
+                FileDialog {
+                    id: fileDialog
+                    title: "Select an Executable File"
+                    fileMode: FileDialog.OpenFile
+                    nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
 
-            onAccepted: {
-                console.log("Selected executable:", selectedFile)
-                let fullPath = selectedFile.toString().replace("file://", "");
+                    onAccepted: {
+                        console.log("Selected executable:", selectedFile)
+                        let fullPath = selectedFile.toString().replace("file://", "");
 
-                // extract the app name from the full path so the app tracker can match it to just the name
-                let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
+                        // extract the app name from the full path so the app tracker can match it to just the name
+                        let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
 
-                // makes sure to set the appname of the selected profile and save it
-                profileManager.setApp(appName);
+                        // makes sure to set the appname of the selected profile and save it
+                        profileManager.setApp(appName);
 
-                // displays the name of the app for the selected profile in the UI
-                exetext.text = hotkeyHandler.profileManager.getApp();
-            }
-        }
+                        // displays the name of the app for the selected profile in the UI
+                        exetext.text = hotkeyHandler.profileManager.getApp();
+
+                        let iconPath = iconExtractor.extractIconForApp(fullPath);
+                        exeIconPath = iconPath !== "" ? "file://" + iconPath : "";
+                    }
+                }
 
         // button to select the app for the profile
         Button {

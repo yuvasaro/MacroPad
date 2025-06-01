@@ -21,6 +21,7 @@ Item {
         }
 
         hotkeyHandler.profileManager.saveProfile();
+        console.log("[save profile to]",value);
     }
 
     function setApp(app) {

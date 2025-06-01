@@ -91,7 +91,7 @@
             QString profileApp;
             QString macroType;
             QString macroContent;
-            int keyNum = -1;
+            int keyNum = -3;
             int macroCount = 0;
 
             line = in.readLine();
@@ -135,8 +135,7 @@
                         qDebug() << "    Detected key index =" << keyNum;
                     } else {
                         qWarning() << "    [Ignored non-numeric or out-of-range index]" << numStr;
-                        keyNum = -1;
-                    }
+                        keyNum = -3;                 }
                     continue;
                 }
 
@@ -152,7 +151,7 @@
                     macroContent = line.mid(9).trimmed();
                     qDebug() << "    Detected content =" << macroContent;
 
-                    if (keyNum != -1 && !macroType.isEmpty() && !macroContent.isEmpty()) {
+                    if (keyNum != -3 && !macroType.isEmpty() && !macroContent.isEmpty()) {
                         userProfile->setMacro(keyNum, macroType, macroContent);
                         qDebug() << "      [Loaded Macro]"
                                  << "key =" << keyNum
@@ -166,7 +165,7 @@
                     }
 
                     // reset for the next block
-                    keyNum = -1;
+                    keyNum = -3;
                     macroType.clear();
                     macroContent.clear();
                     continue;
