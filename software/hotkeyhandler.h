@@ -5,6 +5,7 @@
 #include "profile.h"
 #include "knobhandler.h"
 #include <QQmlListProperty>
+#include "serialhandler.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -35,9 +36,11 @@ public:
     void initializeProfiles();
     void switchCurrentProfile(const QString& appName);
 
+
     Profile* getProfileManager() { return profileManager; };
     void setProfileManager(Profile* profile);
-
+    void setSerialHandler(SerialHandler *s) { serialHandler = s; }
+\
     Q_INVOKABLE QQmlListProperty<Profile> getProfiles();
     static qsizetype profileCount(QQmlListProperty<Profile> *list);
     static Profile* profileAt(QQmlListProperty<Profile> *list, qsizetype index);
@@ -47,12 +50,17 @@ public:
 
     static void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
 
+#ifdef __APPLE__
+    static void pressAndReleaseKeys(const QStringList& keys);
+#endif
+
 signals:
     void profilesChanged();
     void profileManagerChanged();
 
 private:
     QList<Profile*> profiles;
+    SerialHandler *serialHandler {nullptr};
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);

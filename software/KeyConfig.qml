@@ -4,14 +4,18 @@ import QtQuick.Dialogs
 
 Dialog {
     id: keyConfigDialog
-    width: 350
-    height: 250
+    width: 450
+    height: 350
     modal: true
     title: "Configure Key " + keyIndex
 
     property int keyIndex: 0
     property string keystroke: ""
     property string executable: ""
+    property string keyImage: ""
+    property bool useCustomImage: false
+    signal accepted()
+    property string customImage: ""
 
     Component.onCompleted: {
         console.log("Initializing KeyConfig Dialog for Key:", keyIndex);
@@ -34,7 +38,7 @@ Dialog {
 
             ComboBox {
                 id: modifier1
-                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "fn", "option", "Caps Lock", "Del", "Enter", "Backspace", "esc", "delete", "return"]
+                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "Fn", "Option", "Caps Lock", "Del", "Enter", "Backspace", "Esc", "Delete", "Return"]
                 currentIndex: 0
                 enabled: executablePath.text === ""
 
@@ -47,7 +51,7 @@ Dialog {
 
             ComboBox {
                 id: modifier2
-                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "fn", "option", "Caps Lock", "Del", "Enter", "Backspace", "esc", "delete", "return"]
+                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "Fn", "Option", "Caps Lock", "Del", "Enter", "Backspace", "Esc", "Delete", "Return"]
                 currentIndex: 0
                 enabled: executablePath.text === ""
 
@@ -60,7 +64,7 @@ Dialog {
 
             ComboBox {
                 id: keySelection
-                model: ["None", "_space_", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"]
+                model: ["None", "Space", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"]
                 currentIndex: 0
                 enabled: executablePath.text === ""
 
@@ -87,6 +91,43 @@ Dialog {
             readOnly: true
         }
 
+        Row {
+            spacing: 10
+            visible: executablePath.text !== "" || keystrokeInput.text !== ""
+
+            CheckBox {
+                id: customImageCheck
+                text: "Use custom image"
+                checked: keyConfigDialog.useCustomImage
+                onCheckedChanged: keyConfigDialog.useCustomImage = checked
+            }
+
+            Button {
+                text: "Browse Image"
+                enabled: customImageCheck.checked
+                onClicked: imageDialog.open()
+            }
+        }
+
+        Image {
+            id: keyImagePreview
+            width: 50
+            height: 50
+            source: keyConfigDialog.keyImage
+            visible: source !== ""
+        }
+
+        FileDialog {
+            id: imageDialog
+            title: "Select Key Image"
+            fileMode: FileDialog.OpenFile
+            nameFilters: ["Image Files (*.png *.jpg *.jpeg)", "All Files (*)"]
+
+            onAccepted: {
+                keyConfigDialog.keyImage = selectedFile.toString()
+            }
+        }
+
         Button {
             text: "Save"
             onClicked: {
@@ -97,20 +138,27 @@ Dialog {
 
                 var keystrokeValue = keys.join("+");
                 var executableValue = executablePath.text;
+                var imageValue = customImageCheck.checked ? keyImagePreview.source : "";
+                var customImagePath = "";
+                        if (customImageCheck.checked && keyImagePreview.source !== "") {
+                            customImagePath = keyImagePreview.source.toString();
+                        }
 
-                console.log("Saving key", keyConfigDialog.keyIndex, "Keystroke:", keystrokeValue, "Executable:", executableValue);
+                console.log("Saving key", keyConfigDialog.keyIndex, "Keystroke:", keystrokeValue, "Executable:", executableValue, "Image:", imageValue);
 
                 if (keystrokeValue !== "") {
-                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
+                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue, imageValue);
                     mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
                 }
 
                 if (executableValue !== "") {
-                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue);
+                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue, customImagePath);
                     mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "executable", executableValue);
                 }
 
-
+                if (imageValue !== "") {
+                        profileManager.setKeyConfig(keyConfigDialog.keyIndex, "image", imageValue);
+                    }
                 keyConfigDialog.accept();
             }
         }

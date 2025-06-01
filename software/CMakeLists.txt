@@ -32,6 +32,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     endif()
 
     qt_add_executable(MacroPad
+        MACOSX_BUNDLE
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         macro.h macro.cpp
@@ -44,6 +45,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hotkeyhandler.cpp
         knobhandler.h
         knobhandler.cpp
+        imagecache.h imagecache.cpp
+        iconextractor.h iconextractor.mm
 
     )
     qt_add_resources(MacroPad "resources"
@@ -52,6 +55,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
             Main.qml
             KeyConfig.qml
             ProfileManager.qml
+            keystroke.jpg
+            executable.png
     )
 
 else()
@@ -93,14 +98,24 @@ if(APPLE)
             $<TARGET_FILE_DIR:MacroPad>/../Resources/MPIcon.png
     )
 
-    target_link_libraries(MacroPad PRIVATE "-framework Carbon" "-framework ApplicationServices")
+    target_link_libraries(MacroPad PRIVATE "-framework Carbon" "-framework ApplicationServices" "-framework CoreGraphics")
     set_target_properties(MacroPad PROPERTIES
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_GUI_IDENTIFIER com.example.MacroPad
+        MACOSX_BUNDLE_GUI_IDENTIFIER com.hknkappapsi.MacroPad
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
         MACOSX_BUNDLE_ICON_FILE MPIcon.icns
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Info.plist"
     )
+
+    set(CODESIGN_IDENTITY "-")
+
+    add_custom_command(TARGET MacroPad POST_BUILD
+        COMMAND codesign --force --deep --sign "${CODESIGN_IDENTITY}" "$<TARGET_BUNDLE_DIR:MacroPad>"
+        COMMENT "Code signing MacroPad.app with identity: ${CODESIGN_IDENTITY}"
+    )
+
+
 elseif(WIN32)
     target_link_libraries(MacroPad PRIVATE user32.lib)
     set_target_properties(MacroPad PROPERTIES WIN32_EXECUTABLE TRUE)

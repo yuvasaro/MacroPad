@@ -9,6 +9,7 @@
 #include <QProcess>
 #include <QFileInfo>
 #include <QFileInfoList>
+#include "knobhandler.h"
 
 #define DEBUG
 
@@ -104,15 +105,35 @@ void HotkeyHandler::initializeProfiles() {
 void HotkeyHandler::switchCurrentProfile(const QString& appName) {
     qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
-    for (Profile* profile : profiles) {
-        if (profile->getApp() == appName) {
-            currentProfile = profile;
+    // for (Profile* profile : profiles) {
+    //     if (profile->getApp() == appName) {
+    //         currentProfile = profile;
+    //         qDebug() << "Current profile set to:" << currentProfile->getName();
+    //         return;
+    //     }
+    // }
+    bool found = false;
+    for(int i=0;i<profiles.size();i++)
+    {
+        if (profiles[i]->getApp() == appName)
+        {
+            found = true;
+            currentProfile = profiles[i];
             qDebug() << "Current profile set to:" << currentProfile->getName();
+            if (serialHandler)
+                serialHandler->sendProfile(i + 10);
             return;
         }
     }
-    currentProfile = profiles[0];
-    qDebug() << "No profile with this app. Set to General";
+    if(!found)
+    {
+        currentProfile = profiles[0];
+        if (serialHandler)
+            serialHandler->sendProfile(10);
+        qDebug() << "No profile with this app. Set to General";
+        return;
+    }
+    return;
 }
 
 void HotkeyHandler::setProfileManager(Profile* profile) {
@@ -198,10 +219,127 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
 #ifdef __APPLE__
 QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
 static EventHandlerUPP eventHandlerUPP;
-static const std::map<int, int> keyMap = {
+static const std::map<int, int> debugKeyMap = {
     {1, kVK_ANSI_1}, {2, kVK_ANSI_2}, {3, kVK_ANSI_3}, {4, kVK_ANSI_4}, {5, kVK_ANSI_5},
     {6, kVK_ANSI_6}, {7, kVK_ANSI_7}, {8, kVK_ANSI_8}, {9, kVK_ANSI_9}
 };
+
+const QMap<QString, CGKeyCode> keyMap = {
+    // Modifier keys
+    {"cmd", kVK_Command},
+    {"shift", kVK_Shift},
+    {"ctrl", kVK_Control},
+    {"option", kVK_Option},
+    {"fn", kVK_Function},
+
+    // Letters
+    {"a", kVK_ANSI_A}, {"b", kVK_ANSI_B}, {"c", kVK_ANSI_C}, {"d", kVK_ANSI_D},
+    {"e", kVK_ANSI_E}, {"f", kVK_ANSI_F}, {"g", kVK_ANSI_G}, {"h", kVK_ANSI_H},
+    {"i", kVK_ANSI_I}, {"j", kVK_ANSI_J}, {"k", kVK_ANSI_K}, {"l", kVK_ANSI_L},
+    {"m", kVK_ANSI_M}, {"n", kVK_ANSI_N}, {"o", kVK_ANSI_O}, {"p", kVK_ANSI_P},
+    {"q", kVK_ANSI_Q}, {"r", kVK_ANSI_R}, {"s", kVK_ANSI_S}, {"t", kVK_ANSI_T},
+    {"u", kVK_ANSI_U}, {"v", kVK_ANSI_V}, {"w", kVK_ANSI_W}, {"x", kVK_ANSI_X},
+    {"y", kVK_ANSI_Y}, {"z", kVK_ANSI_Z},
+
+    // Numbers
+    {"0", kVK_ANSI_0}, {"1", kVK_ANSI_1}, {"2", kVK_ANSI_2}, {"3", kVK_ANSI_3},
+    {"4", kVK_ANSI_4}, {"5", kVK_ANSI_5}, {"6", kVK_ANSI_6}, {"7", kVK_ANSI_7},
+    {"8", kVK_ANSI_8}, {"9", kVK_ANSI_9},
+
+    // Symbols and punctuation
+    {"`",  kVK_ANSI_Grave},
+    {"-",  kVK_ANSI_Minus},
+    {"=",  kVK_ANSI_Equal},
+    {"[",  kVK_ANSI_LeftBracket},
+    {"]",  kVK_ANSI_RightBracket},
+    {"\\", kVK_ANSI_Backslash},
+    {";",  kVK_ANSI_Semicolon},
+    {"'",  kVK_ANSI_Quote},
+    {",",  kVK_ANSI_Comma},
+    {".",  kVK_ANSI_Period},
+    {"/",  kVK_ANSI_Slash},
+
+    // Whitespace and control
+    {"space",  kVK_Space},
+    {"tab",    kVK_Tab},
+    {"return", kVK_Return},
+    {"enter",  kVK_Return}, // Alias
+    {"delete", kVK_Delete}, // Backspace
+    {"forwarddelete", kVK_ForwardDelete},
+    {"esc",    kVK_Escape},
+    {"escape", kVK_Escape},
+
+    // Arrow keys
+    {"left",  kVK_LeftArrow},
+    {"right", kVK_RightArrow},
+    {"up",    kVK_UpArrow},
+    {"down",  kVK_DownArrow},
+
+    // Navigation
+    {"home",    kVK_Home},
+    {"end",     kVK_End},
+    {"pageup",  kVK_PageUp},
+    {"pagedown",kVK_PageDown},
+    {"help",    kVK_Help},
+
+    // Function keys
+    {"f1",  kVK_F1},  {"f2",  kVK_F2},  {"f3",  kVK_F3},  {"f4",  kVK_F4},
+    {"f5",  kVK_F5},  {"f6",  kVK_F6},  {"f7",  kVK_F7},  {"f8",  kVK_F8},
+    {"f9",  kVK_F9},  {"f10", kVK_F10}, {"f11", kVK_F11}, {"f12", kVK_F12},
+    {"f13", kVK_F13}, {"f14", kVK_F14}, {"f15", kVK_F15}, {"f16", kVK_F16},
+    {"f17", kVK_F17}, {"f18", kVK_F18}, {"f19", kVK_F19}, {"f20", kVK_F20},
+};
+
+void HotkeyHandler::pressAndReleaseKeys(const QStringList& keys) {
+    QList<CGEventRef> keysDown;
+    QList<CGEventRef> keysUp;
+    CGEventSourceRef eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
+    CGEventFlags flags = 0;
+
+    // Iterate over the provided keys to determine modifiers and normal keys
+    for (const auto& key : keys) {
+        if (key == "cmd") {
+            flags |= kCGEventFlagMaskCommand;  // Add Command modifier
+        } else if (key == "shift") {
+            flags |= kCGEventFlagMaskShift;  // Add Shift modifier
+        } else if (key == "ctrl") {
+            flags |= kCGEventFlagMaskControl; // Add Control modifier
+        } else if (key == "alt") {
+            flags |= kCGEventFlagMaskAlternate; // Add Option (Alt) modifier
+        } else {
+            // Create keydown event for normal key
+            CGEventRef keyDown = CGEventCreateKeyboardEvent(eventSource, keyMap[key], true);
+            CGEventSetFlags(keyDown, flags); // Apply modifier flags
+            keysDown.push_back(keyDown);
+
+            // Create keyup event for normal key
+            CGEventRef keyUp = CGEventCreateKeyboardEvent(eventSource, keyMap[key], false);
+            CGEventSetFlags(keyUp, flags); // Apply modifier flags
+            keysUp.push_back(keyUp);
+        }
+    }
+
+    // Post keydown events
+    for (CGEventRef keyDown : keysDown) {
+        CGEventPost(kCGHIDEventTap, keyDown);
+    }
+
+    usleep(1000); // Sleep for 10ms to simulate key press duration
+
+    // Post keyup events in reverse order (release main key first, then modifier)
+    for (CGEventRef keyUp : keysUp) {
+        CGEventPost(kCGHIDEventTap, keyUp);
+    }
+
+    // Release resources
+    for (CGEventRef key : keysDown) {
+        CFRelease(key);
+    }
+    for (CGEventRef key : keysUp) {
+        CFRelease(key);
+    }
+    CFRelease(eventSource);
+}
 
 bool isAppBundle(const QString &path) {
     QFileInfo appInfo(path);
@@ -229,9 +367,11 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
         const QString& type = macro->getType();
         const QString& content = macro->getContent();
 
-        if (macro->getType() == "keystroke") {
-
-        } else if (macro->getType() == "executable") {
+        if (type == "keystroke") {
+            QStringList keys = content.toLower().split("+");
+            //pressAndReleaseKeys(keys);
+            KnobHandler::scrollUp();
+        } else if (type == "executable") {
             if (isAppBundle(content)) {
                 QProcess::startDetached("open", {"-a", content});
             } else {
@@ -277,7 +417,7 @@ void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int 
         }else if(id==2){
             KnobHandler::volumeDown();
         }else if(id==3){
-            KnobHandler::mute();
+            KnobHandler::toggleMute();
         }
     }
     //more to be added.
@@ -368,6 +508,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
+    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __APPLE__
 #ifdef DEBUG
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
@@ -384,7 +525,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     EventHotKeyID hotkeyID = { 0, static_cast<UInt32>(keyNum) };
     eventHandlerUPP = NewEventHandlerUPP(hotkeyCallback);
     InstallApplicationEventHandler(eventHandlerUPP, 1, &eventType, nullptr, nullptr);
-    OSStatus status = RegisterEventHotKey(keyMap.at(keyNum), 0, hotkeyID, GetApplicationEventTarget(), 0, &hotkeyRef);
+    OSStatus status = RegisterEventHotKey(debugKeyMap.at(keyNum), 0, hotkeyID, GetApplicationEventTarget(), 0, &hotkeyRef);
     if (status != noErr) {
         qDebug() << "Failed to register hotkey. Error code:" << status;
     } else {
@@ -393,6 +534,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
+    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __linux__
     display = XOpenDisplay(NULL);
     if (!display) return;

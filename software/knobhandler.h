@@ -8,10 +8,17 @@
 
 class KnobHandler{
 public:
+    // Store mac volume
+#ifdef __APPLE__
+    static int macVolume;
+    static int getSystemVolume();
+    static bool setSystemVolume(int volume);
+#endif
+
     //volume controls
     static void volumeUp();
     static void volumeDown();
-    static void mute();
+    static void toggleMute();
 
     //scrolling controls
     static void scrollUp();
@@ -43,10 +50,10 @@ private:
     // Low‐level key injection
     static void sendSingleKey(WORD key);
     static void sendKeyCombo(WORD modifier, WORD key);
+#endif
 
     // Tracks whether Task View is open
     static bool appSwitcherActive;
-#endif
 };
 
 #endif // KNOBHANDLER_H

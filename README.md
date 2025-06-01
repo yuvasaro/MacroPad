@@ -18,3 +18,4 @@ We aim to create a physical MacroPad that will interact with the app we created.
 ## Dependencies
 Mac OS  
 Windows 10
+

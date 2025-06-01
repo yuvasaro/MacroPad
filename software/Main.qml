@@ -1,22 +1,27 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
+import IconExtractor 1.0
 
 Rectangle {
     id: root
     width: 940
     height: 850
     color: "black"
+    property string exeIconPath: ""
 
     Component.onCompleted: {
         var num = hotkeyHandler.profiles.length;
         console.log("Number of profiles from mainwindow:", num);
     }
 
+    IconExtractor {
+        id: iconExtractor
+    }
+
     ProfileManager {
         id: profileManager
     }
-
 
     Grid {
         id: keyGrid
@@ -35,11 +40,27 @@ Rectangle {
                 border.color: "white"
                 radius: 10
 
-                Text {
-                    text: "Key " + (index + 1)
-                    anchors.centerIn: parent
-                    color: "black"
-                }
+                Item {
+                        anchors.fill: parent
+                        anchors.margins: 5
+
+                        Image {
+                            id: keyImage
+                            anchors.centerIn: parent
+                            width: parent.width - 10
+                            height: parent.height - 10
+                            fillMode: Image.PreserveAspectFit
+                            source: hotkeyHandler.profileManager.getMacroImagePath(index + 1)
+                            visible: source !== ""
+                        }
+
+                        Text {
+                            text: "Key " + (index + 1)
+                            anchors.centerIn: parent
+                            color: "black"
+                            visible: !keyImage.visible
+                        }
+                    }
 
                 MouseArea {
                     anchors.fill: parent
@@ -73,6 +94,8 @@ Rectangle {
                                     "executable",
                                     keyConfigInstance.executable
                                 );
+                                profileManager.setKeyConfig(
+                                    keyConfigInstance.customImage);
 
                                 keyConfigInstance.destroy();
                             });
@@ -120,7 +143,7 @@ Rectangle {
                 }
 
         // ---------- app selection logic --------
-                FileDialog {
+        FileDialog {
                     id: fileDialog
                     title: "Select an Executable File"
                     fileMode: FileDialog.OpenFile
@@ -170,6 +193,18 @@ Rectangle {
             ToolTip.visible: hovered
                 ToolTip.text: text
                 ToolTip.delay: 500
+        }
+
+        Image {
+            id:exeIcon
+            width: 40
+            height: 40
+            anchors.top: exetext.bottom
+            anchors.topMargin: 10
+            anchors.horizontalCenter: exetext.horizontalCenter
+            fillMode: Image.PreserveAspectFit
+            source: exeIconPath
+            visible: profileSelector.currentText !== "General"
         }
 // -----------------------------------
 
@@ -241,4 +276,3 @@ Rectangle {
                     }
                 }
     }
-

@@ -3,9 +3,11 @@
 #include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
+#include "imagecache.h"
 #include "knobhandler.h"
 #include "serialhandler.h"
 #include "apptracker.h"
+#include "iconextractor.h"
 
 #include <QApplication>
 #include <QQmlEngine>
@@ -18,6 +20,11 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QFileInfo>
+
+
+#ifdef __APPLE__
+    int KnobHandler::macVolume = KnobHandler::getSystemVolume();
+#endif
 
 
 MainWindow::MainWindow(QWidget *parent):
@@ -33,14 +40,22 @@ MainWindow::MainWindow(QWidget *parent):
 
     FileIO *fileIO = new FileIO(this);
     Macro *macro = new Macro(this);
+    IconExtractor* iconExtractor = new IconExtractor(this);
 
     qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
+    qmlRegisterType<IconExtractor>("IconExtractor", 1, 0, "IconExtractor");
+    qmlRegisterSingletonType<ImageCache>("ImageCache", 1, 0, "ImageCache", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
+        return ImageCache::instance();
+    });
 
 
     //Initialize hotkeyHandler and profile
     hotkeyHandler = new HotkeyHandler(this);
     hotkeyHandler->initializeProfiles();
+
+    //serialHandler = new SerialHandler(this);
+    hotkeyHandler->setSerialHandler(m_serialHandler);
 
     // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
@@ -138,6 +153,30 @@ void MainWindow::onDataReceived(int number)
         return;
     }
 
+    if (number > 80 && number < 90)
+    {
+        if (number == 82)
+            KnobHandler::volumeUp();
+            //KnobHandler::scrollUp();
+            //KnobHandler::brightnessUp();
+            //KnobHandler::switchAppLeft();
+            //KnobHandler::zoomIn();
+            //KnobHandler::nextTab();
+        else if (number == 81)
+            KnobHandler::volumeDown();
+            //KnobHandler::scrollDown();
+            //KnobHandler::brightnessDown();
+            //KnobHandler::switchAppRight();
+            //KnobHandler::zoomOut();
+            //KnobHandler::previousTab();
+        else if (number == 83)
+            KnobHandler::toggleMute();
+            //KnobHandler::autoScrollToggle();
+            //KnobHandler::activateAppSwitcher();
+            //KnobHandler::zoomReset();
+        return;
+    }
+
     //MacroKey triggering
     if (number>0 && number<10) {
         HotkeyHandler::executeHotkey(number, HotkeyHandler::currentProfile);
@@ -175,4 +214,3 @@ void MainWindow::toggleDockIcon(bool show) {
     }
 #endif
 }
-

@@ -1,4 +1,6 @@
 #include "knobhandler.h"
+#include "hotkeyhandler.h"
+#include <QtWidgets/qapplication.h>
 #include <qdebug.h>
 #include <qlogging.h>
 #include <QProcess>
@@ -45,7 +47,7 @@ void KnobHandler::volumeDown()
 #endif
 }
 
-void KnobHandler::mute()
+void KnobHandler::toggleMute()
 {
 #ifdef _WIN32
     qDebug() << "mute called";
@@ -62,8 +64,9 @@ void KnobHandler::mute()
     toggleMuteSystem();
 #endif
 }
-
+bool KnobHandler::appSwitcherActive = false;
 void KnobHandler:: scrollUp()
+
 {
 #ifdef _WIN32
     qDebug() << "scrollUp called on Windows";
@@ -82,6 +85,15 @@ void KnobHandler:: scrollUp()
     // if (vScrollBar) {
     //     vScrollBar->setValue(vScrollBar->value() - 50);
     // }
+
+    //HotkeyHandler::pressAndReleaseKeys({"up"});
+    //QProcess::execute("osascript", {"-e", "tell application \"System Events\" to key code 126"});
+
+    CGEventRef scroll = CGEventCreateScrollWheelEvent(
+        NULL, kCGScrollEventUnitLine, 1, +3  // positive = up, negative = down
+        );
+    CGEventPost(kCGHIDEventTap, scroll);
+    CFRelease(scroll);
 #endif
 }
 
@@ -103,7 +115,15 @@ void KnobHandler:: scrollDown()
     // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
     // if (vScrollBar) {
     //     vScrollBar->setValue(vScrollBar->value() + 50);
-    // }
+    //}
+
+    //HotkeyHandler::pressAndReleaseKeys({"down"});
+    //QProcess::execute("osascript", {"-e", "tell application \"System Events\" to key code 125"});
+    CGEventRef scroll = CGEventCreateScrollWheelEvent(
+        NULL, kCGScrollEventUnitLine, 1, -3  // negative = down
+        );
+    CGEventPost(kCGHIDEventTap, scroll);
+    CFRelease(scroll);
 #endif
 }
 
@@ -129,6 +149,51 @@ void KnobHandler::autoScrollToggle() {
 #endif
 }
 
+// ===== MAC HELPER FUNCTIONS =====
+#ifdef __APPLE__
+int KnobHandler::getSystemVolume() {
+    FILE* pipe = popen("osascript -e 'output volume of (get volume settings)'", "r");
+    if (!pipe) return -1;
+
+    char buffer[128];
+    if (fgets(buffer, sizeof(buffer), pipe) == nullptr) {
+        pclose(pipe);
+        return -1;
+    }
+    pclose(pipe);
+
+    try {
+        return std::stof(buffer);
+    } catch (...) {
+        return -1;
+    }
+}
+
+bool KnobHandler::setSystemVolume(int volume) {
+    if (volume < 0) volume = 0;
+    if (volume > 100) volume = 100;
+    std::string command = "osascript -e 'set volume output volume " + std::to_string(volume) + "'";
+    qDebug() << "Set system volume to" << volume;
+    return (system(command.c_str()) == 0);
+}
+// ================================
+#endif
+
+#ifdef __APPLE__
+    FILE* pipe = popen("osascript -e 'output muted of (get volume settings)'", "r");
+    if (!pipe) return;
+
+    char buffer[16];
+    fgets(buffer, sizeof(buffer), pipe);
+    pclose(pipe);
+
+    bool isMuted = std::string(buffer).find("true") != std::string::npos;
+
+    if (isMuted)
+        std::system("osascript -e \"set volume without output muted\"");
+    else
+        std::system("osascript -e \"set volume with output muted\"");
+#endif
 
 // Increase screen brightness by 10%
 void KnobHandler::brightnessUp()
@@ -144,7 +209,9 @@ void KnobHandler::brightnessUp()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    HotkeyHandler::pressAndReleaseKeys({"f2"});
+    QProcess::execute("osascript", QStringList() << "-e"
+                                                 << "tell application \"System Events\" to key code 144");
 #endif
 }
 
@@ -161,7 +228,9 @@ void KnobHandler::brightnessDown()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    HotkeyHandler::pressAndReleaseKeys({"f1"});
+    QProcess::execute("osascript", QStringList() << "-e"
+                                                 << "tell application \"System Events\" to key code 145");
 #endif
 }
 
@@ -176,7 +245,7 @@ void KnobHandler:: brightnessToggle()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+
 #endif
 }
 
@@ -186,8 +255,6 @@ void KnobHandler:: brightnessToggle()
 #define ENTER_KEY VK_RETURN
 #define LEFT_ARROW VK_LEFT
 #define RIGHT_ARROW VK_RIGHT
-
-bool KnobHandler::appSwitcherActive = false;
 #endif
 
 #ifdef _WIN32
@@ -246,6 +313,20 @@ void KnobHandler::activateAppSwitcher() {
         appSwitcherActive = false;
     }
 #endif
+
+#ifdef __APPLE__
+    if (!appSwitcherActive) {
+        qDebug() << "activateAppSwitcher: opening Cmd+Tab";
+        QStringList keys = {"cmd", "tab"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+        appSwitcherActive = true;
+    } else {
+        qDebug() << "activateAppSwitcher: selecting with Return";
+        QStringList keys = {"return"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+        appSwitcherActive = false;
+    }
+#endif
 }
 
 // Rotate encoder right → move right in Task View
@@ -259,6 +340,10 @@ void KnobHandler::switchAppRight() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    if (appSwitcherActive) {
+        QStringList keys = {"cmd", "tab"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+    }
 #endif
 }
 
@@ -273,6 +358,10 @@ void KnobHandler::switchAppLeft() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    if (appSwitcherActive) {
+        QStringList keys = {"cmd", "shift", "tab"};
+        HotkeyHandler::pressAndReleaseKeys(keys);
+    }
 #endif
 }
 
@@ -286,6 +375,8 @@ void KnobHandler::zoomIn() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    QStringList keys = {"cmd", "="};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
@@ -298,6 +389,8 @@ void KnobHandler::zoomOut() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    QStringList keys = {"cmd", "shift", "-"};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
@@ -310,6 +403,8 @@ void KnobHandler::zoomReset() {
 
 #ifdef __APPLE__
     //TODO: Mac implementation
+    QStringList keys = {"cmd", "0"};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
@@ -336,4 +431,3 @@ void KnobHandler::previousTab() {
     //TODO: Mac implementation
 #endif
 }
-

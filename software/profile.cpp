@@ -13,70 +13,82 @@
 
     Profile::Profile(const QString& profileName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(profileName) {}
 
-    QString Profile::getName() const {
-        return name;
+QString Profile::getName() const {
+    return name;
+}
+
+QString Profile::getApp() const {
+    return app;
+}
+
+void Profile::setName(const QString& newName) {
+    if (name != newName) {
+        name = newName;
+        emit nameChanged();
+    }
+}
+
+void Profile::setApp(const QString& newApp) {
+    if (app != newApp) {
+        app = newApp;
+        emit appChanged();
+    }
+}
+
+void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
+    if (!macros.contains(keyNum)) {
+        macros[keyNum] = QSharedPointer<Macro>::create(type, content, "");
     }
 
-    QString Profile::getApp() const {
-        return app;
-    }
+}
 
-    void Profile::setName(const QString& newName) {
-        if (name != newName) {
-            name = newName;
-            emit nameChanged();
+
+void Profile::setKeyImage(int keyNum, const QString& imagePath) {
+    if (macros.contains(keyNum)) {
+        macros[keyNum]->setImagePath(imagePath);
+    } else {
+        macros[keyNum] = QSharedPointer<Macro>::create("", "", imagePath);
+    }
+    emit keyImageChanged(keyNum, imagePath);
+}
+
+QString Profile::getMacroImagePath(int keyNum) const {
+    auto macro = macros.value(keyNum);
+    return macro ? macro->getImagePath() : "";
+}
+
+void Profile::deleteMacro(int keyNum) {
+    macros.remove(keyNum);
+}
+
+QSharedPointer<Macro> Profile::getMacro(int keyNum) {
+    return macros.value(keyNum, QSharedPointer<Macro>());
+}
+
+void Profile::saveProfile() {
+    qDebug() << "Saving profile. Current macros:";
+    this->printMacros();
+    QString configDir = Config::getConfigDir();
+    QString filePath = configDir + "/" + name + ".txt";
+
+    QFile outFile(filePath);
+    if (outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&outFile);
+        out << "Name: " << name << "\n";
+        out << "App: " << app << "\n";
+
+        for (auto it = macros.begin(); it != macros.end(); ++it) {
+            out << it.key() << ":\n";
+            out << "type: " << it.value()->getType() << "\n";
+            out << "content: " << it.value()->getContent() << "\n";
+            out << "image: " << it.value()->getImagePath() << "\n";
         }
+
+        outFile.close();
+    } else {
+        qCritical() << "Unable to open file for writing:" << filePath;
     }
-
-    void Profile::setApp(const QString& newApp) {
-        if (app != newApp) {
-            app = newApp;
-            emit appChanged();
-        }
-    }
-
-    void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
-        if (!macros.contains(keyNum)) {
-            macros[keyNum] = QSharedPointer<Macro>::create();
-        }
-
-        macros[keyNum]->setType(type);
-        macros[keyNum]->setContent(content);
-
-    }
-
-    void Profile::deleteMacro(int keyNum) {
-        macros.remove(keyNum);
-    }
-
-    QSharedPointer<Macro> Profile::getMacro(int keyNum) {
-        return macros.value(keyNum, QSharedPointer<Macro>());
-    }
-
-    void Profile::saveProfile() {
-        qDebug() << "Saving profile. Current macros:";
-        this->printMacros();
-        QString configDir = Config::getConfigDir();
-        QString filePath = configDir + "/" + name + ".txt";
-
-        QFile outFile(filePath);
-        if (outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QTextStream out(&outFile);
-            out << "Name: " << name << "\n";
-            out << "App: " << app << "\n";
-
-            for (auto it = macros.begin(); it != macros.end(); ++it) {
-                out << it.key() << ":\n";
-                out << "type: " << it.value()->getType() << "\n";
-                out << "content: " << it.value()->getContent() << "\n";
-            }
-
-            outFile.close();
-        } else {
-            qCritical() << "Unable to open file for writing:" << filePath;
-        }
-    }
-
+}
     // reads the .txt file in config with the matching name and creates its profile and macro objects
     Profile* Profile::loadProfile(const QString& nameLookUp) {
 
@@ -164,6 +176,14 @@
                                    << " content:" << macroContent;
                     }
 
+                }
+
+                if (line.startsWith("image: ")) {
+                    QString imagePath = line.mid(7);
+                    if (keyNum != -3 && !imagePath.isEmpty()) {
+                        userProfile->setKeyImage(keyNum, imagePath);
+                    }
+
                     // reset for the next block
                     keyNum = -3;
                     macroType.clear();
@@ -171,7 +191,6 @@
                     continue;
                 }
             }
-
             inFile.close();
             return userProfile;
 
