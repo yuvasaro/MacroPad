@@ -165,13 +165,8 @@ Rectangle {
                 // displays the name of the app for the selected profile in the UI
                 exetext.text = hotkeyHandler.profileManager.getApp();
 
-
-                /*
                 let iconPath = iconExtractor.extractIconForApp(fullPath);
-                exeIconPath = iconPath !== "" ? "file://" + iconPath : "";
-                */
-                    let iconPath = iconExtractor.extractIconForApp(fullPath);
-                    exeIconPath = iconPath !== "" ? "file:///" + iconPath : "";
+                exeIconPath = iconPath !== "" ? "file:///" + iconPath : "";
 
                 }
                 if(fileDialogCaller==="encoder1"){

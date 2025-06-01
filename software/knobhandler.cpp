@@ -436,8 +436,9 @@ void KnobHandler::previousTab() {
 #endif
 }
 
-#ifdef _WIN32
+
 void adjustAppVolume(QString name, float volumeStep) {
+    #ifdef _WIN32
     const wchar_t* targetApp = reinterpret_cast<const wchar_t *>(name.utf16());
     CoInitialize(nullptr);
 
@@ -495,8 +496,9 @@ void adjustAppVolume(QString name, float volumeStep) {
     pEnumerator->Release();
 
     CoUninitialize();
+    #endif
 }
-#endif
+
 
 
 void KnobHandler::appVolumeUp(){
