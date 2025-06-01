@@ -1,4 +1,5 @@
 #import "iconextractor.h"
+#ifdef __APPLE__
 #import <Cocoa/Cocoa.h>
 #import <QtCore/QStandardPaths>
 #import <QtCore/QDir>
@@ -35,4 +36,4 @@ QString IconExtractor::extractIconForApp(const QString& appPath) {
         return "";
     }
 }
-
+#endif

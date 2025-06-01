@@ -405,24 +405,72 @@ Id: 1 for left, 2 for right, 3 for press down
 */
 void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int id){
 #ifdef _WIN32
-    auto macro = profileInstance->getMacro(hotKeyNum);
-    if (macro.isNull() || macro->getType() != "encoder")
-        return;
+        // Retrieve the macro for this encoder key
+        auto macro = profileInstance->getMacro(hotKeyNum);
+        if (macro.isNull() || macro->getType() != "encoder")
+            return;
 
-    const QString& content = macro->getContent();
+        const QString& content = macro->getContent();
 
-    if (content == "Volume") {
-        if(id == 1){
-            KnobHandler::volumeUp();
-        }else if(id==2){
-            KnobHandler::volumeDown();
-        }else if(id==3){
-            KnobHandler::toggleMute();
+        // VOLUME: CW = volume up, CCW = volume down, press = mute/unmute
+        if (content == "Volume") {
+            if (id == 1) {
+                KnobHandler::volumeUp();
+            } else if (id == 2) {
+                KnobHandler::volumeDown();
+            } else if (id == 3) {
+                KnobHandler::toggleMute();
+            }
+
+            // SCROLL: CW = scroll up, CCW = scroll down, press = toggle auto‐scroll
+        } else if (content == "Scroll") {
+            if (id == 1) {
+                KnobHandler::scrollUp();
+            } else if (id == 2) {
+                KnobHandler::scrollDown();
+            } else if (id == 3) {
+                KnobHandler::autoScrollToggle();
+            }
+
+            // CHROME TABS: CW = next tab, CCW = previous tab (press does nothing)
+        } else if (content == "Chrome Tabs") {
+            if (id == 1) {
+                KnobHandler::nextTab();
+            } else if (id == 2) {
+                KnobHandler::previousTab();
+            }
+
+            // SWITCH APPS (Task View): press = open/confirm, CW = move right, CCW = move left
+        } else if (content == "Switch Apps") {
+            if (id == 3) {
+                KnobHandler::activateAppSwitcher();
+            } else if (id == 1) {
+                KnobHandler::switchAppRight();
+            } else if (id == 2) {
+                KnobHandler::switchAppLeft();
+            }
+
+            // BRIGHTNESS: CW = increase, CCW = decrease, press = toggle between low/medium
+        } else if (content == "Brightness") {
+            if (id == 1) {
+                KnobHandler::brightnessUp();
+            } else if (id == 2) {
+                KnobHandler::brightnessDown();
+            } else if (id == 3) {
+                KnobHandler::brightnessToggle();
+            }
+
+            // ZOOM: CW = zoom in, CCW = zoom out, press = reset zoom
+        } else if (content == "Zoom") {
+            if (id == 1) {
+                KnobHandler::zoomIn();
+            } else if (id == 2) {
+                KnobHandler::zoomOut();
+            } else if (id == 3) {
+                KnobHandler::zoomReset();
+            }
         }
-    }
-    //more to be added.
 #endif
-
 #ifdef __APPLE__
 //TODO
 #endif

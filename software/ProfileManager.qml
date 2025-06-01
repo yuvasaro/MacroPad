@@ -45,11 +45,13 @@ Item {
             hotkeyHandler.profileManager.setMacro(keyIndex, "executable", value);
             hotkeyHandler.profileManager.setKeyImage(keyIndex, image);
 
-        } else if(type === "encoder" && value !== "None" && value !=="" && !(value === undefined)){
+        } else if(type === "encoder" && value !=="" && !(value === undefined)){
             console.log("[setMacro to]",value);
+            console.log("[Profile Name]", hotkeyHandler.profileManager.getName());
+            console.log("[Profile Macros: ]", hotkeyHandler.profileManager.printMacros());
             hotkeyHandler.profileManager.setMacro(keyIndex, "encoder", value);
+            console.log("[Profile Macros2: ]", hotkeyHandler.profileManager.printMacros());
         }
-
         hotkeyHandler.profileManager.saveProfile();
         console.log("[save profile to]",value);
     }

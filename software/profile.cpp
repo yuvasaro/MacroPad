@@ -9,9 +9,9 @@
     #include <QDir>
 
 
-    Profile::Profile(QObject* parent) : QObject(parent) {}
+Profile::Profile(QObject* parent) : QObject(parent) {}
 
-    Profile::Profile(const QString& profileName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(profileName) {}
+Profile::Profile(const QString& profileName, const QString& appName, QObject* parent) : QObject(parent), app(appName), name(profileName) {}
 
 QString Profile::getName() const {
     return name;
@@ -36,12 +36,17 @@ void Profile::setApp(const QString& newApp) {
 }
 
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
-    if (!macros.contains(keyNum)) {
+    if (macros.contains(keyNum)) {
+        // update the existing Macro object
+        auto m = macros.value(keyNum);
+        m->setType(type);
+        m->setContent(content);
+        // (if your Macro has an “image” field, you might clear it or leave it untouched here)
+    } else {
+        // create a brand‐new Macro when none exists
         macros[keyNum] = QSharedPointer<Macro>::create(type, content, "");
     }
-
 }
-
 
 void Profile::setKeyImage(int keyNum, const QString& imagePath) {
     if (macros.contains(keyNum)) {
@@ -145,9 +150,12 @@ void Profile::saveProfile() {
                     if (ok && numStr == QString::number(n) && n >= -2 && n <= 9) {
                         keyNum = n;
                         qDebug() << "    Detected key index =" << keyNum;
-                    } else {
+                    } else if (numStr == "image"){
+                        continue;
+                    }else{
                         qWarning() << "    [Ignored non-numeric or out-of-range index]" << numStr;
-                        keyNum = -3;                 }
+                        keyNum = -3;
+                    }
                     continue;
                 }
 
@@ -191,6 +199,9 @@ void Profile::saveProfile() {
                     continue;
                 }
             }
+
+            userProfile->printMacros();
+
             inFile.close();
             return userProfile;
 
