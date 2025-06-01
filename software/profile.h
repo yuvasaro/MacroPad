@@ -35,15 +35,18 @@ public:
     Q_INVOKABLE void setName(const QString& newName);
     Q_INVOKABLE void setApp(const QString& newApp);
     Q_INVOKABLE void setMacro(int keyNum, const QString& type, const QString& content);
+    Q_INVOKABLE void setKeyImage(int keyNum, const QString& imagePath);
     Q_INVOKABLE void deleteMacro(int keyNum);
     Q_INVOKABLE QSharedPointer<Macro> getMacro(int keyNum);
     Q_INVOKABLE void saveProfile();
     Q_INVOKABLE static Profile* loadProfile(const QString& nameLookUp);
     Q_INVOKABLE void printMacros();
+    Q_INVOKABLE QString getMacroImagePath(int keyNum) const;
 
 signals:
     void nameChanged();
     void appChanged();
+    void keyImageChanged(int keyNum, const QString& imagePath);
 
 };
 

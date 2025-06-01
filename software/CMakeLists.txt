@@ -30,6 +30,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     else()
         set(APPTRACKER_SOURCES apptracker.h apptracker.cpp)  # Use regular C++ for Windows/Linux
     endif()
+    if(APPLE)
+        set(ICONEXTRACTOR_SRC iconextractor.mm)
+        set_source_files_properties(iconextractor.mm PROPERTIES COMPILE_FLAGS "-x objective-c++")
+    elseif(WIN32 OR UNIX)
+        set(ICONEXTRACTOR_SRC iconextractor.cpp)
+    endif()
 
     qt_add_executable(MacroPad
         MACOSX_BUNDLE
@@ -41,10 +47,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         fileio.h fileio.cpp
         serialhandler.h serialhandler.cpp
         ${APPTRACKER_SOURCES}
+        ${ICONEXTRACTOR_SRC}
         hotkeyhandler.h
         hotkeyhandler.cpp
         knobhandler.h
         knobhandler.cpp
+        imagecache.h imagecache.cpp
 
     )
     qt_add_resources(MacroPad "resources"
@@ -53,6 +61,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
             Main.qml
             KeyConfig.qml
             ProfileManager.qml
+            keystroke.jpg
+            executable.png
     )
 
 else()
@@ -110,6 +120,8 @@ if(APPLE)
         COMMAND codesign --force --deep --sign "${CODESIGN_IDENTITY}" "$<TARGET_BUNDLE_DIR:MacroPad>"
         COMMENT "Code signing MacroPad.app with identity: ${CODESIGN_IDENTITY}"
     )
+
+
 elseif(WIN32)
     target_link_libraries(MacroPad PRIVATE user32.lib)
     set_target_properties(MacroPad PROPERTIES WIN32_EXECUTABLE TRUE)

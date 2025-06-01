@@ -37,12 +37,26 @@ void Profile::setApp(const QString& newApp) {
 
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
     if (!macros.contains(keyNum)) {
-        macros[keyNum] = QSharedPointer<Macro>::create();
+        macros[keyNum] = QSharedPointer<Macro>::create(type, content, "");
     }
 
     macros[keyNum]->setType(type);
     macros[keyNum]->setContent(content);
 
+}
+
+void Profile::setKeyImage(int keyNum, const QString& imagePath) {
+    if (macros.contains(keyNum)) {
+        macros[keyNum]->setImagePath(imagePath);
+    } else {
+        macros[keyNum] = QSharedPointer<Macro>::create("", "", imagePath);
+    }
+    emit keyImageChanged(keyNum, imagePath);
+}
+
+QString Profile::getMacroImagePath(int keyNum) const {
+    auto macro = macros.value(keyNum);
+    return macro ? macro->getImagePath() : "";
 }
 
 void Profile::deleteMacro(int keyNum) {
@@ -69,6 +83,7 @@ void Profile::saveProfile() {
             out << it.key() << ":\n";
             out << "type: " << it.value()->getType() << "\n";
             out << "content: " << it.value()->getContent() << "\n";
+            out << "image: " << it.value()->getImagePath() << "\n";
         }
 
         outFile.close();
@@ -130,6 +145,12 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
                     userProfile->setMacro(keyNum, macroType, macroContent);
                     userProfile->printMacros();
                     keyNum = -1;
+                }
+            }
+            else if (line.startsWith("image: ")) {
+                QString imagePath = line.mid(7);
+                if (keyNum != -1 && !imagePath.isEmpty()) {
+                    userProfile->setKeyImage(keyNum, imagePath);
                 }
             }
         }

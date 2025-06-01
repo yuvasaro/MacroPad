@@ -1,5 +1,6 @@
 #include "knobhandler.h"
 #include "hotkeyhandler.h"
+#include <QtWidgets/qapplication.h>
 #include <qdebug.h>
 #include <qlogging.h>
 #include <QProcess>
@@ -33,6 +34,15 @@ void KnobHandler:: scrollUp()
     // if (vScrollBar) {
     //     vScrollBar->setValue(vScrollBar->value() - 50);
     // }
+
+    //HotkeyHandler::pressAndReleaseKeys({"up"});
+    //QProcess::execute("osascript", {"-e", "tell application \"System Events\" to key code 126"});
+
+    CGEventRef scroll = CGEventCreateScrollWheelEvent(
+        NULL, kCGScrollEventUnitLine, 1, +3  // positive = up, negative = down
+        );
+    CGEventPost(kCGHIDEventTap, scroll);
+    CFRelease(scroll);
 #endif
 }
 
@@ -54,7 +64,15 @@ void KnobHandler:: scrollDown()
     // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
     // if (vScrollBar) {
     //     vScrollBar->setValue(vScrollBar->value() + 50);
-    // }
+    //}
+
+    //HotkeyHandler::pressAndReleaseKeys({"down"});
+    //QProcess::execute("osascript", {"-e", "tell application \"System Events\" to key code 125"});
+    CGEventRef scroll = CGEventCreateScrollWheelEvent(
+        NULL, kCGScrollEventUnitLine, 1, -3  // negative = down
+        );
+    CGEventPost(kCGHIDEventTap, scroll);
+    CFRelease(scroll);
 #endif
 }
 
@@ -195,7 +213,9 @@ void KnobHandler::brightnessUp()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    HotkeyHandler::pressAndReleaseKeys({"f2"});
+    QProcess::execute("osascript", QStringList() << "-e"
+                                                 << "tell application \"System Events\" to key code 144");
 #endif
 }
 
@@ -212,7 +232,9 @@ void KnobHandler::brightnessDown()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    HotkeyHandler::pressAndReleaseKeys({"f1"});
+    QProcess::execute("osascript", QStringList() << "-e"
+                                                 << "tell application \"System Events\" to key code 145");
 #endif
 }
 
@@ -227,7 +249,7 @@ void KnobHandler:: brightnessToggle()
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+
 #endif
 }
 

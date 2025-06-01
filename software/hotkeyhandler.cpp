@@ -11,8 +11,9 @@
 #include <QProcess>
 #include <QFileInfo>
 #include <QFileInfoList>
+#include "knobhandler.h"
 
-//#define DEBUG
+#define DEBUG
 
 // profileManager in this file refers to the profile that is selected from the dropdown in the UI
 Profile* HotkeyHandler::profileManager;
@@ -370,7 +371,8 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
 
         if (type == "keystroke") {
             QStringList keys = content.toLower().split("+");
-            pressAndReleaseKeys(keys);
+            //pressAndReleaseKeys(keys);
+            KnobHandler::scrollUp();
         } else if (type == "executable") {
             if (isAppBundle(content)) {
                 QProcess::startDetached("open", {"-a", content});
@@ -476,6 +478,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
+    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __APPLE__
 #ifdef DEBUG
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
@@ -501,6 +504,7 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
+    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __linux__
     display = XOpenDisplay(NULL);
     if (!display) return;

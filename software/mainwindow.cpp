@@ -3,9 +3,11 @@
 #include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
+#include "imagecache.h"
 #include "knobhandler.h"
 #include "serialhandler.h"
 #include "apptracker.h"
+#include "iconextractor.h"
 
 #include <QApplication>
 #include <QQmlEngine>
@@ -38,9 +40,14 @@ MainWindow::MainWindow(QWidget *parent):
 
     FileIO *fileIO = new FileIO(this);
     Macro *macro = new Macro(this);
+    IconExtractor* iconExtractor = new IconExtractor(this);
 
     qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
+    qmlRegisterType<IconExtractor>("IconExtractor", 1, 0, "IconExtractor");
+    qmlRegisterSingletonType<ImageCache>("ImageCache", 1, 0, "ImageCache", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
+        return ImageCache::instance();
+    });
 
 
     hotkeyHandler = new HotkeyHandler(this);
@@ -136,17 +143,17 @@ void MainWindow::onDataReceived(int number)
     {
         if (number == 72)
             //KnobHandler::volumeUp();
-            //KnobHandler::scrollUp();
+            KnobHandler::scrollDown();
             //KnobHandler::brightnessUp();
             //KnobHandler::switchAppRight();
-            KnobHandler::zoomIn();
+            //KnobHandler::zoomIn();
             //KnobHandler::nextTab();
         else if (number == 71)
             //KnobHandler::volumeDown();
-            //KnobHandler::scrollDown();
+            KnobHandler::scrollUp();
             //KnobHandler::brightnessDown();
             //KnobHandler::switchAppLeft();
-            KnobHandler::zoomOut();
+            //KnobHandler::zoomOut();
             //KnobHandler::previousTab();
         else if (number == 73)
             //KnobHandler::toggleMute();
