@@ -1,4 +1,3 @@
-// mainwindow.h (refactored)
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -52,7 +51,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
-    void onDataReceived(int number);
+    void onDataReceived(int number); // data received from hardware through serial port
 
     void showWindow();
     void exitApplication();

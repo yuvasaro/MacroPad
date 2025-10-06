@@ -60,12 +60,10 @@ MainWindow::MainWindow(QWidget *parent):
     // Register with QML
     qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
-    //qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("currentProfile", HotkeyHandler::currentProfile);
     qmlWidget->engine()->rootContext()->setContextProperty("hotkeyHandler", hotkeyHandler);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
-
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -75,9 +73,9 @@ MainWindow::MainWindow(QWidget *parent):
 
     createTrayIcon();
 
-    //Connecting apptracker signals to switchProfile.
+    // Connecting apptracker signals to switchProfile.
     QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile,Qt::DirectConnection);
-    //Connecting Macropad with SerialHandler.
+    // Connecting MacroPad with SerialHandler.
     connect(m_serialHandler, &SerialHandler::dataReceived, this, &MainWindow::onDataReceived);
 }
 
@@ -120,14 +118,12 @@ void MainWindow::createTrayIcon() {
     trayIcon->show();
 }
 
-
 /*
  * Nesting registerGlobalHotkey() into a MainWindow function, because qml can't get it from hotkeyhandler.
  */
 void MainWindow::callHotkeyHandler(Profile* profile, int keyNum, const QString& type, const QString& content) {
     HotkeyHandler::registerGlobalHotkey(profile, keyNum, type, content);
 }
-
 
 /*
  * Function that connects with Macropad

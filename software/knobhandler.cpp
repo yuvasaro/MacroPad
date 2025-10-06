@@ -114,7 +114,6 @@ void KnobHandler::toggleMute()
 }
 
 void KnobHandler::scrollUp()
-
 {
 #ifdef _WIN32
     qDebug() << "scrollUp called on Windows";

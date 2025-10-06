@@ -11,6 +11,7 @@
 #include <QFileInfoList>
 #include "knobhandler.h"
 
+
 #define DEBUG
 
 // profileManager in this file refers to the profile that is selected from the dropdown in the UI
@@ -30,19 +31,19 @@ HotkeyHandler::~HotkeyHandler(){
 
 // ------- the following functions are required to expose the profiles list to QML -----
 
-// required profileCount function for QML_PROPERTY
+// Required profileCount function for QML_PROPERTY
 qsizetype HotkeyHandler::profileCount(QQmlListProperty<Profile> *list) {
     auto profiles = static_cast<QList<Profile*>*>(list->data);
     return profiles->size();
 }
 
-// required profileAt function for QML_PROPERTY
+// Required profileAt function for QML_PROPERTY
 Profile *HotkeyHandler::profileAt(QQmlListProperty<Profile> *list, qsizetype index) {
     auto profiles = static_cast<QList<Profile*>*>(list->data);
     return profiles->at(index);
 }
 
-// getter for QML to access profiles
+// Getter for QML to access profiles
 QQmlListProperty<Profile> HotkeyHandler::getProfiles() {
     return QQmlListProperty<Profile>(
         this,
@@ -105,13 +106,7 @@ void HotkeyHandler::initializeProfiles() {
 void HotkeyHandler::switchCurrentProfile(const QString& appName) {
     qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
-    // for (Profile* profile : profiles) {
-    //     if (profile->getApp() == appName) {
-    //         currentProfile = profile;
-    //         qDebug() << "Current profile set to:" << currentProfile->getName();
-    //         return;
-    //     }
-    // }
+
     bool found = false;
     for(int i=0;i<profiles.size();i++)
     {
@@ -369,8 +364,7 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
 
         if (type == "keystroke") {
             QStringList keys = content.toLower().split("+");
-            //pressAndReleaseKeys(keys);
-            KnobHandler::scrollUp();
+            pressAndReleaseKeys(keys);
         } else if (type == "executable") {
             if (isAppBundle(content)) {
                 QProcess::startDetached("open", {"-a", content});

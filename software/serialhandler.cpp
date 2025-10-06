@@ -4,6 +4,7 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 
+
 SerialHandler::SerialHandler(QObject *parent)
     : QObject(parent),
     COMPORT(nullptr),
@@ -65,7 +66,6 @@ SerialHandler::~SerialHandler()
     }
 }
 
-// ---------------- your original methods remain unchanged ----------------
 void SerialHandler::readSerialData()
 {
     QByteArray data = COMPORT->readAll();

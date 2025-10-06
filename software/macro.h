@@ -19,7 +19,7 @@ public:
     Macro(const QString& userType, const QString& userContent, const QString& userImagePath, QObject* parent = nullptr);
     ~Macro();
 
-    //Exisiting Types: executable, keystroke, encoder
+    // Exisiting Types: executable, keystroke, encoder
     QString getType() const;
     void setType(const QString& newType);
 
@@ -36,7 +36,6 @@ signals:
     void contentChanged();
     void imagePathChanged();
     void runCallback();
-
 
 private:
     QString type;

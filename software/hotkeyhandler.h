@@ -25,17 +25,14 @@ class HotkeyHandler : public QObject {
     Q_PROPERTY(Profile* profileManager READ getProfileManager WRITE setProfileManager NOTIFY profileManagerChanged)
 
 public:
-
     explicit HotkeyHandler(QObject* parent = nullptr);
     ~HotkeyHandler();
 
-
-    static Profile* profileManager;
-    static Profile* currentProfile;
+    static Profile* profileManager; // the profile that is selected from the dropdown in the UI
+    static Profile* currentProfile; // the profile that matches the name of the application the user is on
 
     void initializeProfiles();
     void switchCurrentProfile(const QString& appName);
-
 
     Profile* getProfileManager() { return profileManager; };
     void setProfileManager(Profile* profile);
@@ -67,7 +64,6 @@ private:
     static HHOOK keyboardHook;
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
     static std::wstring wpathExec;
-
 #elif __APPLE__
     static QMap<int, EventHotKeyRef> registeredHotkeys;
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);

@@ -12,10 +12,10 @@ public:
     ~AppTracker();
 
 signals:
-    void appChanged(const QString &appName);  // Signal emitted when the active app changes
+    void appChanged(const QString &appName); // Signal emitted when the active app changes
 
 private:
-    void startTracking();  // Platform-specific implementation for tracking apps
+    void startTracking(); // Platform-specific implementation for tracking apps
     void stopTracking();
 
     QString lastAppName;
