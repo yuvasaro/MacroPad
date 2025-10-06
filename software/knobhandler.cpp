@@ -13,145 +13,7 @@
 #include <comdef.h>
 #endif
 
-void KnobHandler::volumeUp()
-{
-#ifdef _WIN32
-    qDebug() << "volumeUp called";
-    INPUT inputs[2] = {};
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_UP;
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_UP;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(2, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    MainWindow::macVolume = (MainWindow::macVolume >= 100) ? MainWindow::macVolume : MainWindow::macVolume + 6;
-    setSystemVolume(MainWindow::macVolume);
-#endif
-}
-
-void KnobHandler::volumeDown()
-{
-#ifdef _WIN32
-    qDebug() << "volumeDown called";
-    INPUT inputs[2] = {};
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_DOWN;
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_DOWN;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(2, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    MainWindow::macVolume = (MainWindow::macVolume <= 0) ? MainWindow::macVolume : MainWindow::macVolume - 6;
-    setSystemVolume(MainWindow::macVolume);
-#endif
-}
-
-void KnobHandler::toggleMute()
-{
-#ifdef _WIN32
-    qDebug() << "mute called";
-    INPUT inputs[2] = {};
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wVk = VK_VOLUME_MUTE;
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wVk = VK_VOLUME_MUTE;
-    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(2, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    toggleMuteSystem();
-#endif
-}
 bool KnobHandler::appSwitcherActive = false;
-void KnobHandler:: scrollUp()
-
-{
-#ifdef _WIN32
-    qDebug() << "scrollUp called on Windows";
-    // Simulate one notch of wheel up (WHEEL_DELTA = +120)
-    INPUT input = {};
-    input.type             = INPUT_MOUSE;
-    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
-    input.mi.mouseData     = WHEEL_DELTA;
-    SendInput(1, &input, sizeof(input));
-#endif
-
-#ifdef __APPLE__
-    // qDebug() << "scrollUp called on macOS";
-    // QScrollArea* scrollArea = ui->scrollArea;
-    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
-    // if (vScrollBar) {
-    //     vScrollBar->setValue(vScrollBar->value() - 50);
-    // }
-
-    //HotkeyHandler::pressAndReleaseKeys({"up"});
-    //QProcess::execute("osascript", {"-e", "tell application \"System Events\" to key code 126"});
-
-    CGEventRef scroll = CGEventCreateScrollWheelEvent(
-        NULL, kCGScrollEventUnitLine, 1, +3  // positive = up, negative = down
-        );
-    CGEventPost(kCGHIDEventTap, scroll);
-    CFRelease(scroll);
-#endif
-}
-
-void KnobHandler:: scrollDown()
-{
-#ifdef _WIN32
-    qDebug() << "scrollDown called on Windows";
-    // Simulate one notch of wheel down (–120)
-    INPUT input = {};
-    input.type             = INPUT_MOUSE;
-    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
-    input.mi.mouseData     = -WHEEL_DELTA;
-    SendInput(1, &input, sizeof(input));
-#endif
-
-#ifdef __APPLE__
-    // qDebug() << "scrollDown called on macOS";
-    // QScrollArea* scrollArea = ui->scrollArea;
-    // QScrollBar* vScrollBar = scrollArea->verticalScrollBar();
-    // if (vScrollBar) {
-    //     vScrollBar->setValue(vScrollBar->value() + 50);
-    //}
-
-    //HotkeyHandler::pressAndReleaseKeys({"down"});
-    //QProcess::execute("osascript", {"-e", "tell application \"System Events\" to key code 125"});
-    CGEventRef scroll = CGEventCreateScrollWheelEvent(
-        NULL, kCGScrollEventUnitLine, 1, -3  // negative = down
-        );
-    CGEventPost(kCGHIDEventTap, scroll);
-    CFRelease(scroll);
-#endif
-}
-
-void KnobHandler::autoScrollToggle() {
-#ifdef   _WIN32
-    qDebug() << "AutoScrollToggle called";
-    // two events: middle-button down, then up
-    INPUT inputs[2] = {};
-
-    // middle-button down
-    inputs[0].type               = INPUT_MOUSE;
-    inputs[0].mi.dwFlags         = MOUSEEVENTF_MIDDLEDOWN;
-
-    // middle-button up
-    inputs[1].type               = INPUT_MOUSE;
-    inputs[1].mi.dwFlags         = MOUSEEVENTF_MIDDLEUP;
-
-    SendInput(2, inputs, sizeof(INPUT));
-#endif
-
-#ifdef __APPLE__
-    //TODO: Mac implementation
-#endif
-}
 
 // ===== MAC HELPER FUNCTIONS =====
 #ifdef __APPLE__
@@ -183,6 +45,57 @@ bool KnobHandler::setSystemVolume(int volume) {
 // ================================
 #endif
 
+void KnobHandler::volumeUp()
+{
+#ifdef _WIN32
+    qDebug() << "volumeUp called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_UP;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_UP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    macVolume = (macVolume >= 100) ? macVolume : macVolume + 6;
+    setSystemVolume(macVolume);
+#endif
+}
+
+void KnobHandler::volumeDown()
+{
+#ifdef _WIN32
+    qDebug() << "volumeDown called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_DOWN;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    macVolume = (macVolume <= 0) ? macVolume : macVolume - 6;
+    setSystemVolume(macVolume);
+#endif
+}
+
+void KnobHandler::toggleMute()
+{
+#ifdef _WIN32
+    qDebug() << "mute called";
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_VOLUME_MUTE;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
 #ifdef __APPLE__
     FILE* pipe = popen("osascript -e 'output muted of (get volume settings)'", "r");
     if (!pipe) return;
@@ -198,6 +111,72 @@ bool KnobHandler::setSystemVolume(int volume) {
     else
         std::system("osascript -e \"set volume with output muted\"");
 #endif
+}
+
+void KnobHandler::scrollUp()
+
+{
+#ifdef _WIN32
+    qDebug() << "scrollUp called on Windows";
+    // Simulate one notch of wheel up (WHEEL_DELTA = +120)
+    INPUT input = {};
+    input.type             = INPUT_MOUSE;
+    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
+    input.mi.mouseData     = WHEEL_DELTA;
+    SendInput(1, &input, sizeof(input));
+#endif
+
+#ifdef __APPLE__
+    CGEventRef scroll = CGEventCreateScrollWheelEvent(
+        NULL, kCGScrollEventUnitLine, 1, +3  // positive = up, negative = down
+        );
+    CGEventPost(kCGHIDEventTap, scroll);
+    CFRelease(scroll);
+#endif
+}
+
+void KnobHandler::scrollDown()
+{
+#ifdef _WIN32
+    qDebug() << "scrollDown called on Windows";
+    // Simulate one notch of wheel down (–120)
+    INPUT input = {};
+    input.type             = INPUT_MOUSE;
+    input.mi.dwFlags       = MOUSEEVENTF_WHEEL;
+    input.mi.mouseData     = -WHEEL_DELTA;
+    SendInput(1, &input, sizeof(input));
+#endif
+
+#ifdef __APPLE__
+    CGEventRef scroll = CGEventCreateScrollWheelEvent(
+        NULL, kCGScrollEventUnitLine, 1, -3  // negative = down
+        );
+    CGEventPost(kCGHIDEventTap, scroll);
+    CFRelease(scroll);
+#endif
+}
+
+void KnobHandler::autoScrollToggle() {
+#ifdef   _WIN32
+    qDebug() << "AutoScrollToggle called";
+    // two events: middle-button down, then up
+    INPUT inputs[2] = {};
+
+    // middle-button down
+    inputs[0].type               = INPUT_MOUSE;
+    inputs[0].mi.dwFlags         = MOUSEEVENTF_MIDDLEDOWN;
+
+    // middle-button up
+    inputs[1].type               = INPUT_MOUSE;
+    inputs[1].mi.dwFlags         = MOUSEEVENTF_MIDDLEUP;
+
+    SendInput(2, inputs, sizeof(INPUT));
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
+}
 
 // Increase screen brightness by 10%
 void KnobHandler::brightnessUp()
@@ -249,7 +228,7 @@ void KnobHandler:: brightnessToggle()
 #endif
 
 #ifdef __APPLE__
-
+    //TODO: Mac Implementation
 #endif
 }
 
@@ -343,7 +322,6 @@ void KnobHandler::switchAppRight() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
     if (appSwitcherActive) {
         QStringList keys = {"cmd", "tab"};
         HotkeyHandler::pressAndReleaseKeys(keys);
@@ -361,7 +339,6 @@ void KnobHandler::switchAppLeft() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
     if (appSwitcherActive) {
         QStringList keys = {"cmd", "shift", "tab"};
         HotkeyHandler::pressAndReleaseKeys(keys);
@@ -378,7 +355,6 @@ void KnobHandler::zoomIn() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
     QStringList keys = {"cmd", "="};
     HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
@@ -392,7 +368,6 @@ void KnobHandler::zoomOut() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
     QStringList keys = {"cmd", "shift", "-"};
     HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
@@ -406,7 +381,6 @@ void KnobHandler::zoomReset() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
     QStringList keys = {"cmd", "0"};
     HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
@@ -438,7 +412,7 @@ void KnobHandler::previousTab() {
 
 
 void adjustAppVolume(QString name, float volumeStep) {
-    #ifdef _WIN32
+#ifdef _WIN32
     const wchar_t* targetApp = reinterpret_cast<const wchar_t *>(name.utf16());
     CoInitialize(nullptr);
 
@@ -496,14 +470,17 @@ void adjustAppVolume(QString name, float volumeStep) {
     pEnumerator->Release();
 
     CoUninitialize();
-    #endif
+#endif
+
+#ifdef __APPLE__
+    //TODO: Mac implementation
+#endif
 }
-
-
 
 void KnobHandler::appVolumeUp(){
     adjustAppVolume("a", .01);
 }
+
 void KnobHandler::appVolumeDown(){
     adjustAppVolume("a", -.01);
 }
