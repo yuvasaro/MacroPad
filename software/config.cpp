@@ -6,6 +6,7 @@
 #include <shlobj.h>
 #endif
 
+
 QString Config::getConfigDir() {
     std::filesystem::path configPath;
 

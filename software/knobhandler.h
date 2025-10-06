@@ -15,37 +15,36 @@ public:
     static bool setSystemVolume(int volume);
 #endif
 
-    //volume controls
+    // Volume controls
     static void volumeUp();
     static void volumeDown();
     static void toggleMute();
 
-    //scrolling controls
+    // Scrolling controls
     static void scrollUp();
     static void scrollDown();
     static void autoScrollToggle();
-
 
     // Brightness controls
     static void brightnessUp();
     static void brightnessDown();
     static void brightnessToggle();
 
-    // App‐switcher controls
+    // App switcher controls
     static void activateAppSwitcher();
     static void switchAppRight();
     static void switchAppLeft();
 
-    //Zoom In and Out controls
+    // Zoom In and Out controls
     static void zoomIn();
     static void zoomOut();
     static void zoomReset();
 
-    //browser tab switching controls
+    // Browser tab switching controls
     static void nextTab();
     static void previousTab();
 
-    //app volume
+    // App volume
     static void appVolumeUp();
     static void appVolumeDown();
 

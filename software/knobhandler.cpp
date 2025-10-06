@@ -13,6 +13,7 @@
 #include <comdef.h>
 #endif
 
+
 bool KnobHandler::appSwitcherActive = false;
 
 // ===== MAC HELPER FUNCTIONS =====

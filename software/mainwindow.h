@@ -3,7 +3,6 @@
 
 #include "apptracker.h"
 #include "serialhandler.h"
-#include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
 #include "knobhandler.h"

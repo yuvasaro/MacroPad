@@ -6,6 +6,7 @@
 #import <QtCore/QFile>
 #import <QtCore/QFileInfo>
 
+
 IconExtractor::IconExtractor(QObject* parent) : QObject(parent) {}
 
 QString IconExtractor::extractIconForApp(const QString& appPath) {

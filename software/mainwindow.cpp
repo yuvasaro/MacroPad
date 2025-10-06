@@ -1,6 +1,5 @@
 // mainwindow.cpp (refactored)
 #include "mainwindow.h"
-#include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
 #include "imagecache.h"
@@ -38,11 +37,9 @@ MainWindow::MainWindow(QWidget *parent):
     qmlWidget = new QQuickWidget(this);
     qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-    FileIO *fileIO = new FileIO(this);
     Macro *macro = new Macro(this);
     IconExtractor* iconExtractor = new IconExtractor(this);
 
-    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
     qmlRegisterType<IconExtractor>("IconExtractor", 1, 0, "IconExtractor");
     qmlRegisterSingletonType<ImageCache>("ImageCache", 1, 0, "ImageCache", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
@@ -58,7 +55,6 @@ MainWindow::MainWindow(QWidget *parent):
     hotkeyHandler->setSerialHandler(m_serialHandler);
 
     // Register with QML
-    qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
     qmlWidget->engine()->rootContext()->setContextProperty("currentProfile", HotkeyHandler::currentProfile);
     qmlWidget->engine()->rootContext()->setContextProperty("hotkeyHandler", hotkeyHandler);
