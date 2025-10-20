@@ -13,6 +13,55 @@ Rectangle {
     Component.onCompleted: {
         var num = hotkeyHandler.profiles.length;
         console.log("Number of profiles from mainwindow:", num);
+        // Force initial update of encoders
+        updateEncoders();
+    }
+
+    // Function to update encoder selections based on current profile
+    function updateEncoders() {
+        console.log("=== Updating encoders for profile:", hotkeyHandler.profileManager.name);
+
+        // Update Encoder 1
+        encoder1Combo.isUpdating = true;
+        try {
+            const macroData1 = hotkeyHandler.profileManager.getMacroData(-2);
+            console.log("Encoder 1 type:", macroData1.type, "content:", macroData1.content);
+
+            if (macroData1.type === "encoder" && macroData1.content !== "") {
+                const i1 = encoder1Combo.model.indexOf(macroData1.content);
+                console.log("Found encoder 1 content '" + macroData1.content + "' at index:", i1);
+                encoder1Combo.currentIndex = i1 >= 0 ? i1 : 0;
+            } else {
+                console.log("No valid macro for encoder 1, setting to None");
+                encoder1Combo.currentIndex = 0;
+            }
+        } catch (e) {
+            console.log("Error updating encoder 1:", e);
+            encoder1Combo.currentIndex = 0;
+        }
+        encoder1Combo.isUpdating = false;
+
+        // Update Encoder 2
+        encoder2Combo.isUpdating = true;
+        try {
+            const macroData2 = hotkeyHandler.profileManager.getMacroData(-1);
+            console.log("Encoder 2 type:", macroData2.type, "content:", macroData2.content);
+
+            if (macroData2.type === "encoder" && macroData2.content !== "") {
+                const i2 = encoder2Combo.model.indexOf(macroData2.content);
+                console.log("Found encoder 2 content '" + macroData2.content + "' at index:", i2);
+                encoder2Combo.currentIndex = i2 >= 0 ? i2 : 0;
+            } else {
+                console.log("No valid macro for encoder 2, setting to None");
+                encoder2Combo.currentIndex = 0;
+            }
+        } catch (e) {
+            console.log("Error updating encoder 2:", e);
+            encoder2Combo.currentIndex = 0;
+        }
+        encoder2Combo.isUpdating = false;
+
+        console.log("=== Finished updating encoders ===");
     }
 
     IconExtractor {
@@ -41,26 +90,26 @@ Rectangle {
                 radius: 10
 
                 Item {
-                        anchors.fill: parent
-                        anchors.margins: 5
+                    anchors.fill: parent
+                    anchors.margins: 5
 
-                        Image {
-                            id: keyImage
-                            anchors.centerIn: parent
-                            width: parent.width - 10
-                            height: parent.height - 10
-                            fillMode: Image.PreserveAspectFit
-                            source: hotkeyHandler.profileManager.getMacroImagePath(index + 1)
-                            visible: source !== ""
-                        }
-
-                        Text {
-                            text: "Key " + (index + 1)
-                            anchors.centerIn: parent
-                            color: "black"
-                            visible: !keyImage.visible
-                        }
+                    Image {
+                        id: keyImage
+                        anchors.centerIn: parent
+                        width: parent.width - 10
+                        height: parent.height - 10
+                        fillMode: Image.PreserveAspectFit
+                        source: hotkeyHandler.profileManager.getMacroImagePath(index + 1)
+                        visible: source !== ""
                     }
+
+                    Text {
+                        text: "Key " + (index + 1)
+                        anchors.centerIn: parent
+                        color: "black"
+                        visible: !keyImage.visible
+                    }
+                }
 
                 MouseArea {
                     anchors.fill: parent
@@ -68,10 +117,12 @@ Rectangle {
                         var component = Qt.createComponent("KeyConfig.qml");
                         if (component.status === Component.Ready) {
                             var profile = hotkeyHandler.profileManager;
-                            var macro = profile.getMacro(index + 1);
-                            var existingKey = macro ? { keystroke: macro.type === "keystroke" ? macro.content : "",
-                                                        executable: macro.type === "executable" ? macro.content: "" }
-                                                    : { keystroke: "", executable: ""};
+                            var macroData = profile.getMacroData(index + 1);
+                            var macro = macroData.type !== "" ? macroData : null;
+                            var existingKey = macro ? {
+                                keystroke: macroData.type === "keystroke" ? macroData.content : "",
+                                executable: macroData.type === "executable" ? macroData.content : ""
+                            } : { keystroke: "", executable: "" };
 
                             var keyConfigInstance = component.createObject(root, {
                                 keyIndex: index + 1,
@@ -107,209 +158,207 @@ Rectangle {
                             keyConfigInstance.open();
                         }
                     }
-
                 }
             }
         }
     }
 
-        KeyConfig {
-            id: keyConfigDialog
-        }
+    KeyConfig {
+        id: keyConfigDialog
+    }
 
-        ComboBox {
-                    id: profileSelector
-                    anchors.top: parent.top
-                    anchors.topMargin: 20
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    model: hotkeyHandler.profiles
-                    textRole: "name"
-                    background: Rectangle {
-                            color: "lightgray"
-                            radius: 5
-                            border.color: "white"
-                        }
-                    contentItem: Text {
-                                text: parent.displayText
-                                color: "black"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
+    ComboBox {
+        id: profileSelector
+        anchors.top: parent.top
+        anchors.topMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
+        model: hotkeyHandler.profiles
+        textRole: "name"
+        background: Rectangle {
+            color: "lightgray"
+            radius: 5
+            border.color: "white"
+        }
+        contentItem: Text {
+            text: parent.displayText
+            color: "black"
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+        onCurrentIndexChanged: {
+            hotkeyHandler.profileManager = hotkeyHandler.profiles[currentIndex];
+            exetext.text = hotkeyHandler.profileManager.getApp();
+            console.log("Selected profile:", hotkeyHandler.profileManager.name);
+
+            // Update encoders when profile changes
+            Qt.callLater(root.updateEncoders);
+        }
+    }
+
+    // ---------- app selection logic --------
+    property string fileDialogCaller: ""
+
+    FileDialog {
+        id: fileDialog
+        title: "Select an Executable File"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
+
+        onAccepted: {
+            let fullPath = selectedFile.toString().replace("file://", "");
+            if(fileDialogCaller === "exebutton"){
+                console.log("Selected executable:", selectedFile)
+
+                // extract the app name from the full path so the app tracker can match it to just the name
+                let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
+
+                // makes sure to set the appname of the selected profile and save it
+                profileManager.setApp(appName);
+
+                // displays the name of the app for the selected profile in the UI
+                exetext.text = hotkeyHandler.profileManager.getApp();
+
+                let iconPath = iconExtractor.extractIconForApp(fullPath);
+                exeIconPath = iconPath !== "" ? "file:///" + iconPath : "";
+            }
+            if(fileDialogCaller === "encoder1"){
+                let volapp = profileManager.setKeyConfig(-2, "encoder", "AppVolume:"+selectedFile);
+            }
+            if(fileDialogCaller === "encoder2"){
+                let volapp = profileManager.setKeyConfig(-1, "encoder", "AppVolume:"+selectedFile);
+            }
+        }
+    }
+
+    // button to select the app for the profile
+    Button {
+        id: exebutton
+        width: 100
+        height: 40
+        text: "Select Executable"
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: 10
+        anchors.rightMargin: 10
+        visible: profileSelector.currentText !== "General"
+        onClicked: {
+            fileDialogCaller = "exebutton"
+            fileDialog.open()
+        }
+    }
+
+    // where the name of the selected app for the profile is displayed
+    Button {
+        id: exetext
+        width: 100
+        height: 40
+        anchors.top: exebutton.bottom
+        anchors.topMargin: 10
+        anchors.right: exebutton.right
+        visible: profileSelector.currentText !== "General"
+        ToolTip.visible: hovered
+        ToolTip.text: text
+        ToolTip.delay: 500
+    }
+
+    Image {
+        id: exeIcon
+        width: 40
+        height: 40
+        anchors.top: exetext.bottom
+        anchors.topMargin: 10
+        anchors.horizontalCenter: exetext.horizontalCenter
+        fillMode: Image.PreserveAspectFit
+        source: exeIconPath
+        visible: profileSelector.currentText !== "General"
+    }
+
+    //two encoder knobs
+    GroupBox {
+        id: encoderConfigBox
+        title: "Rotary Encoder Actions"
+        anchors.top: profileSelector.bottom
+        anchors.topMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: 400
+
+        Column {
+            spacing: 10
+            padding: 10
+
+            Row {
+                spacing: 10
+                Text { text: "Encoder 1:"; width: 100; color: "white" }
+
+                ComboBox {
+                    id: encoder1Combo
+                    model: ["None","Scroll","Volume","Chrome Tabs","Switch Apps","Brightness","Zoom","App Volume"]
+                    width: 200
+
+                    property bool isUpdating: false
+
                     onCurrentIndexChanged: {
-                            hotkeyHandler.profileManager= hotkeyHandler.profiles[currentIndex];
-                            exetext.text = hotkeyHandler.profileManager.getApp();
-                            console.log("Selected profile:", hotkeyHandler.profileManager.name);
+                        if (isUpdating) {
+                            console.log("Encoder 1 - Skipping update (isUpdating=true)");
+                            return;
+                        }
+
+                        const val = model[currentIndex]
+                        console.log("Encoder 1 - User changed to:", val);
+                        profileManager.setKeyConfig(-2, "encoder",
+                            val !== "None" ? val : "")
                     }
                 }
 
-        // ---------- app selection logic --------
-                property string fileDialogCaller: ""
+                Button {
+                    id: volButton1
+                    width: 50
+                    height: 20
+                    text: "Select Executable"
+                    visible: encoder1Combo.currentText === "App Volume"
+                    onClicked: {
+                        fileDialogCaller = "encoder1"
+                        fileDialog.open()
+                    }
+                }
+            }
 
-                FileDialog {
-                    id: fileDialog
-                    title: "Select an Executable File"
-                    fileMode: FileDialog.OpenFile
-                    nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
+            Row {
+                spacing: 10
+                Text { text: "Encoder 2:"; width: 100; color: "white" }
 
-                    onAccepted: {
-                        let fullPath = selectedFile.toString().replace("file://", "");
-                        if(fileDialogCaller==="exebutton"){
-                        console.log("Selected executable:", selectedFile)
+                ComboBox {
+                    id: encoder2Combo
+                    model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom", "App Volume"]
+                    width: 200
 
-                        // extract the app name from the full path so the app tracker can match it to just the name
-                        let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
+                    property bool isUpdating: false
 
-                        // makes sure to set the appname of the selected profile and save it
-                        profileManager.setApp(appName);
-
-                        // displays the name of the app for the selected profile in the UI
-                        exetext.text = hotkeyHandler.profileManager.getApp();
-
-                        let iconPath = iconExtractor.extractIconForApp(fullPath);
-                        exeIconPath = iconPath !== "" ? "file:///" + iconPath : "";
-
-                        }
-                        if(fileDialogCaller==="encoder1"){
-                            let volapp =
-                            profileManager.setKeyConfig(-1, "encoder1", "AppVolume:"+selectedFile);
+                    onCurrentIndexChanged: {
+                        if (isUpdating) {
+                            console.log("Encoder 2 - Skipping update (isUpdating=true)");
+                            return;
                         }
 
+                        const val = model[currentIndex]
+                        console.log("Encoder 2 - User changed to:", val);
+                        profileManager.setKeyConfig(-1, "encoder",
+                            val !== "None" ? val : "")
                     }
                 }
 
-        // button to select the app for the profile
-        Button {
-            id: exebutton
-            width: 100
-            height: 40
-            text: "Select Executable"
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.topMargin: 10
-            anchors.rightMargin: 10
-            visible: profileSelector.currentText !== "General"
-            onClicked: {
-                fileDialogCaller = "exebutton"
-                fileDialog.open()
+                Button {
+                    id: volButton2
+                    width: 50
+                    height: 20
+                    text: "Select Executable"
+                    visible: encoder2Combo.currentText === "App Volume"
+                    onClicked: {
+                        fileDialogCaller = "encoder2"
+                        fileDialog.open()
+                    }
+                }
             }
         }
-
-        // where the name of the selected app for the profile is displayed
-        Button {
-            id:exetext
-            width: 100
-            height: 40
-            anchors.top: exebutton.bottom
-            anchors.topMargin: 10
-            anchors.right: exebutton.right
-            visible: profileSelector.currentText !== "General"
-            ToolTip.visible: hovered
-                ToolTip.text: text
-                ToolTip.delay: 500
-        }
-
-        Image {
-            id:exeIcon
-            width: 40
-            height: 40
-            anchors.top: exetext.bottom
-            anchors.topMargin: 10
-            anchors.horizontalCenter: exetext.horizontalCenter
-            fillMode: Image.PreserveAspectFit
-            source: exeIconPath
-            visible: profileSelector.currentText !== "General"
-        }
-
-
-        GroupBox {
-                    id: encoderConfigBox
-                    title: "Rotary Encoder Actions"
-                    anchors.top: profileSelector.bottom
-                    anchors.topMargin: 20
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 400
-
-                    Column {
-                        spacing: 10
-                        padding: 10
-
-                        Row {
-                            spacing: 10
-                            Text { text: "Encoder 1:"; width: 100; color: "white" }
-
-                            ComboBox {
-                                    id: encoder1Combo
-                                    model: ["None","Scroll","Volume","Chrome Tabs","Switch Apps","Brightness","Zoom"]
-                                    width: 200
-
-
-                                    Component.onCompleted: Qt.callLater(() => {
-                                        const macro = hotkeyHandler.profileManager.getMacro(-2)
-
-                                        if (macro && macro.type==="encoder") {
-                                            const i = encoder1Combo.model.indexOf(macro.content)
-                                            if (i>=0) encoder1Combo.currentIndex = i
-                                        }
-                                    })
-
-                                    onCurrentIndexChanged: {
-                                        const val = model[currentIndex]
-                                        profileManager.setKeyConfig(-2, "encoder",
-                                            val!=="None" ? val : "")
-                                    }
-                                }
-
-                            Button {
-                                id: volButton1
-                                width: 50
-                                height: 20
-                                text: "Select Executable"
-                                visible: encoder1Combo.currentText === "App Volume"
-                                onClicked: {
-                                    fileDialogCaller = "encoder1"
-                                    fileDialog.open()
-                                }
-                            }
-                        }
-
-                        Row {
-                            spacing: 10
-                            Text { text: "Encoder 2:"; width: 100; color: "white" }
-
-                            ComboBox {
-                                id: encoder2Combo
-                                model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom", "App Volume"]
-                                width: 200
-
-                                Component.onCompleted: Qt.callLater(() => {
-                                       const macro = hotkeyHandler.profileManager.getMacro(-1)
-                                        console.log(macro.content);
-                                       if (macro && macro.type==="encoder") {
-                                           const i = encoder2Combo.model.indexOf(macro.content)
-                                           if (i>=0) encoder2Combo.currentIndex = i
-                                       }
-                                   })
-
-                               onCurrentIndexChanged: {
-                                   const val = model[currentIndex]
-                                   profileManager.setKeyConfig(-1, "encoder",
-                                       val!=="None" ? val : "")
-                               }
-
-                            }
-
-                            Button {
-                                id: volButton2
-                                width: 50
-                                height: 20
-                                text: "Select Executable"
-                                visible: encoder2Combo.currentText === "App Volume"
-                                onClicked: {
-                                    fileDialogCaller = "encoder2"
-                                    fileDialog.open()
-                                }
-                            }
-                        }
-                    }
-                }
     }
+}

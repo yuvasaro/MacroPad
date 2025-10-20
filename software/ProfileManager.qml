@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtCore 6.2
 import IconExtractor 1.0
 
-
 Item {
     id: profileManager
     property var profiles: hotkeyHandler.profiles
@@ -23,18 +22,18 @@ Item {
             // Default keystroke icon
             image = "qrc:/keystroke.jpg";
         } else if (type === "executable" && value !== "") {
-        try {
-            let extractedPath = iconExtractor.extractIconForApp(value);
-            if (extractedPath && extractedPath !== "") {
-                image = "file://" + extractedPath;
-            } else {
-                image = "qrc:/executable.png";  // fallback
+            try {
+                let extractedPath = iconExtractor.extractIconForApp(value);
+                if (extractedPath && extractedPath !== "") {
+                    image = "file://" + extractedPath;
+                } else {
+                    image = "qrc:/executable.png";  // fallback
+                }
+            } catch (e) {
+                console.log("Couldn't extract icon:", e);
+                image = "qrc:/executable.png";
             }
-        } catch (e) {
-            console.log("Couldn't extract icon:", e);
-            image = "qrc:/executable.png";
         }
-    }
 
         if (type === "image") {
             hotkeyHandler.profileManager.setKeyImage(keyIndex, value);
@@ -44,22 +43,31 @@ Item {
         } else if (type === "executable" && value !== "") {
             hotkeyHandler.profileManager.setMacro(keyIndex, "executable", value);
             hotkeyHandler.profileManager.setKeyImage(keyIndex, image);
-
-        } else if(type === "encoder" && value !=="" && !(value === undefined)){
-            console.log("[setMacro to]",value);
+        } else if(type === "encoder" && value !== "" && !(value === undefined)){
+            console.log("[setMacro to]", value);
             console.log("[Profile Name]", hotkeyHandler.profileManager.getName());
             console.log("[Profile Macros: ]", hotkeyHandler.profileManager.printMacros());
             hotkeyHandler.profileManager.setMacro(keyIndex, "encoder", value);
             console.log("[Profile Macros2: ]", hotkeyHandler.profileManager.printMacros());
         }
+
         hotkeyHandler.profileManager.saveProfile();
-        console.log("[save profile to]",value);
+        console.log("[save profile to]", value);
     }
 
     function setApp(app) {
         console.log("app changed");
         hotkeyHandler.profileManager.setApp(app);
         hotkeyHandler.profileManager.saveProfile();
+    }
+
+    // Helper function to get encoder value from current profile
+    function getEncoderValue(encoderIndex) {
+        const macro = hotkeyHandler.profileManager.getMacroData(encoderIndex);
+        if (macro && macro.type === "encoder") {
+            return macro.content;
+        }
+        return "";
     }
 
     Component.onCompleted: {
