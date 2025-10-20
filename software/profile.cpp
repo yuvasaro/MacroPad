@@ -210,11 +210,29 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         qWarning() << "Unable to open file for reading:" << filePath;
         return nullptr;
     }
-
 }
+
+QVariantMap Profile::getMacroData(int keyNum) const {
+    QVariantMap result;
+    auto macro = macros.value(keyNum);
+
+    if (macro) {
+        result["type"] = macro->getType();
+        result["content"] = macro->getContent();
+        result["image"] = macro->getImagePath();
+    } else {
+        result["type"] = "";
+        result["content"] = "";
+        result["image"] = "";
+    }
+
+    return result;
+}
+
 
 void Profile::printMacros() {
     for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) {
         qDebug() << "Key:" << it.key() << "Macro:" << it.value()->toString();
     }
 }
+

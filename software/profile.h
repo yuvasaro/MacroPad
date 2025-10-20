@@ -41,6 +41,7 @@ public:
     Q_INVOKABLE static Profile* loadProfile(const QString& nameLookUp);
     Q_INVOKABLE void printMacros();
     Q_INVOKABLE QString getMacroImagePath(int keyNum) const;
+    Q_INVOKABLE QVariantMap getMacroData(int keyNum) const;
 
 signals:
     void nameChanged();
