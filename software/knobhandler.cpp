@@ -394,7 +394,8 @@ void KnobHandler::nextTab() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    QStringList keys = {"ctrl", "tab"};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
@@ -406,7 +407,8 @@ void KnobHandler::previousTab() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    QStringList keys = {"ctrl", "shift", "tab"};
+    HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
 }
 
