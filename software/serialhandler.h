@@ -11,6 +11,7 @@
 class SerialHandler : public QObject
 {
     Q_OBJECT
+
 public:
     explicit SerialHandler(QObject *parent = nullptr);
     ~SerialHandler();
@@ -18,7 +19,6 @@ public:
     void sendProfile(int profileCode);
 
 signals:
-    //void buttonPressed(int button);
     void dataReceived(const int number);
 
 private slots:

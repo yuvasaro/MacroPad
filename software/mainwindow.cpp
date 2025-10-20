@@ -1,6 +1,5 @@
 // mainwindow.cpp (refactored)
 #include "mainwindow.h"
-#include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
 #include "imagecache.h"
@@ -38,11 +37,9 @@ MainWindow::MainWindow(QWidget *parent):
     qmlWidget = new QQuickWidget(this);
     qmlWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-    FileIO *fileIO = new FileIO(this);
     Macro *macro = new Macro(this);
     IconExtractor* iconExtractor = new IconExtractor(this);
 
-    qmlRegisterType<FileIO>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<Macro>("Macro", 1, 0, "Macro");
     qmlRegisterType<IconExtractor>("IconExtractor", 1, 0, "IconExtractor");
     qmlRegisterSingletonType<ImageCache>("ImageCache", 1, 0, "ImageCache", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
@@ -58,14 +55,11 @@ MainWindow::MainWindow(QWidget *parent):
     hotkeyHandler->setSerialHandler(m_serialHandler);
 
     // Register with QML
-    qmlWidget->engine()->rootContext()->setContextProperty("fileIO", fileIO);
     qmlWidget->engine()->rootContext()->setContextProperty("Macro", macro);
-    //qmlWidget->engine()->rootContext()->setContextProperty("profileInstance", HotkeyHandler::profileManager);
     qmlWidget->engine()->rootContext()->setContextProperty("currentProfile", HotkeyHandler::currentProfile);
     qmlWidget->engine()->rootContext()->setContextProperty("hotkeyHandler", hotkeyHandler);
     qmlWidget->engine()->rootContext()->setContextProperty("mainWindow", this);
     qmlWidget->setSource(QUrl("qrc:/Main.qml"));
-
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -75,9 +69,9 @@ MainWindow::MainWindow(QWidget *parent):
 
     createTrayIcon();
 
-    //Connecting apptracker signals to switchProfile.
+    // Connecting apptracker signals to switchProfile.
     QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile,Qt::DirectConnection);
-    //Connecting Macropad with SerialHandler.
+    // Connecting MacroPad with SerialHandler.
     connect(m_serialHandler, &SerialHandler::dataReceived, this, &MainWindow::onDataReceived);
 }
 
@@ -120,14 +114,12 @@ void MainWindow::createTrayIcon() {
     trayIcon->show();
 }
 
-
 /*
  * Nesting registerGlobalHotkey() into a MainWindow function, because qml can't get it from hotkeyhandler.
  */
 void MainWindow::callHotkeyHandler(Profile* profile, int keyNum, const QString& type, const QString& content) {
     HotkeyHandler::registerGlobalHotkey(profile, keyNum, type, content);
 }
-
 
 /*
  * Function that connects with Macropad

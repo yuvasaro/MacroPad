@@ -27,7 +27,6 @@ public:
     Profile(Profile&&) = delete;
     Profile& operator=(Profile&&) = delete;
 
-
     Profile() = default;
 
     Q_INVOKABLE QString getName() const;
@@ -48,7 +47,6 @@ signals:
     void nameChanged();
     void appChanged();
     void keyImageChanged(int keyNum, const QString& imagePath);
-
 };
 
 #endif // PROFILE_H

@@ -1,10 +1,8 @@
-// mainwindow.h (refactored)
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include "apptracker.h"
 #include "serialhandler.h"
-#include "fileio.h"
 #include "profile.h"
 #include "hotkeyhandler.h"
 #include "knobhandler.h"
@@ -52,7 +50,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
-    void onDataReceived(int number);
+    void onDataReceived(int number); // data received from hardware through serial port
 
     void showWindow();
     void exitApplication();

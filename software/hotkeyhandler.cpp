@@ -11,7 +11,8 @@
 #include <QFileInfoList>
 #include "knobhandler.h"
 
-#define DEBUG
+
+// #define DEBUG
 
 // profileManager in this file refers to the profile that is selected from the dropdown in the UI
 Profile* HotkeyHandler::profileManager;
@@ -30,19 +31,19 @@ HotkeyHandler::~HotkeyHandler(){
 
 // ------- the following functions are required to expose the profiles list to QML -----
 
-// required profileCount function for QML_PROPERTY
+// Required profileCount function for QML_PROPERTY
 qsizetype HotkeyHandler::profileCount(QQmlListProperty<Profile> *list) {
     auto profiles = static_cast<QList<Profile*>*>(list->data);
     return profiles->size();
 }
 
-// required profileAt function for QML_PROPERTY
+// Required profileAt function for QML_PROPERTY
 Profile *HotkeyHandler::profileAt(QQmlListProperty<Profile> *list, qsizetype index) {
     auto profiles = static_cast<QList<Profile*>*>(list->data);
     return profiles->at(index);
 }
 
-// getter for QML to access profiles
+// Getter for QML to access profiles
 QQmlListProperty<Profile> HotkeyHandler::getProfiles() {
     return QQmlListProperty<Profile>(
         this,
@@ -105,13 +106,7 @@ void HotkeyHandler::initializeProfiles() {
 void HotkeyHandler::switchCurrentProfile(const QString& appName) {
     qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
-    // for (Profile* profile : profiles) {
-    //     if (profile->getApp() == appName) {
-    //         currentProfile = profile;
-    //         qDebug() << "Current profile set to:" << currentProfile->getName();
-    //         return;
-    //     }
-    // }
+
     bool found = false;
     for(int i=0;i<profiles.size();i++)
     {
@@ -220,6 +215,7 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
 QMap<int, EventHotKeyRef> HotkeyHandler::registeredHotkeys;
 static EventHandlerUPP eventHandlerUPP;
 static const std::map<int, int> debugKeyMap = {
+    {-2, 0}, {-1, 0},
     {1, kVK_ANSI_1}, {2, kVK_ANSI_2}, {3, kVK_ANSI_3}, {4, kVK_ANSI_4}, {5, kVK_ANSI_5},
     {6, kVK_ANSI_6}, {7, kVK_ANSI_7}, {8, kVK_ANSI_8}, {9, kVK_ANSI_9}
 };
@@ -369,8 +365,7 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
 
         if (type == "keystroke") {
             QStringList keys = content.toLower().split("+");
-            //pressAndReleaseKeys(keys);
-            KnobHandler::scrollUp();
+            pressAndReleaseKeys(keys);
         } else if (type == "executable") {
             if (isAppBundle(content)) {
                 QProcess::startDetached("open", {"-a", content});
@@ -404,76 +399,71 @@ void HotkeyHandler::listenForHotkeys() {
 Id: 1 for left, 2 for right, 3 for press down
 */
 void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int id){
-#ifdef _WIN32
-        // Retrieve the macro for this encoder key
-        auto macro = profileInstance->getMacro(hotKeyNum);
-        if (macro.isNull() || macro->getType() != "encoder")
-            return;
+    // Retrieve the macro for this encoder key
+    auto macro = profileInstance->getMacro(hotKeyNum);
+    if (macro.isNull() || macro->getType() != "encoder")
+        return;
 
-        const QString& content = macro->getContent();
+    const QString& content = macro->getContent();
 
-        // VOLUME: CW = volume up, CCW = volume down, press = mute/unmute
-        if (content == "Volume") {
-            if (id == 1) {
-                KnobHandler::volumeUp();
-            } else if (id == 2) {
-                KnobHandler::volumeDown();
-            } else if (id == 3) {
-                KnobHandler::toggleMute();
-            }
-
-            // SCROLL: CW = scroll up, CCW = scroll down, press = toggle auto‐scroll
-        } else if (content == "Scroll") {
-            if (id == 1) {
-                KnobHandler::scrollUp();
-            } else if (id == 2) {
-                KnobHandler::scrollDown();
-            } else if (id == 3) {
-                KnobHandler::autoScrollToggle();
-            }
-
-            // CHROME TABS: CW = next tab, CCW = previous tab (press does nothing)
-        } else if (content == "Chrome Tabs") {
-            if (id == 1) {
-                KnobHandler::nextTab();
-            } else if (id == 2) {
-                KnobHandler::previousTab();
-            }
-
-            // SWITCH APPS (Task View): press = open/confirm, CW = move right, CCW = move left
-        } else if (content == "Switch Apps") {
-            if (id == 3) {
-                KnobHandler::activateAppSwitcher();
-            } else if (id == 1) {
-                KnobHandler::switchAppRight();
-            } else if (id == 2) {
-                KnobHandler::switchAppLeft();
-            }
-
-            // BRIGHTNESS: CW = increase, CCW = decrease, press = toggle between low/medium
-        } else if (content == "Brightness") {
-            if (id == 1) {
-                KnobHandler::brightnessUp();
-            } else if (id == 2) {
-                KnobHandler::brightnessDown();
-            } else if (id == 3) {
-                KnobHandler::brightnessToggle();
-            }
-
-            // ZOOM: CW = zoom in, CCW = zoom out, press = reset zoom
-        } else if (content == "Zoom") {
-            if (id == 1) {
-                KnobHandler::zoomIn();
-            } else if (id == 2) {
-                KnobHandler::zoomOut();
-            } else if (id == 3) {
-                KnobHandler::zoomReset();
-            }
+    // VOLUME: CW = volume up, CCW = volume down, press = mute/unmute
+    if (content == "Volume") {
+        if (id == 1) {
+            KnobHandler::volumeUp();
+        } else if (id == 2) {
+            KnobHandler::volumeDown();
+        } else if (id == 3) {
+            KnobHandler::toggleMute();
         }
-#endif
-#ifdef __APPLE__
-//TODO
-#endif
+
+    // SCROLL: CW = scroll up, CCW = scroll down, press = toggle auto‐scroll
+    } else if (content == "Scroll") {
+        if (id == 1) {
+            KnobHandler::scrollUp();
+        } else if (id == 2) {
+            KnobHandler::scrollDown();
+        } else if (id == 3) {
+            KnobHandler::autoScrollToggle();
+        }
+
+    // CHROME TABS: CW = next tab, CCW = previous tab (press does nothing)
+    } else if (content == "Chrome Tabs") {
+        if (id == 1) {
+            KnobHandler::nextTab();
+        } else if (id == 2) {
+            KnobHandler::previousTab();
+        }
+
+    // SWITCH APPS (Task View): press = open/confirm, CW = move right, CCW = move left
+    } else if (content == "Switch Apps") {
+        if (id == 3) {
+            KnobHandler::activateAppSwitcher();
+        } else if (id == 1) {
+            KnobHandler::switchAppRight();
+        } else if (id == 2) {
+            KnobHandler::switchAppLeft();
+        }
+
+    // BRIGHTNESS: CW = increase, CCW = decrease, press = toggle between low/medium
+    } else if (content == "Brightness") {
+        if (id == 1) {
+            KnobHandler::brightnessUp();
+        } else if (id == 2) {
+            KnobHandler::brightnessDown();
+        } else if (id == 3) {
+            KnobHandler::brightnessToggle();
+        }
+
+    // ZOOM: CW = zoom in, CCW = zoom out, press = reset zoom
+    } else if (content == "Zoom") {
+        if (id == 1) {
+            KnobHandler::zoomIn();
+        } else if (id == 2) {
+            KnobHandler::zoomOut();
+        } else if (id == 3) {
+            KnobHandler::zoomReset();
+        }
+    }
 
 }
 

@@ -1,12 +1,12 @@
-    #include "profile.h"
-    #include <iostream>
-    #include <fstream>
-    #include <memory>
-    #include "config.h"
-    #include <QString>
-    #include <QFile>
-    #include <QTextStream>
-    #include <QDir>
+#include "profile.h"
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include "config.h"
+#include <QString>
+#include <QFile>
+#include <QTextStream>
+#include <QDir>
 
 
 Profile::Profile(QObject* parent) : QObject(parent) {}
@@ -37,13 +37,13 @@ void Profile::setApp(const QString& newApp) {
 
 void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
     if (macros.contains(keyNum)) {
-        // update the existing Macro object
+        // Update the existing Macro object
         auto m = macros.value(keyNum);
         m->setType(type);
         m->setContent(content);
-        // (if your Macro has an “image” field, you might clear it or leave it untouched here)
+        // (If your Macro has an “image” field, you might clear it or leave it untouched here)
     } else {
-        // create a brand‐new Macro when none exists
+        // Create a brand‐new Macro when none exists
         macros[keyNum] = QSharedPointer<Macro>::create(type, content, "");
     }
 }
@@ -94,144 +94,145 @@ void Profile::saveProfile() {
         qCritical() << "Unable to open file for writing:" << filePath;
     }
 }
-    // reads the .txt file in config with the matching name and creates its profile and macro objects
-    Profile* Profile::loadProfile(const QString& nameLookUp) {
 
-        qDebug() << "Loading profile: " << nameLookUp;
-        QString filePath = Config::getConfigDir() + "/" + nameLookUp + ".txt";
-        QFile inFile(filePath);
+// Reads the .txt file in config with the matching name and creates its profile and macro objects
+Profile* Profile::loadProfile(const QString& nameLookUp) {
 
-        if (inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QTextStream in(&inFile);
-            QString line;
-            QString profileName;
-            QString profileApp;
-            QString macroType;
-            QString macroContent;
-            int keyNum = -3;
-            int macroCount = 0;
+    qDebug() << "Loading profile: " << nameLookUp;
+    QString filePath = Config::getConfigDir() + "/" + nameLookUp + ".txt";
+    QFile inFile(filePath);
 
-            line = in.readLine();
-            if (line.startsWith("Name: ")) {
-                profileName = line.mid(6);
-            } else {
-                qWarning() << "Missing profile name!";
-                return new Profile("", "", nullptr);
-            }
+    if (inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&inFile);
+        QString line;
+        QString profileName;
+        QString profileApp;
+        QString macroType;
+        QString macroContent;
+        int keyNum = -3;
+        int macroCount = 0;
 
-            line = in.readLine();
-            if (line.startsWith("App: ")) {
-                profileApp = line.mid(5);
-            } else {
-                qWarning() << "Missing profile name!";
-                return new Profile("", "", nullptr);            ;
-            }
+        line = in.readLine();
+        if (line.startsWith("Name: ")) {
+            profileName = line.mid(6);
+        } else {
+            qWarning() << "Missing profile name!";
+            return new Profile("", "", nullptr);
+        }
 
-            Profile* userProfile = new Profile(profileName, profileApp);
+        line = in.readLine();
+        if (line.startsWith("App: ")) {
+            profileApp = line.mid(5);
+        } else {
+            qWarning() << "Missing profile name!";
+            return new Profile("", "", nullptr);            ;
+        }
 
-            if (line.startsWith("Application: ")){
-                profileApp = line.mid(13);
-            }
+        Profile* userProfile = new Profile(profileName, profileApp);
 
-            while (!in.atEnd()) {
-                line = in.readLine().trimmed();
-                qDebug() << "  >> line:" << line;
+        if (line.startsWith("Application: ")){
+            profileApp = line.mid(13);
+        }
 
-                // 1) Is it an index line?  It must:
-                //    • end with “:”
-                //    • the part before “:” must be a valid integer string (e.g. “-2”, “0”, “9”)
-                //    • and that integer must lie between -2 and 9
-                if (line.endsWith(":")) {
-                    QString numStr = line.left(line.length() - 1);
-                    bool ok = false;
-                    int n = numStr.toInt(&ok);
+        while (!in.atEnd()) {
+            line = in.readLine().trimmed();
+            qDebug() << "  >> line:" << line;
 
-                    // ensure toInt succeeded AND numStr has no extra chars (no “content”!)
-                    if (ok && numStr == QString::number(n) && n >= -2 && n <= 9) {
-                        keyNum = n;
-                        qDebug() << "    Detected key index =" << keyNum;
-                    } else if (numStr == "image"){
-                        continue;
-                    }else{
-                        qWarning() << "    [Ignored non-numeric or out-of-range index]" << numStr;
-                        keyNum = -3;
-                    }
+            // 1) Is it an index line?  It must:
+            //    • end with “:”
+            //    • the part before “:” must be a valid integer string (e.g. “-2”, “0”, “9”)
+            //    • and that integer must lie between -2 and 9
+            if (line.endsWith(":")) {
+                QString numStr = line.left(line.length() - 1);
+                bool ok = false;
+                int n = numStr.toInt(&ok);
+
+                // ensure toInt succeeded AND numStr has no extra chars (no “content”!)
+                if (ok && numStr == QString::number(n) && n >= -2 && n <= 9) {
+                    keyNum = n;
+                    qDebug() << "    Detected key index =" << keyNum;
+                } else if (numStr == "image"){
                     continue;
-                }
-
-                // 2) type: …
-                if (line.startsWith("type: ")) {
-                    macroType = line.mid(6).trimmed();
-                    qDebug() << "    Detected type =" << macroType;
-                    continue;
-                }
-
-                // 3) content: …
-                if (line.startsWith("content: ")) {
-                    macroContent = line.mid(9).trimmed();
-                    qDebug() << "    Detected content =" << macroContent;
-
-                    if (keyNum != -3 && !macroType.isEmpty() && !macroContent.isEmpty()) {
-                        userProfile->setMacro(keyNum, macroType, macroContent);
-                        qDebug() << "      [Loaded Macro]"
-                                 << "key =" << keyNum
-                                 << ", type =" << macroType
-                                 << ", content =" << macroContent;
-                        ++macroCount;
-                    } else {
-                        qWarning() << "      [Skipped malformed macro] key:" << keyNum
-                                   << " type:" << macroType
-                                   << " content:" << macroContent;
-                    }
-
-                }
-
-                if (line.startsWith("image: ")) {
-                    QString imagePath = line.mid(7);
-                    if (keyNum != -3 && !imagePath.isEmpty()) {
-                        userProfile->setKeyImage(keyNum, imagePath);
-                    }
-
-                    // reset for the next block
+                }else{
+                    qWarning() << "    [Ignored non-numeric or out-of-range index]" << numStr;
                     keyNum = -3;
-                    macroType.clear();
-                    macroContent.clear();
-                    continue;
                 }
+                continue;
             }
 
-            userProfile->printMacros();
+            // 2) type: …
+            if (line.startsWith("type: ")) {
+                macroType = line.mid(6).trimmed();
+                qDebug() << "    Detected type =" << macroType;
+                continue;
+            }
 
-            inFile.close();
-            return userProfile;
+            // 3) content: …
+            if (line.startsWith("content: ")) {
+                macroContent = line.mid(9).trimmed();
+                qDebug() << "    Detected content =" << macroContent;
 
-        } else {
-            qWarning() << "Unable to open file for reading:" << filePath;
-            return nullptr;
+                if (keyNum != -3 && !macroType.isEmpty() && !macroContent.isEmpty()) {
+                    userProfile->setMacro(keyNum, macroType, macroContent);
+                    qDebug() << "      [Loaded Macro]"
+                             << "key =" << keyNum
+                             << ", type =" << macroType
+                             << ", content =" << macroContent;
+                    ++macroCount;
+                } else {
+                    qWarning() << "      [Skipped malformed macro] key:" << keyNum
+                               << " type:" << macroType
+                               << " content:" << macroContent;
+                }
+
+            }
+
+            if (line.startsWith("image: ")) {
+                QString imagePath = line.mid(7);
+                if (keyNum != -3 && !imagePath.isEmpty()) {
+                    userProfile->setKeyImage(keyNum, imagePath);
+                }
+
+                // reset for the next block
+                keyNum = -3;
+                macroType.clear();
+                macroContent.clear();
+                continue;
+            }
         }
 
+        userProfile->printMacros();
+
+        inFile.close();
+        return userProfile;
+
+    } else {
+        qWarning() << "Unable to open file for reading:" << filePath;
+        return nullptr;
+    }
+}
+
+QVariantMap Profile::getMacroData(int keyNum) const {
+    QVariantMap result;
+    auto macro = macros.value(keyNum);
+
+    if (macro) {
+        result["type"] = macro->getType();
+        result["content"] = macro->getContent();
+        result["image"] = macro->getImagePath();
+    } else {
+        result["type"] = "";
+        result["content"] = "";
+        result["image"] = "";
     }
 
-    QVariantMap Profile::getMacroData(int keyNum) const {
-        QVariantMap result;
-        auto macro = macros.value(keyNum);
+    return result;
+}
 
-        if (macro) {
-            result["type"] = macro->getType();
-            result["content"] = macro->getContent();
-            result["image"] = macro->getImagePath();
-        } else {
-            result["type"] = "";
-            result["content"] = "";
-            result["image"] = "";
-        }
 
-        return result;
+void Profile::printMacros() {
+    for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) {
+        qDebug() << "Key:" << it.key() << "Macro:" << it.value()->toString();
     }
+}
 
-
-    void Profile::printMacros() {
-        for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) {
-            qDebug() << "Key:" << it.key() << "Macro:" << it.value()->toString();
-        }
-    }

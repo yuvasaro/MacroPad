@@ -2,16 +2,15 @@
 #include <iostream>
 #include <QString>
 
-
 #ifdef _WIN32
 #include <shlobj.h>
 #endif
+
 
 QString Config::getConfigDir() {
     std::filesystem::path configPath;
 
 #ifdef _WIN32 // C:\Users\username\AppData\Local\YourAppName\
-
     #include <minwindef.h>
     char path[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path))) {
@@ -33,10 +32,9 @@ QString Config::getConfigDir() {
     }
 
     configPath = std::filesystem::path(home) / ".config/MacroPad";
-
 #endif
 
-    // create the directory if one does not already exist
+    // Create the directory if one does not already exist
     if (!std::filesystem::exists(configPath)) {
         if(std::filesystem::create_directories(configPath)) {
             std::cout << "Created config directory: " << configPath << std::endl;
@@ -46,5 +44,4 @@ QString Config::getConfigDir() {
     }
 
     return QString::fromStdString(configPath.string());
-
 }

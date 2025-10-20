@@ -22,10 +22,10 @@ class Config : public QObject {
     Q_OBJECT
 
 public:
-    Config() = delete;  // Prevent instantiation
+    Config() = delete; // Prevent instantiation
     ~Config() {};
 
-    static Q_INVOKABLE QString getConfigDir();  // Static method accessible from QML
+    static Q_INVOKABLE QString getConfigDir(); // Static method accessible from QML
 };
 
 #endif // CONFIG_H

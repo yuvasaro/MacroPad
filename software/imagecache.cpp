@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QFileInfo>
 
+
 ImageCache* ImageCache::m_instance = nullptr;
 
 ImageCache::ImageCache(QObject* parent) : QObject(parent) {}
