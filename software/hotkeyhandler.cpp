@@ -11,7 +11,7 @@
 #include <QFileInfoList>
 #include "knobhandler.h"
 
-#define DEBUG
+//#define DEBUG
 
 // profileManager in this file refers to the profile that is selected from the dropdown in the UI
 Profile* HotkeyHandler::profileManager;

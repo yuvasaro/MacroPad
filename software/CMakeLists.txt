@@ -63,6 +63,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
             ProfileManager.qml
             keystroke.jpg
             executable.png
+            images
     )
 
 else()
