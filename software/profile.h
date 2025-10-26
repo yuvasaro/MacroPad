@@ -47,6 +47,7 @@ signals:
     void nameChanged();
     void appChanged();
     void keyImageChanged(int keyNum, const QString& imagePath);
+    void macrosChanged();
 };
 
 #endif // PROFILE_H

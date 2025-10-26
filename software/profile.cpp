@@ -46,6 +46,7 @@ void Profile::setMacro(int keyNum, const QString& type, const QString& content) 
         // Create a brand‐new Macro when none exists
         macros[keyNum] = QSharedPointer<Macro>::create(type, content, "");
     }
+    emit macrosChanged();
 }
 
 void Profile::setKeyImage(int keyNum, const QString& imagePath) {
@@ -55,6 +56,7 @@ void Profile::setKeyImage(int keyNum, const QString& imagePath) {
         macros[keyNum] = QSharedPointer<Macro>::create("", "", imagePath);
     }
     emit keyImageChanged(keyNum, imagePath);
+    emit macrosChanged();
 }
 
 QString Profile::getMacroImagePath(int keyNum) const {
