@@ -4,14 +4,16 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 #include <QFile>
-
+#include <QCoreApplication>
+#include <QDir>
 
 static constexpr qint32 BAUD_UNO   = QSerialPort::Baud19200;
 static constexpr qint32 BAUD_ESP32 = QSerialPort::Baud115200;
 
 SerialHandler::SerialHandler(QObject *parent)
-    : QObject(parent), COMPORT(nullptr)
+    : QObject(parent), COMPORT(nullptr), m_imagesDir(QCoreApplication::applicationDirPath()+"/images")
 {
+    QDir().mkpath(m_imagesDir);
     connect(&scanTimer, &QTimer::timeout, this, &SerialHandler::tryConnect);
     connect(&heartbeatTimer, &QTimer::timeout, this, &SerialHandler::heartbeat);
     startScanning();
@@ -110,27 +112,63 @@ void SerialHandler::heartbeat()
 
 
 // ---------------- your original methods remain unchanged ----------------
+// void SerialHandler::readSerialData()
+// {
+//     if(!COMPORT) return;
+//     QByteArray data = COMPORT->readAll();
+//     qDebug() << "Received data (raw bytes):" << data;
+
+//     QString trimmedText = QString::fromUtf8(data).trimmed();
+//     QByteArray butt = trimmedText.toUtf8();
+//     qDebug() << "Number only:" << butt;
+//     bool ok = false;
+//     int number = trimmedText.toInt(&ok);
+//     if(number == 1) this->transferAllImages("images", 6, 6);
+//     qDebug() << "Integer:" << number;
+
+//     if(ok) emit dataReceived(number);
+// }
+
 void SerialHandler::readSerialData()
 {
-    if(!COMPORT) return;
-    QByteArray data = COMPORT->readAll();
-    qDebug() << "Received data (raw bytes):" << data;
+    if (!COMPORT) return;
 
-    QString trimmedText = QString::fromUtf8(data).trimmed();
-    QByteArray butt = trimmedText.toUtf8();
-    qDebug() << "Number only:" << butt;
-    bool ok = false;
-    int number = trimmedText.toInt(&ok);
-    if(number == 1) this->transferAllImages("images", 6, 6);
-    qDebug() << "Integer:" << number;
+    m_rxBuf += COMPORT->readAll();
 
-    if(ok) emit dataReceived(number);
+    // process complete lines
+    for (;;) {
+        int nl = m_rxBuf.indexOf('\n');
+        if (nl < 0) break;
+
+        QByteArray line = m_rxBuf.left(nl);
+        m_rxBuf.remove(0, nl + 1);
+
+        line = line.trimmed();
+        if (line.isEmpty()) continue;
+
+        qDebug() << "rx line:" << line;
+
+        // Only lines that start with '#' are input events
+        if (line.startsWith('#')) {
+            bool ok = false;
+            int code = QString::fromUtf8(line.mid(1)).toInt(&ok);
+            if(code==1) transferAllImages(m_imagesDir, /*profiles*/6, /*icons*/6);
+            if (ok) {
+                emit dataReceived(code);
+            } else {
+                qDebug() << "[Serial] bad input code:" << line;
+            }
+        } else {
+            // everything else is a device log; ignore or show
+            // qDebug() << "[ESP]" << line;
+        }
+    }
 }
 
 void SerialHandler::sendProfile(int profileCode)
 {
     if (COMPORT && COMPORT->isOpen()) {
-        QByteArray data = QByteArray::number(profileCode);
+        QByteArray data = QByteArray::number(profileCode)+"\n";
         qDebug() << "Sending profile code:" << profileCode;
         COMPORT->write(data);
     } else {
@@ -155,41 +193,42 @@ bool SerialHandler::writeAll(QSerialPort *port, const QByteArray &data, int chun
 bool SerialHandler::enterImageMode()    // 47
 {
     if (!COMPORT || !COMPORT->isOpen()) return false;
-    const char c = 47; // single byte
-    return writeAll(COMPORT, QByteArray(1, c));
+    QByteArray data = QByteArray::number(47)+"\n";
+    return COMPORT->write(data);
 }
 
-bool SerialHandler::sendImageSlot(quint8 profileX, quint8 iconY, const QByteArray &pngBytes)
+bool SerialHandler::sendImageSlot(quint8 x, quint8 y, const QByteArray &pngBytes)
 {
     if (!COMPORT || !COMPORT->isOpen()) return false;
-    // header: x y (raw bytes)
-    QByteArray hdr;
-    hdr.reserve(2);
-    hdr.append(char(profileX));
-    hdr.append(char(iconY));
-    if (!writeAll(COMPORT, hdr)) return false;
 
-    // body: raw PNG
-    if (!writeAll(COMPORT, pngBytes)) return false;
+    QByteArray pkt;
+    pkt.reserve(1 + 1 + 4 + pngBytes.size());
+    pkt.append(char(x));
+    pkt.append(char(y));
 
-    // terminator: 48
-    const char endImage = 48;
-    return writeAll(COMPORT, QByteArray(1, endImage));
+    const quint32 len = pngBytes.size();
+    pkt.append(char(len & 0xFF));
+    pkt.append(char((len >> 8) & 0xFF));
+    pkt.append(char((len >> 16) & 0xFF));
+    pkt.append(char((len >> 24) & 0xFF));
+
+    pkt.append(pngBytes);
+    return writeAll(COMPORT, pkt);
 }
 
 bool SerialHandler::exitImageModeAndReset()   // 49
 {
     if (!COMPORT || !COMPORT->isOpen()) return false;
-    const char c = 49;
-    return writeAll(COMPORT, QByteArray(1, c));
+    QByteArray data = QByteArray::number(49)+"\n";
+    return COMPORT->write(data);
 }
 
-QString SerialHandler::pngPathFor(int x, int y, const QString &root, bool oneBasedY)
+// Flat naming: images/pXiY.png  (x = 0..5, y = 0..5)
+QString SerialHandler::pngPathFor(int x, int y, const QString &root)
 {
-    // your layout: images/profile0/1.png..6.png (y is 1-based in filenames)
-    const int fnameIndex = oneBasedY ? (y + 1) : y;
-    return QString("%1/profile%2/%3.png").arg(root).arg(x).arg(fnameIndex);
+    return QDir(root).filePath(QString("p%1i%2.png").arg(x).arg(y));
 }
+
 
 bool SerialHandler::isPng(const QByteArray &bytes)
 {
@@ -201,13 +240,12 @@ bool SerialHandler::isPng(const QByteArray &bytes)
 bool SerialHandler::transferAllImages(const QString &root, int profiles, int iconsPerProfile)
 {
     if (!COMPORT || !COMPORT->isOpen()) { qDebug() << "[Images] no serial connection"; return false; }
-
     if (!enterImageMode()) { qDebug() << "[Images] failed 47"; return false; }
 
     bool ok = true;
     for (int x = 0; x < profiles && ok; ++x) {
         for (int y = 0; y < iconsPerProfile && ok; ++y) {
-            const QString path = pngPathFor(x, y, root, /*oneBasedY*/true);
+            const QString path = pngPathFor(x, y, root);   // <— root = m_imagesDir
             QFile f(path);
             if (!f.exists()) { qDebug() << "[Images] missing" << path << "(skipping)"; continue; }
             if (!f.open(QIODevice::ReadOnly)) { qDebug() << "[Images] open failed" << path; ok = false; break; }

@@ -38,6 +38,8 @@ private slots:
 private:
     QSerialPort* COMPORT=nullptr;
     QByteArray buffer;
+    QString m_imagesDir;
+    QByteArray m_rxBuf;
 
     bool openPort(const QSerialPortInfo &info);
     void closePort();
@@ -46,7 +48,7 @@ private:
     void stopScanning();
     static bool writeAll(QSerialPort *port, const QByteArray &data, int chunk = 512, int timeoutMs = 4000);
 
-    static QString pngPathFor(int x, int y, const QString &root, bool oneBasedY = true);
+    QString pngPathFor(int x, int y, const QString &root);
     static bool isPng(const QByteArray &bytes);
     //static QString cArrayFor(const QByteArray &bytes, const QString &symnbol);
     //static QString headerGuard(const QString &name);

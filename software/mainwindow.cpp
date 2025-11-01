@@ -20,7 +20,8 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QFileInfo>
-
+#include <QShortcut>
+#include "serialhandler.h"
 
 #ifdef __APPLE__
     int KnobHandler::macVolume = KnobHandler::getSystemVolume();
@@ -79,6 +80,12 @@ MainWindow::MainWindow(QWidget *parent):
     QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile,Qt::DirectConnection);
     //Connecting Macropad with SerialHandler.
     connect(m_serialHandler, &SerialHandler::dataReceived, this, &MainWindow::onDataReceived);
+
+    // auto shortcut = new QShortcut(QKeySequence(Qt::Key_F10), this);
+    // connect(shortcut, &QShortcut::activated, this, [this] {
+    //     if (serialHandler)
+    //         serialHandler->transferAllImages(QCoreApplication::applicationDirPath() + "/images", 6, 6);
+    // });
 }
 
 MainWindow::~MainWindow() {}
@@ -148,6 +155,7 @@ void MainWindow::onDataReceived(int number)
             HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,2);
         else if (number == 73)
             HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,3);
+            //m_serialHandler->transferAllImages(m_imagesDir, /*profiles*/6, /*icons*/6);
             //KnobHandler::mute();
             //KnobHandler::autoScrollToggle();
         return;

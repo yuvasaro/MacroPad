@@ -141,3 +141,9 @@ install(TARGETS MacroPad
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(MacroPad)
 endif()
+# --- Copy images/ to the run directory (beside the exe) after build ---
+set(APP_IMAGE_DIR "${CMAKE_CURRENT_LIST_DIR}/images")
+add_custom_command(TARGET MacroPad POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:MacroPad>/images"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${APP_IMAGE_DIR}" "$<TARGET_FILE_DIR:MacroPad>/images"
+  COMMENT "Copying images/ to run dir")
