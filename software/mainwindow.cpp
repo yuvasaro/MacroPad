@@ -148,24 +148,27 @@ void MainWindow::onDataReceived(int number)
     if (number > 80 && number < 90)
     {
         if (number == 82)
-            KnobHandler::volumeUp();
+            //KnobHandler::volumeUp();
             //KnobHandler::scrollUp();
             //KnobHandler::brightnessUp();
             //KnobHandler::switchAppLeft();
             //KnobHandler::zoomIn();
             //KnobHandler::nextTab();
+            HotkeyHandler::executeEncoder(-1, HotkeyHandler::currentProfile,1);
         else if (number == 81)
-            KnobHandler::volumeDown();
+            //KnobHandler::volumeDown();
             //KnobHandler::scrollDown();
             //KnobHandler::brightnessDown();
             //KnobHandler::switchAppRight();
             //KnobHandler::zoomOut();
             //KnobHandler::previousTab();
+            HotkeyHandler::executeEncoder(-1, HotkeyHandler::currentProfile,2);
         else if (number == 83)
-            KnobHandler::toggleMute();
+            //KnobHandler::toggleMute();
             //KnobHandler::autoScrollToggle();
             //KnobHandler::activateAppSwitcher();
             //KnobHandler::zoomReset();
+            HotkeyHandler::executeEncoder(-1, HotkeyHandler::currentProfile,3);
         return;
     }
 
