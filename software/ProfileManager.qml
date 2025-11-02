@@ -20,7 +20,8 @@ Item {
             image = customImage;
         } else if (type === "keystroke" && value !== "") {
             // Default keystroke icon
-            image = "qrc:/keystroke.jpg";
+            image = "qrc:/keystroke.png";
+            console.log("image is ", image);
         } else if (type === "executable" && value !== "") {
             try {
                 let extractedPath = iconExtractor.extractIconForApp(value);
