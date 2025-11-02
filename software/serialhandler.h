@@ -52,6 +52,7 @@ private:
     static bool isPng(const QByteArray &bytes);
     //static QString cArrayFor(const QByteArray &bytes, const QString &symnbol);
     //static QString headerGuard(const QString &name);
+    bool waitForByte(char want, int timeoutMs);
 
     QTimer scanTimer;
     QTimer heartbeatTimer;

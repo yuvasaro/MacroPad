@@ -190,11 +190,15 @@ bool SerialHandler::writeAll(QSerialPort *port, const QByteArray &data, int chun
     return true;
 }
 
-bool SerialHandler::enterImageMode()    // 47
-{
+bool SerialHandler::enterImageMode() {
     if (!COMPORT || !COMPORT->isOpen()) return false;
-    QByteArray data = QByteArray::number(47)+"\n";
-    return COMPORT->write(data);
+    if (!writeAll(COMPORT, QByteArray("47\n"))) return false;  // send and flush
+    return waitForByte('R', 3000);                             // wait READY from ESP
+}
+
+bool SerialHandler::exitImageModeAndReset() {
+    if (!COMPORT || !COMPORT->isOpen()) return false;
+    return writeAll(COMPORT, QByteArray("49\n"));
 }
 
 bool SerialHandler::sendImageSlot(quint8 x, quint8 y, const QByteArray &pngBytes)
@@ -216,11 +220,16 @@ bool SerialHandler::sendImageSlot(quint8 x, quint8 y, const QByteArray &pngBytes
     return writeAll(COMPORT, pkt);
 }
 
-bool SerialHandler::exitImageModeAndReset()   // 49
-{
-    if (!COMPORT || !COMPORT->isOpen()) return false;
-    QByteArray data = QByteArray::number(49)+"\n";
-    return COMPORT->write(data);
+bool SerialHandler::waitForByte(char want, int timeoutMs) {
+    QElapsedTimer t; t.start();
+    while (t.elapsed() < timeoutMs) {
+        if (!COMPORT || !COMPORT->isOpen()) return false;
+        if (COMPORT->waitForReadyRead(50)) {
+            const QByteArray b = COMPORT->readAll();
+            if (b.contains(want)) return true;
+        }
+    }
+    return false;
 }
 
 // Flat naming: images/pXiY.png  (x = 0..5, y = 0..5)
@@ -240,22 +249,34 @@ bool SerialHandler::isPng(const QByteArray &bytes)
 bool SerialHandler::transferAllImages(const QString &root, int profiles, int iconsPerProfile)
 {
     if (!COMPORT || !COMPORT->isOpen()) { qDebug() << "[Images] no serial connection"; return false; }
-    if (!enterImageMode()) { qDebug() << "[Images] failed 47"; return false; }
+    if (!enterImageMode())                { qDebug() << "[Images] failed to enter or no READY"; return false; }
 
     bool ok = true;
     for (int x = 0; x < profiles && ok; ++x) {
         for (int y = 0; y < iconsPerProfile && ok; ++y) {
-            const QString path = pngPathFor(x, y, root);   // <— root = m_imagesDir
+            const QString path = pngPathFor(x, y, root);
             QFile f(path);
             if (!f.exists()) { qDebug() << "[Images] missing" << path << "(skipping)"; continue; }
             if (!f.open(QIODevice::ReadOnly)) { qDebug() << "[Images] open failed" << path; ok = false; break; }
             const QByteArray bytes = f.readAll();
             f.close();
-
             if (!isPng(bytes)) { qDebug() << "[Images] not a PNG:" << path; ok = false; break; }
 
-            qDebug() << "[Images]" << path << "-> (" << x << "," << y << ") bytes:" << bytes.size();
-            if (!sendImageSlot(quint8(x), quint8(y), bytes)) { qDebug() << "[Images] send failed"; ok = false; break; }
+            // send 6-byte header + body
+            QByteArray hdr;
+            hdr.reserve(6);
+            hdr.append(char(x));
+            hdr.append(char(y));
+            const quint32 len = bytes.size();
+            hdr.append(char(len & 0xFF));
+            hdr.append(char((len >> 8) & 0xFF));
+            hdr.append(char((len >> 16) & 0xFF));
+            hdr.append(char((len >> 24) & 0xFF));
+
+            if (!writeAll(COMPORT, hdr) || !writeAll(COMPORT, bytes)) { qDebug() << "[Images] send failed"; ok = false; break; }
+
+            // wait for ESP ACK=50 before next image
+            if (!waitForByte(char(50), 5000)) { qDebug() << "[Images] no ACK for" << path; ok = false; break; }
         }
     }
 
