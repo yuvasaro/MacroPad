@@ -9,12 +9,20 @@ Rectangle {
     height: 850
     color: "black"
     property string exeIconPath: ""
+    property int refreshCounter: 0
 
     Component.onCompleted: {
         var num = hotkeyHandler.profiles.length;
         console.log("Number of profiles from mainwindow:", num);
         // Force initial update of encoders
         updateEncoders();
+
+        if (hotkeyHandler.profileManager) {
+            hotkeyHandler.profileManager.macrosChanged.connect(function() {
+                console.log("Macros changed, refreshing UI");
+                refreshCounter++;
+            });
+        }
     }
 
     // Function to update encoder selections based on current profile
@@ -99,7 +107,10 @@ Rectangle {
                         width: parent.width - 10
                         height: parent.height - 10
                         fillMode: Image.PreserveAspectFit
-                        source: hotkeyHandler.profileManager.getMacroImagePath(index + 1)
+                        source: {
+                            refreshCounter; // Force refresh when this changes
+                            return hotkeyHandler.profileManager.getMacroImagePath(index + 1);
+                        }
                         visible: source !== ""
                     }
 
@@ -190,8 +201,17 @@ Rectangle {
             exetext.text = hotkeyHandler.profileManager.getApp();
             console.log("Selected profile:", hotkeyHandler.profileManager.name);
 
+            if (hotkeyHandler.profileManager) {
+                hotkeyHandler.profileManager.macrosChanged.connect(function() {
+                    console.log("Macros changed, refreshing UI");
+                    refreshCounter++;
+                });
+            }
+
             // Update encoders when profile changes
             Qt.callLater(root.updateEncoders);
+
+            refreshCounter++;
         }
     }
 
