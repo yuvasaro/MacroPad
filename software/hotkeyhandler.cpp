@@ -204,9 +204,105 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
     else if (type == "executable") {
         QString fixed = content;
         if (fixed.startsWith("/")) fixed.remove(0,1);
+
+        // Extract executable name from full path
+        QString exeName = QFileInfo(fixed).fileName();
+
+        // Try to find and switch to existing window
+        if (findAndSwitchToWindow(exeName)) {
+            qDebug() << "Switched to existing window for" << exeName;
+            return; // EXIT HERE - don't open new window
+        }
+
+        // No existing window found, open new instance
+        qDebug() << "No existing window found, opening new instance for" << exeName;
         wpathExec = QDir::toNativeSeparators(fixed).toStdWString();
         ShellExecuteW(NULL, L"open", wpathExec.c_str(), NULL, NULL, SW_SHOWNORMAL);
     }
+}
+
+bool HotkeyHandler::findAndSwitchToWindow(const QString& exeName)
+{
+    struct EnumData {
+        QString targetExe;
+        HWND foundWindow;
+    };
+
+    EnumData data;
+    data.targetExe = exeName.toLower();
+    data.foundWindow = nullptr;
+
+    // Enumerate all top-level windows
+    EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
+        EnumData* pData = reinterpret_cast<EnumData*>(lParam);
+
+        // Skip invisible windows
+        if (!IsWindowVisible(hwnd)) {
+            return TRUE;
+        }
+
+        // Get process ID for this window
+        DWORD processId;
+        GetWindowThreadProcessId(hwnd, &processId);
+
+        // Open process to get executable name
+        HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+        if (hProcess) {
+            wchar_t exePath[MAX_PATH];
+            DWORD size = MAX_PATH;
+
+            // Get executable path
+            if (QueryFullProcessImageNameW(hProcess, 0, exePath, &size)) {
+                QString processExe = QFileInfo(QString::fromWCharArray(exePath)).fileName().toLower();
+
+                // Check if this matches our target executable
+                if (processExe == pData->targetExe) {
+                    pData->foundWindow = hwnd;
+                    CloseHandle(hProcess);
+                    return FALSE; // Stop enumeration
+                }
+            }
+            CloseHandle(hProcess);
+        }
+
+        return TRUE; // Continue enumeration
+    }, reinterpret_cast<LPARAM>(&data));
+
+    // If we found a window, bring it to front
+    if (data.foundWindow) {
+        // Restore if minimized
+        if (IsIconic(data.foundWindow)) {
+            ShowWindow(data.foundWindow, SW_RESTORE);
+        }
+
+        // Comprehensive approach to force foreground window
+        HWND hCurWnd = GetForegroundWindow();
+        DWORD dwMyID = GetCurrentThreadId();
+        DWORD dwCurID = GetWindowThreadProcessId(hCurWnd, NULL);
+
+        // Attach input to allow SetForegroundWindow to work
+        AttachThreadInput(dwCurID, dwMyID, TRUE);
+
+        // Show and activate the window
+        ShowWindow(data.foundWindow, SW_SHOW);
+        SetForegroundWindow(data.foundWindow);
+        SetFocus(data.foundWindow);
+        SetActiveWindow(data.foundWindow);
+        BringWindowToTop(data.foundWindow);
+
+        // Detach input
+        AttachThreadInput(dwCurID, dwMyID, FALSE);
+
+        // Alternative: simulate Alt key press to bypass foreground lock
+        // This is a common workaround for stubborn cases
+        keybd_event(VK_MENU, 0, 0, 0);
+        SetForegroundWindow(data.foundWindow);
+        keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);
+
+        return true;
+    }
+
+    return false;
 }
 
 #endif
