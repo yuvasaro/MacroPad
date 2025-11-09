@@ -396,8 +396,9 @@ void KnobHandler::nextTab() {
 
 #ifdef __APPLE__
     qDebug() << "nextTab called";
-    QStringList keys = {"ctrl", "tab"};
-    HotkeyHandler::pressAndReleaseKeys(keys);
+    QProcess::execute("osascript", QStringList() << "-e" <<
+                                       "tell application \"Google Chrome\" to tell window 1 to set active tab index to (active tab index + 1)");
+
 #endif
 }
 
@@ -410,8 +411,9 @@ void KnobHandler::previousTab() {
 
 #ifdef __APPLE__
     qDebug() << "previousTab called";
-    QStringList keys = {"ctrl", "shift", "tab"};
-    HotkeyHandler::pressAndReleaseKeys(keys);
+    QProcess::execute("osascript", QStringList() << "-e" <<
+                                       "tell application \"Google Chrome\" to tell window 1 to set active tab index to (active tab index - 1)");
+
 #endif
 }
 
