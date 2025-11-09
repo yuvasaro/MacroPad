@@ -368,6 +368,7 @@ void KnobHandler::zoomOut() {
 #endif
 
 #ifdef __APPLE__
+    qDebug() << "zoomOut called";
     QStringList keys = {"cmd", "shift", "-"};
     HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
@@ -394,6 +395,7 @@ void KnobHandler::nextTab() {
 #endif
 
 #ifdef __APPLE__
+    qDebug() << "nextTab called";
     QStringList keys = {"ctrl", "tab"};
     HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
@@ -407,6 +409,7 @@ void KnobHandler::previousTab() {
 #endif
 
 #ifdef __APPLE__
+    qDebug() << "previousTab called";
     QStringList keys = {"ctrl", "shift", "tab"};
     HotkeyHandler::pressAndReleaseKeys(keys);
 #endif

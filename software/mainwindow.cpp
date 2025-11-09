@@ -148,19 +148,19 @@ void MainWindow::onDataReceived(int number)
     if (number > 80 && number < 90)
     {
         if (number == 82)
-            KnobHandler::volumeUp();
+            //KnobHandler::volumeUp();
             //KnobHandler::scrollUp();
             //KnobHandler::brightnessUp();
             //KnobHandler::switchAppLeft();
             //KnobHandler::zoomIn();
-            //KnobHandler::nextTab();
+            KnobHandler::nextTab();
         else if (number == 81)
-            KnobHandler::volumeDown();
+            //KnobHandler::volumeDown();
             //KnobHandler::scrollDown();
             //KnobHandler::brightnessDown();
             //KnobHandler::switchAppRight();
             //KnobHandler::zoomOut();
-            //KnobHandler::previousTab();
+            KnobHandler::previousTab();
         else if (number == 83)
             KnobHandler::toggleMute();
             //KnobHandler::autoScrollToggle();
