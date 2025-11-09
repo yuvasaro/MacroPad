@@ -472,17 +472,17 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
 #ifdef DEBUG
     UINT vkCode = 0;
     switch (keyNum) {
-    case -2:vkCode = 0xBD;break;
-    case -1:vkCode = 0xBD;break;
-    case 1: vkCode = 0xBB; break;
-    case 2: vkCode = 0x32; break;
-    case 3: vkCode = 0x33; break;
-    case 4: vkCode = 0x34; break;
-    case 5: vkCode = 0x35; break;
-    case 6: vkCode = 0x36; break;
-    case 7: vkCode = 0x37; break;
-    case 8: vkCode = 0x38; break;
-    case 9: vkCode = 0x39; break;
+    // case -2:vkCode = 0xBD;break;
+    // case -1:vkCode = 0xBD;break;
+    // case 1: vkCode = 0xBB; break;
+    // case 2: vkCode = 0x32; break;
+    // case 3: vkCode = 0x33; break;
+    // case 4: vkCode = 0x34; break;
+    // case 5: vkCode = 0x35; break;
+    // case 6: vkCode = 0x36; break;
+    // case 7: vkCode = 0x37; break;
+    // case 8: vkCode = 0x38; break;
+    // case 9: vkCode = 0x39; break;
     default:
         std::cerr << "Invalid key number specified.\n";
         return;

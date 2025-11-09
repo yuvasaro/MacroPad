@@ -46,6 +46,7 @@ void Profile::setMacro(int keyNum, const QString& type, const QString& content) 
         // Create a brand‐new Macro when none exists
         macros[keyNum] = QSharedPointer<Macro>::create(type, content, "");
     }
+    emit macrosChanged();
 }
 
 void Profile::setKeyImage(int keyNum, const QString& imagePath) {
@@ -55,6 +56,7 @@ void Profile::setKeyImage(int keyNum, const QString& imagePath) {
         macros[keyNum] = QSharedPointer<Macro>::create("", "", imagePath);
     }
     emit keyImageChanged(keyNum, imagePath);
+    emit macrosChanged();
 }
 
 QString Profile::getMacroImagePath(int keyNum) const {
@@ -210,11 +212,29 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         qWarning() << "Unable to open file for reading:" << filePath;
         return nullptr;
     }
-
 }
+
+QVariantMap Profile::getMacroData(int keyNum) const {
+    QVariantMap result;
+    auto macro = macros.value(keyNum);
+
+    if (macro) {
+        result["type"] = macro->getType();
+        result["content"] = macro->getContent();
+        result["image"] = macro->getImagePath();
+    } else {
+        result["type"] = "";
+        result["content"] = "";
+        result["image"] = "";
+    }
+
+    return result;
+}
+
 
 void Profile::printMacros() {
     for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) {
         qDebug() << "Key:" << it.key() << "Macro:" << it.value()->toString();
     }
 }
+

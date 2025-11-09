@@ -53,7 +53,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         knobhandler.h
         knobhandler.cpp
         imagecache.h imagecache.cpp
-
     )
     qt_add_resources(MacroPad "resources"
         PREFIX "/"
@@ -61,7 +60,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
             Main.qml
             KeyConfig.qml
             ProfileManager.qml
-            keystroke.jpg
+            keystroke.png
             executable.png
     )
 
