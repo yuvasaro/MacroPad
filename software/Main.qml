@@ -17,12 +17,19 @@ Rectangle {
         // Force initial update of encoders
         updateEncoders();
 
+        // Connect to profile macro changes
         if (hotkeyHandler.profileManager) {
             hotkeyHandler.profileManager.macrosChanged.connect(function() {
                 console.log("Macros changed, refreshing UI");
                 refreshCounter++;
             });
         }
+
+        // Load profile icon for initial profile
+        loadProfileIcon();
+
+        // Force initial refresh to load saved icons
+        refreshCounter++;
     }
 
     // Function to update encoder selections based on current profile
@@ -70,6 +77,60 @@ Rectangle {
         encoder2Combo.isUpdating = false;
 
         console.log("=== Finished updating encoders ===");
+    }
+
+    function loadProfileIcon() {
+        var appName = hotkeyHandler.profileManager.getApp();
+        console.log("Loading profile icon for app:", appName);
+
+        if (!appName || appName === "") {
+            console.log("No app set for this profile");
+            return;
+        }
+
+        // Check if icon is already saved in profile
+        var savedIconPath = hotkeyHandler.profileManager.getMacroImagePath(0);
+        console.log("Saved icon path:", savedIconPath);
+
+        if (savedIconPath && savedIconPath !== "") {
+            // Check if the saved icon file still exists
+            // If it exists, we're done - the Image binding will load it
+            console.log("Profile has saved icon path");
+            return;
+        }
+
+        // No saved icon or icon doesn't exist - try to find and extract from app name
+        // We need to search for the executable based on the app name
+        console.log("Attempting to re-extract icon for app:", appName);
+
+        // Try common locations for the app
+        var possiblePaths = [];
+
+        // Add platform-specific common paths
+        if (Qt.platform.os === "osx") {
+            possiblePaths.push("/Applications/" + appName + ".app");
+        } else if (Qt.platform.os === "windows") {
+            possiblePaths.push("C:/Program Files/" + appName + "/" + appName + ".exe");
+            possiblePaths.push("C:/Program Files (x86)/" + appName + "/" + appName + ".exe");
+        }
+
+        // Try to extract icon from each possible path
+        for (var i = 0; i < possiblePaths.length; i++) {
+            try {
+                var iconPath = iconExtractor.extractIconForApp(possiblePaths[i]);
+                if (iconPath && iconPath !== "") {
+                    console.log("Successfully re-extracted icon from:", possiblePaths[i]);
+                    hotkeyHandler.profileManager.setKeyImage(0, "file:///" + iconPath);
+                    hotkeyHandler.profileManager.saveProfile();
+                    refreshCounter++;
+                    return;
+                }
+            } catch (e) {
+                console.log("Failed to extract from:", possiblePaths[i]);
+            }
+        }
+
+        console.log("Could not re-extract icon for app:", appName);
     }
 
     IconExtractor {
@@ -209,17 +270,13 @@ Rectangle {
                 });
             }
 
-            var appName = hotkeyHandler.profileManager.getApp();
-            if (appName && appName !== "") {
-                // Get the icon for this profile's app
-                var macroData = hotkeyHandler.profileManager.getMacroData(1);
-                exeIconPath = "";
-            } else {
-                exeIconPath = "";
-            }
+            // Load/re-extract the profile icon if an app is set
+            loadProfileIcon();
 
+            // Update encoders when profile changes
             Qt.callLater(root.updateEncoders);
 
+            // Force refresh of all keys
             refreshCounter++;
         }
     }
