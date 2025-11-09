@@ -201,6 +201,7 @@ Rectangle {
             exetext.text = hotkeyHandler.profileManager.getApp();
             console.log("Selected profile:", hotkeyHandler.profileManager.name);
 
+            // Reconnect to new profile's macrosChanged signal
             if (hotkeyHandler.profileManager) {
                 hotkeyHandler.profileManager.macrosChanged.connect(function() {
                     console.log("Macros changed, refreshing UI");
@@ -208,7 +209,15 @@ Rectangle {
                 });
             }
 
-            // Update encoders when profile changes
+            var appName = hotkeyHandler.profileManager.getApp();
+            if (appName && appName !== "") {
+                // Get the icon for this profile's app
+                var macroData = hotkeyHandler.profileManager.getMacroData(1);
+                exeIconPath = "";
+            } else {
+                exeIconPath = "";
+            }
+
             Qt.callLater(root.updateEncoders);
 
             refreshCounter++;
@@ -229,23 +238,19 @@ Rectangle {
             if(fileDialogCaller === "exebutton"){
                 console.log("Selected executable:", selectedFile)
 
-                // extract the app name from the full path so the app tracker can match it to just the name
                 let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
 
-                // makes sure to set the appname of the selected profile and save it
                 profileManager.setApp(appName);
 
-                // displays the name of the app for the selected profile in the UI
                 exetext.text = hotkeyHandler.profileManager.getApp();
 
                 let iconPath = iconExtractor.extractIconForApp(fullPath);
-                exeIconPath = iconPath !== "" ? "file:///" + iconPath : "";
-            }
-            if(fileDialogCaller === "encoder1"){
-                let volapp = profileManager.setKeyConfig(-2, "encoder", "AppVolume:"+selectedFile);
-            }
-            if(fileDialogCaller === "encoder2"){
-                let volapp = profileManager.setKeyConfig(-1, "encoder", "AppVolume:"+selectedFile);
+                if (iconPath !== "") {
+                    hotkeyHandler.profileManager.setKeyImage(0, "file:///" + iconPath);
+                    exeIconPath = "file:///" + iconPath;
+                } else {
+                    exeIconPath = "";
+                }
             }
         }
     }
@@ -289,8 +294,13 @@ Rectangle {
         anchors.topMargin: 10
         anchors.horizontalCenter: exetext.horizontalCenter
         fillMode: Image.PreserveAspectFit
-        source: exeIconPath
-        visible: profileSelector.currentText !== "General"
+        source: {
+            refreshCounter; // Force refresh
+            if (profileSelector.currentText === "General") return "";
+            // Get the profile icon from key 0 (reserved for profile icon)
+            return hotkeyHandler.profileManager.getMacroImagePath(0);
+        }
+        visible: profileSelector.currentText !== "General" && source !== ""
     }
 
     //two encoder knobs
