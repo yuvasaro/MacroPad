@@ -16,6 +16,7 @@ Dialog {
     property bool useCustomImage: false
     signal accepted()
     property string customImage: ""
+    property string extractedIconPath: ""
 
     Component.onCompleted: {
         console.log("Initializing KeyConfig Dialog for Key:", keyIndex);
@@ -138,27 +139,23 @@ Dialog {
 
                 var keystrokeValue = keys.join("+");
                 var executableValue = executablePath.text;
-                var imageValue = customImageCheck.checked ? keyImagePreview.source : "";
-                var customImagePath = "";
-                        if (customImageCheck.checked && keyImagePreview.source !== "") {
-                            customImagePath = keyImagePreview.source.toString();
-                        }
+
+                // Use custom image if checked, otherwise use extracted icon
+                var imageValue = customImageCheck.checked ? keyImagePreview.source.toString() : extractedIconPath;
 
                 console.log("Saving key", keyConfigDialog.keyIndex, "Keystroke:", keystrokeValue, "Executable:", executableValue, "Image:", imageValue);
 
                 if (keystrokeValue !== "") {
-                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue, imageValue);
+                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue, "");
                     mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
                 }
 
                 if (executableValue !== "") {
-                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue, customImagePath);
+                    // Pass the icon path (either extracted or custom)
+                    profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue, imageValue);
                     mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "executable", executableValue);
                 }
 
-                if (imageValue !== "") {
-                        profileManager.setKeyConfig(keyConfigDialog.keyIndex, "image", imageValue);
-                    }
                 keyConfigDialog.accept();
             }
         }
@@ -177,14 +174,22 @@ Dialog {
         nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
 
         onAccepted: {
-            console.log("Selected executable:", selectedFile)
-            keyConfigDialog.executable = selectedFile.toString().replace("file://", "");
-            executablePath.text = keyConfigDialog.executable;
+                    console.log("Selected executable:", selectedFile)
+                    keyConfigDialog.executable = selectedFile.toString().replace("file:///", "");
+                    executablePath.text = keyConfigDialog.executable;
 
-            modifier1.currentIndex = 0;
-            modifier2.currentIndex = 0;
-            keySelection.currentIndex = 0;
+                    // Extract icon for the selected executable
+                    var iconPath = iconExtractor.extractIconForApp(keyConfigDialog.executable);
+                    if (iconPath !== "") {
+                        extractedIconPath = iconPath;
+                        console.log("Extracted icon path:", extractedIconPath);
+                    }
+
+                    modifier1.currentIndex = 0;
+                    modifier2.currentIndex = 0;
+                    keySelection.currentIndex = 0;
+                }
+
         }
-    }
 }
 

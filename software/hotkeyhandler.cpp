@@ -180,12 +180,22 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
     if (type == "keystroke") {
         std::thread([content]() {
             QMap<QString,int> keyMap = {
-                {"Cmd", VK_LWIN}, {"Shift", VK_SHIFT},
-                {"Ctrl", VK_CONTROL}, {"Alt", VK_MENU},
-                {"Space", VK_SPACE}, {"Enter", VK_RETURN},
-                {"Backspace", VK_BACK}, {"Tab", VK_TAB},
-                {"Esc", VK_ESCAPE}
+                {"Win", VK_LWIN},
+                {"Shift", VK_SHIFT},
+                {"Ctrl", VK_CONTROL},
+                {"Alt", VK_MENU},
+                {"Option", VK_MENU},
+                {"Space", VK_SPACE},
+                {"Enter", VK_RETURN},
+                {"Return", VK_RETURN},
+                {"Backspace", VK_BACK},
+                {"Tab", VK_TAB},
+                {"Esc", VK_ESCAPE},
+                {"Del", VK_DELETE},
+                {"Delete", VK_DELETE},
+                {"Caps Lock", VK_CAPITAL}
             };
+
             for (char c = '0'; c <= '9'; ++c) keyMap[QString(c)] = c;
             for (char c = 'A'; c <= 'Z'; ++c) keyMap[QString(c)] = c;
 
