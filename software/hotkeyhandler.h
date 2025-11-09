@@ -45,6 +45,7 @@ public:
     static void executeHotkey(int hotKeyNum, Profile* profileInstance);
     static void executeEncoder(int hotKeyNum, Profile* profileInstance, int id);
 
+
     static void registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content);
 
 #ifdef __APPLE__
@@ -64,6 +65,7 @@ private:
     static HHOOK keyboardHook;
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
     static std::wstring wpathExec;
+    static bool findAndSwitchToWindow(const QString& exeName);
 #elif __APPLE__
     static QMap<int, EventHotKeyRef> registeredHotkeys;
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);

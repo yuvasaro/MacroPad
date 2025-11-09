@@ -16,6 +16,7 @@ Dialog {
     property bool useCustomImage: false
     signal accepted()
     property string customImage: ""
+    property string extractedIconPath: ""
     property string configMode: "select"
 
     Component.onCompleted: {
@@ -261,18 +262,17 @@ Dialog {
 
             Button {
                 text: "Save"
-                enabled: executablePath.text !== ""
                 onClicked: {
                     var executableValue = executablePath.text;
-                    var customImagePath = "";
-                    if (customImageCheckExecutable.checked && keyImagePreviewExecutable.source !== "") {
-                        customImagePath = keyImagePreviewExecutable.source.toString();
-                    }
 
-                    console.log("Saving key", keyConfigDialog.keyIndex, "Executable:", executableValue, "Image:", customImagePath);
+                    // Use custom image if checked, otherwise use extracted icon
+                    var imageValue = customImageCheckExecutable.checked ? keyImagePreviewExecutable.source.toString() : extractedIconPath;
+
+                    console.log("Saving key", keyConfigDialog.keyIndex, "Executable:", executableValue, "Image:", imageValue);
 
                     if (executableValue !== "") {
-                        profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue, customImagePath);
+                        // Pass the icon path (either extracted or custom)
+                        profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue, imageValue);
                         mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "executable", executableValue);
                     }
 
@@ -307,9 +307,20 @@ Dialog {
         nameFilters: ["Executable Files (*.exe *.app *.sh)", "All Files (*)"]
 
         onAccepted: {
-            console.log("Selected executable:", selectedFile);
-            keyConfigDialog.executable = selectedFile.toString().replace("file://", "");
-            executablePath.text = keyConfigDialog.executable;
+                    console.log("Selected executable:", selectedFile)
+                    keyConfigDialog.executable = selectedFile.toString().replace("file://", "");
+                    executablePath.text = keyConfigDialog.executable;
+
+                    // Extract icon for the selected executable
+                    var iconPath = iconExtractor.extractIconForApp(keyConfigDialog.executable);
+                    if (iconPath !== "") {
+                        extractedIconPath = iconPath;
+                        console.log("Extracted icon path:", extractedIconPath);
+                    }
+
+                    modifier1.currentIndex = 0;
+                    modifier2.currentIndex = 0;
+                    keySelection.currentIndex = 0;
+                }
         }
-    }
 }

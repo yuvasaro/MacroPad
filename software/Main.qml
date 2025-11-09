@@ -12,10 +12,11 @@ Rectangle {
     property int refreshCounter: 0
 
     Component.onCompleted: {
-        var num = hotkeyHandler.profiles.length;
-        console.log("Number of profiles from mainwindow:", num);
-        // Force initial update of encoders
-        updateEncoders();
+        if (!hotkeyHandler || !hotkeyHandler.profiles) return;
+            var num = hotkeyHandler.profiles.length;
+            console.log("Number of profiles from mainwindow:", num);
+            // Force initial update of encoders
+            updateEncoders();
 
         // Connect to profile macro changes
         if (hotkeyHandler.profileManager) {
@@ -34,6 +35,7 @@ Rectangle {
 
     // Function to update encoder selections based on current profile
     function updateEncoders() {
+        if (!hotkeyHandler || !hotkeyHandler.profileManager) return;
         console.log("=== Updating encoders for profile:", hotkeyHandler.profileManager.name);
 
         // Update Encoder 1
@@ -158,7 +160,8 @@ Rectangle {
                         fillMode: Image.PreserveAspectFit
                         source: {
                             refreshCounter; // Force refresh when this changes
-                            return hotkeyHandler.profileManager.getMacroImagePath(index + 1);
+                            if (!hotkeyHandler || !hotkeyHandler.profileManager) return "";
+                                    return hotkeyHandler.profileManager.getMacroImagePath(index + 1);
                         }
                         visible: source !== ""
                     }
@@ -232,7 +235,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 20
         anchors.horizontalCenter: parent.horizontalCenter
-        model: hotkeyHandler.profiles
+        model: hotkeyHandler ? hotkeyHandler.profiles : []
         textRole: "name"
         background: Rectangle {
             color: "lightgray"
