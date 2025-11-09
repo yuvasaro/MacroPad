@@ -62,6 +62,13 @@ Item {
         hotkeyHandler.profileManager.saveProfile();
     }
 
+    function setAppWithPath(app, executablePath) {
+        console.log("app changed with path");
+        hotkeyHandler.profileManager.setApp(app);
+        hotkeyHandler.profileManager.setAppExecutablePath(executablePath);
+        hotkeyHandler.profileManager.saveProfile();
+    }
+
     // Helper function to get encoder value from current profile
     function getEncoderValue(encoderIndex) {
         const macro = hotkeyHandler.profileManager.getMacroData(encoderIndex);

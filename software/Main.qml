@@ -93,45 +93,33 @@ Rectangle {
         console.log("Saved icon path:", savedIconPath);
 
         if (savedIconPath && savedIconPath !== "") {
-            // Check if the saved icon file still exists
-            // If it exists, we're done - the Image binding will load it
-            console.log("Profile has saved icon path");
+            console.log("Profile has saved icon, forcing refresh");
+            refreshCounter++;
             return;
         }
 
-        // No saved icon or icon doesn't exist - try to find and extract from app name
-        // We need to search for the executable based on the app name
-        console.log("Attempting to re-extract icon for app:", appName);
+        // Try to re-extract icon from saved executable path
+        var execPath = hotkeyHandler.profileManager.getAppExecutablePath();
+        console.log("Saved executable path:", execPath);
 
-        // Try common locations for the app
-        var possiblePaths = [];
-
-        // Add platform-specific common paths
-        if (Qt.platform.os === "osx") {
-            possiblePaths.push("/Applications/" + appName + ".app");
-        } else if (Qt.platform.os === "windows") {
-            possiblePaths.push("C:/Program Files/" + appName + "/" + appName + ".exe");
-            possiblePaths.push("C:/Program Files (x86)/" + appName + "/" + appName + ".exe");
-        }
-
-        // Try to extract icon from each possible path
-        for (var i = 0; i < possiblePaths.length; i++) {
+        if (execPath && execPath !== "") {
             try {
-                var iconPath = iconExtractor.extractIconForApp(possiblePaths[i]);
+                var iconPath = iconExtractor.extractIconForApp(execPath);
                 if (iconPath && iconPath !== "") {
-                    console.log("Successfully re-extracted icon from:", possiblePaths[i]);
+                    console.log("Successfully re-extracted icon from saved path");
                     hotkeyHandler.profileManager.setKeyImage(0, "file:///" + iconPath);
                     hotkeyHandler.profileManager.saveProfile();
                     refreshCounter++;
                     return;
                 }
             } catch (e) {
-                console.log("Failed to extract from:", possiblePaths[i]);
+                console.log("Failed to extract icon:", e);
             }
         }
 
-        console.log("Could not re-extract icon for app:", appName);
+        console.log("Could not load icon for app:", appName);
     }
+
 
     IconExtractor {
         id: iconExtractor
@@ -295,13 +283,17 @@ Rectangle {
             if(fileDialogCaller === "exebutton"){
                 console.log("Selected executable:", selectedFile)
 
+                // extract the app name from the full path so the app tracker can match it to just the name
                 let appName = fullPath.split("/").pop().replace(".exe", "").replace(".app", "").replace(".sh", "");
 
-                profileManager.setApp(appName);
+                // makes sure to set the appname AND executable path of the selected profile and save it
+                profileManager.setAppWithPath(appName, fullPath);
 
+                // displays the name of the app for the selected profile in the UI
                 exetext.text = hotkeyHandler.profileManager.getApp();
 
                 let iconPath = iconExtractor.extractIconForApp(fullPath);
+                // Store the icon path in the profile itself, not just in exeIconPath
                 if (iconPath !== "") {
                     hotkeyHandler.profileManager.setKeyImage(0, "file:///" + iconPath);
                     exeIconPath = "file:///" + iconPath;

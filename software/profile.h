@@ -14,6 +14,7 @@ class Profile : public QObject {
 private:
     QString name;
     QString app;
+    QString appExecutablePath;
     QMap<int, QSharedPointer<Macro>> macros;
     QString application;
 
@@ -42,6 +43,8 @@ public:
     Q_INVOKABLE void printMacros();
     Q_INVOKABLE QString getMacroImagePath(int keyNum) const;
     Q_INVOKABLE QVariantMap getMacroData(int keyNum) const;
+    Q_INVOKABLE QString getAppExecutablePath() const;
+    Q_INVOKABLE void setAppExecutablePath(const QString& path);
 
 signals:
     void nameChanged();

@@ -83,6 +83,7 @@ void Profile::saveProfile() {
         QTextStream out(&outFile);
         out << "Name: " << name << "\n";
         out << "App: " << app << "\n";
+        out << "AppExecutablePath: " << appExecutablePath << "\n";  // ADD THIS LINE
 
         for (auto it = macros.begin(); it != macros.end(); ++it) {
             out << it.key() << ":\n";
@@ -126,11 +127,21 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         if (line.startsWith("App: ")) {
             profileApp = line.mid(5);
         } else {
-            qWarning() << "Missing profile name!";
-            return new Profile("", "", nullptr);            ;
+            qWarning() << "Missing profile app!";
+            return new Profile("", "", nullptr);
         }
 
         Profile* userProfile = new Profile(profileName, profileApp);
+
+        // Load executable path if it exists - ADD THESE LINES
+        line = in.readLine();
+        if (line.startsWith("AppExecutablePath: ")) {
+            QString exePath = line.mid(19);
+            userProfile->setAppExecutablePath(exePath);
+        } else {
+            // This line might be the start of macro data, so we need to process it below
+            // Don't read another line
+        }
 
         if (line.startsWith("Application: ")){
             profileApp = line.mid(13);
@@ -238,3 +249,12 @@ void Profile::printMacros() {
     }
 }
 
+QString Profile::getAppExecutablePath() const {
+    return appExecutablePath;
+}
+
+void Profile::setAppExecutablePath(const QString& path) {
+    if (appExecutablePath != path) {
+        appExecutablePath = path;
+    }
+}
