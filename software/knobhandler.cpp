@@ -368,6 +368,7 @@ void KnobHandler::zoomOut() {
 #endif
 
 #ifdef __APPLE__
+    qDebug() << "zoomOut called";
     QStringList keys = {"cmd", "shift", "-"};
     HotkeyHandler::pressAndReleaseKeys(keys);
 #endif
@@ -394,7 +395,10 @@ void KnobHandler::nextTab() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    qDebug() << "nextTab called";
+    QProcess::execute("osascript", QStringList() << "-e" <<
+                                       "tell application \"Google Chrome\" to tell window 1 to set active tab index to (active tab index + 1)");
+
 #endif
 }
 
@@ -406,7 +410,10 @@ void KnobHandler::previousTab() {
 #endif
 
 #ifdef __APPLE__
-    //TODO: Mac implementation
+    qDebug() << "previousTab called";
+    QProcess::execute("osascript", QStringList() << "-e" <<
+                                       "tell application \"Google Chrome\" to tell window 1 to set active tab index to (active tab index - 1)");
+
 #endif
 }
 
