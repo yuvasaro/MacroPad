@@ -135,11 +135,9 @@ void MainWindow::onDataReceived(int number)
     {
         //Manually Set to the Encoder 1 (macro key -2)
         if (number == 72)
-            //HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,1);
-            KnobHandler::nextTab();
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,1);
         else if (number == 71)
-            //HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,2);
-            KnobHandler::previousTab();
+            HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,2);
         else if (number == 73)
             HotkeyHandler::executeEncoder(-2, HotkeyHandler::currentProfile,3);
             //KnobHandler::mute();
