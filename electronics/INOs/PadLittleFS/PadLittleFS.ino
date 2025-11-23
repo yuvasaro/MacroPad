@@ -216,7 +216,7 @@ void setup() {
     listFiles();
   }
 
-  Serial.println("[BOOT] Ready. cmds: 10..15=set profile, 47=image mode, 90=list, 91=format, 92=redraw");
+  Serial.println("[BOOT] Ready. 1-9, 71-73, 81-83=cmds 10..15=set profile, 47=image mode, 90=list, 91=format, 92=redraw");
 }
 
 // ================== LOOP ==================
