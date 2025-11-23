@@ -314,7 +314,7 @@ Dialog {
                     // Extract icon for the selected executable
                     var iconPath = iconExtractor.extractIconForApp(keyConfigDialog.executable);
                     if (iconPath !== "") {
-                        extractedIconPath = iconPath;
+                        extractedIconPath = "file:///" + iconPath;
                         console.log("Extracted icon path:", extractedIconPath);
                     }
 

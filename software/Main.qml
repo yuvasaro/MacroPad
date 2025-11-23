@@ -299,7 +299,9 @@ Rectangle {
                 // Store the icon path in the profile itself, not just in exeIconPath
                 if (iconPath !== "") {
                     hotkeyHandler.profileManager.setKeyImage(0, "file:///" + iconPath);
+                    hotkeyHandler.profileManager.saveProfile();
                     exeIconPath = "file:///" + iconPath;
+                    refreshCounter++;
                 } else {
                     exeIconPath = "";
                 }
