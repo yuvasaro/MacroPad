@@ -24,6 +24,10 @@ CGEventRef KeystrokeRecorder::EventCallback(CGEventTapProxy proxy, CGEventType t
 bool KeystrokeRecorder::StartRecording() {
     if (isRecording) return true;
 
+    if (!AXIsProcessTrusted()) {
+        std::cerr << "Not trusted for Accessibility. Grant permission to the app that launches this binary.\n";
+    }
+
     recordedKeys.clear();
 
     CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventFlagsChanged);

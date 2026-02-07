@@ -19,6 +19,8 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QFileInfo>
+#include <QTimer>
+#include <iostream>
 
 
 #ifdef __APPLE__
@@ -30,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     trayIcon(new QSystemTrayIcon(this)),
     trayMenu(new QMenu(this)),
-    m_serialHandler(new SerialHandler(this)) {
+    m_serialHandler(new SerialHandler(this)){
 
     setWindowTitle("MacroPad - Configuration");
 
@@ -45,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent):
     qmlRegisterSingletonType<ImageCache>("ImageCache", 1, 0, "ImageCache", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
         return ImageCache::instance();
     });
+    qmlWidget->engine()->rootContext()->setContextProperty("keystrokeRecorder", this);
 
 
     //Initialize hotkeyHandler and profile
@@ -73,9 +76,37 @@ MainWindow::MainWindow(QWidget *parent):
     QObject::connect(&appTracker, &AppTracker::appChanged, hotkeyHandler, &HotkeyHandler::switchCurrentProfile,Qt::DirectConnection);
     // Connecting MacroPad with SerialHandler.
     connect(m_serialHandler, &SerialHandler::dataReceived, this, &MainWindow::onDataReceived);
+
+    QTimer::singleShot(3000, this, [this]() {
+        std::cout << "Starting recording in main window..." << std::endl;
+        startRecording();
+
+        QTimer::singleShot(10000, this, [this]() {
+            std::cout << "Stopping recording..." << std::endl;
+            stopRecording();
+        });
+    });
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::startRecording() {
+    if (KeystrokeRecorder::StartRecording()) {
+        std::cout << "Recording started!" << std::endl;
+    } else {
+        std::cerr << "Failed to start recording!" << std::endl;
+    }
+}
+
+void MainWindow::stopRecording() {
+    std::vector<CGKeyCode> keycodes = KeystrokeRecorder::StopRecording();
+
+    std::cout << "\n=== Recorded " << keycodes.size() << " keycodes ===" << std::endl;
+    for (CGKeyCode code : keycodes) {
+        std::cout << (int)code << " ";
+    }
+    std::cout << "\n====================================" << std::endl;
+}
 
 /*
  * Loading the Icon for the app.
