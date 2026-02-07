@@ -53,6 +53,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         knobhandler.h
         knobhandler.cpp
         imagecache.h imagecache.cpp
+        keystrokerecorder.h keystrokerecorder.cpp
     )
     qt_add_resources(MacroPad "resources"
         PREFIX "/"
