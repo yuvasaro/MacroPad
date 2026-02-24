@@ -7,6 +7,7 @@
 #include "serialhandler.h"
 #include "apptracker.h"
 #include "iconextractor.h"
+#include "keystrokerecorder.h"
 
 #include <QApplication>
 #include <QQmlEngine>
@@ -99,13 +100,12 @@ void MainWindow::startRecording() {
 }
 
 void MainWindow::stopRecording() {
-    std::vector<CGKeyCode> keycodes = KeystrokeRecorder::StopRecording();
-
+    auto keycodes = KeystrokeRecorder::StopRecording();
     std::cout << "\n=== Recorded " << keycodes.size() << " keycodes ===" << std::endl;
-    for (CGKeyCode code : keycodes) {
+    for (auto code : keycodes)
         std::cout << (int)code << " ";
-    }
-    std::cout << "\n====================================" << std::endl;
+    std::cout << "\nMapped: " << KeystrokeRecorder::ToString(keycodes) << std::endl;
+    std::cout << "====================================" << std::endl;
 }
 
 /*

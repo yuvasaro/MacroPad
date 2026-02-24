@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <vector>
 
 #ifdef __APPLE__
@@ -18,6 +19,7 @@ public:
     static std::vector<KeyCode> StopRecording();
     static bool IsRecording();
     static void Clear();
+    static std::string ToString(const std::vector<KeyCode>& keys);
 
 private:
     static std::vector<KeyCode> recordedKeys;
