@@ -66,6 +66,16 @@ private:
     static std::unordered_map<UINT, std::function<void()>> hotkeyActions;
     static std::wstring wpathExec;
     static bool findAndSwitchToWindow(const QString& exeName);
+
+    //recording
+    // static bool isRecording;
+    // static QStringList recordedKeys;
+
+    // Q_INVOKABLE void startRecording();
+    // Q_INVOKABLE void stopRecording();
+    // Q_INVOKABLE QString getRecordedKeystroke();
+    // Q_INVOKABLE bool getIsRecording();
+
 #elif __APPLE__
     static QMap<int, EventHotKeyRef> registeredHotkeys;
     static OSStatus hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData);
