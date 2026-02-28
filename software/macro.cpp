@@ -34,6 +34,13 @@ void Macro::setImagePath(const QString& path) {
     }
 }
 
+void Macro::setLabel(const QString& newLabel) {
+    if (label != newLabel) {
+        label = newLabel;
+        emit labelChanged();
+    }
+}
+
 QString Macro::getType() const {
     return type;
 }
@@ -44,6 +51,10 @@ QString Macro::getContent() const {
 
 QString Macro::getImagePath() const {
     return imagePath;
+}
+
+QString Macro::getLabel() const {
+    return label;
 }
 
 QString Macro::toString() const {

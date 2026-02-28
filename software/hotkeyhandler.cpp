@@ -140,6 +140,8 @@ void HotkeyHandler::setProfileManager(Profile* profile) {
 
 #ifdef _WIN32
 HHOOK HotkeyHandler::keyboardHook = nullptr;
+HHOOK HotkeyHandler::m_recordingHook = nullptr;
+HotkeyHandler* HotkeyHandler::s_instance = nullptr;
 std::unordered_map<UINT, std::function<void()>> HotkeyHandler::hotkeyActions;
 std::wstring HotkeyHandler::wpathExec;
 
@@ -229,6 +231,86 @@ void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance)
         wpathExec = QDir::toNativeSeparators(fixed).toStdWString();
         ShellExecuteW(NULL, L"open", wpathExec.c_str(), NULL, NULL, SW_SHOWNORMAL);
     }
+}
+
+void HotkeyHandler::startRecording() {
+    if (m_isRecording) return;
+    m_isRecording = true;
+    s_instance = this;
+    m_heldKeys.clear();
+    m_recordedKeys.clear();
+    emit isRecordingChanged();
+
+    m_recordingHook = SetWindowsHookEx(WH_KEYBOARD_LL, recordingCallback, GetModuleHandle(NULL), 0);
+    if (!m_recordingHook) {
+        qWarning() << "Failed to set recording hook.";
+        m_isRecording = false;
+        emit isRecordingChanged();
+    }
+}
+
+QString HotkeyHandler::stopRecording() {
+    if (!m_isRecording) return "";
+    m_isRecording = false;
+    emit isRecordingChanged();
+
+    if (m_recordingHook) {
+        UnhookWindowsHookEx(m_recordingHook);
+        m_recordingHook = nullptr;
+    }
+
+    QString result = m_recordedKeys.join("+");
+    m_recordedKeys.clear();
+    m_heldKeys.clear();
+    return result;
+}
+
+LRESULT CALLBACK HotkeyHandler::recordingCallback(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode == HC_ACTION) {
+        KBDLLHOOKSTRUCT* kbdStruct = (KBDLLHOOKSTRUCT*)lParam;
+        static const QMap<int, QString> vkNames = {
+                                                   {VK_LWIN, "Win"}, {VK_SHIFT, "Shift"}, {VK_CONTROL, "Ctrl"},
+                                                   {VK_MENU, "Alt"}, {VK_SPACE, "Space"}, {VK_RETURN, "Enter"},
+                                                   {VK_BACK, "Backspace"}, {VK_TAB, "Tab"}, {VK_ESCAPE, "Esc"},
+                                                   {VK_DELETE, "Delete"}, {VK_CAPITAL, "Caps Lock"},
+                                                   {VK_F1,'F1'},{VK_F2,"F2"},{VK_F3,"F3"},{VK_F4,"F4"},
+                                                   {VK_F5,"F5"},{VK_F6,"F6"},{VK_F7,"F7"},{VK_F8,"F8"},
+                                                   {VK_F9,"F9"},{VK_F10,"F10"},{VK_F11,"F11"},{VK_F12,"F12"},
+                                                   };
+
+        // Build a static pointer to the handler — you'll need to store it
+        // Store `this` pointer at startRecording time via a static:
+        // Add `static HotkeyHandler* s_instance;` to the class and assign in startRecording
+        // Then use it here:
+        HotkeyHandler* self = s_instance;
+        if (!self) return CallNextHookEx(nullptr, nCode, wParam, lParam);
+
+        int vk = kbdStruct->vkCode;
+        QString keyName;
+
+        if (vkNames.contains(vk)) {
+            keyName = vkNames[vk];
+        } else if (vk >= '0' && vk <= '9') {
+            keyName = QString(QChar(vk));
+        } else if (vk >= 'A' && vk <= 'Z') {
+            keyName = QString(QChar(vk));
+        }
+
+        if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+            if (!self->m_heldKeys.contains(vk) && !keyName.isEmpty()) {
+                self->m_heldKeys.insert(vk);
+                QStringList modifiers = {"Win", "Ctrl", "Shift", "Alt"};
+                if (modifiers.contains(keyName)) {
+                    self->m_recordedKeys.prepend(keyName);
+                } else {
+                    self->m_recordedKeys.append(keyName);
+                }
+                emit self->recordedKeyChanged(self->m_recordedKeys.join("+"));
+            }
+        }
+        return 1; // suppress key while recording
+    }
+    return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
 bool HotkeyHandler::findAndSwitchToWindow(const QString& exeName)
@@ -573,6 +655,129 @@ void HotkeyHandler::executeEncoder(int hotKeyNum, Profile* profileInstance, int 
 
 }
 
+void HotkeyHandler::startRecording() {
+    if (m_isRecording) return;
+    m_isRecording = true;
+    m_heldKeys.clear();
+    m_recordedKeys.clear();
+    emit isRecordingChanged();
+
+    CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventFlagsChanged);
+    m_eventTap = CGEventTapCreate(
+        kCGSessionEventTap,
+        kCGHeadInsertEventTap,
+        kCGEventTapOptionDefault,
+        eventMask,
+        &HotkeyHandler::recordingEventCallback,
+        this
+        );
+
+    if (!m_eventTap) {
+        qWarning() << "Failed to create event tap. Requesting Accessibility permission...";
+        m_isRecording = false;
+        emit isRecordingChanged();
+
+        // Prompt user for Accessibility access using pure C API
+        CFStringRef keys[] = { kAXTrustedCheckOptionPrompt };
+        CFTypeRef values[] = { kCFBooleanTrue };
+        CFDictionaryRef options = CFDictionaryCreate(
+            kCFAllocatorDefault,
+            (const void**)keys,
+            (const void**)values,
+            1,
+            &kCFTypeDictionaryKeyCallBacks,
+            &kCFTypeDictionaryValueCallBacks
+            );
+        AXIsProcessTrustedWithOptions(options);
+        CFRelease(options);
+
+        emit recordedKeyChanged("⚠ Grant Accessibility access, then try again");
+        return;
+    }
+
+    m_runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, m_eventTap, 0);
+    CFRunLoopAddSource(CFRunLoopGetMain(), m_runLoopSource, kCFRunLoopCommonModes);
+    CGEventTapEnable(m_eventTap, true);
+}
+
+QString HotkeyHandler::stopRecording() {
+    if (!m_isRecording) return "";
+    m_isRecording = false;
+    emit isRecordingChanged();
+
+    if (m_eventTap) {
+        CGEventTapEnable(m_eventTap, false);
+        CFRunLoopRemoveSource(CFRunLoopGetMain(), m_runLoopSource, kCFRunLoopCommonModes);
+        CFRelease(m_runLoopSource);
+        CFRelease(m_eventTap);
+        m_eventTap = nullptr;
+        m_runLoopSource = nullptr;
+    }
+
+    QString result = m_recordedKeys.join("+");
+    m_recordedKeys.clear();
+    m_heldKeys.clear();
+    return result;
+}
+
+CGEventRef HotkeyHandler::recordingEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon) {
+    HotkeyHandler* self = static_cast<HotkeyHandler*>(refcon);
+    if (!self->m_isRecording) return event;
+
+    // Reverse lookup: CGKeyCode -> key name string
+    static const QMap<CGKeyCode, QString> reverseKeyMap = {
+                                                           {kVK_Command, "cmd"}, {kVK_Shift, "shift"}, {kVK_Control, "ctrl"},
+                                                           {kVK_Option, "option"}, {kVK_Function, "fn"},
+                                                           {kVK_ANSI_A, "a"}, {kVK_ANSI_B, "b"}, {kVK_ANSI_C, "c"}, {kVK_ANSI_D, "d"},
+                                                           {kVK_ANSI_E, "e"}, {kVK_ANSI_F, "f"}, {kVK_ANSI_G, "g"}, {kVK_ANSI_H, "h"},
+                                                           {kVK_ANSI_I, "i"}, {kVK_ANSI_J, "j"}, {kVK_ANSI_K, "k"}, {kVK_ANSI_L, "l"},
+                                                           {kVK_ANSI_M, "m"}, {kVK_ANSI_N, "n"}, {kVK_ANSI_O, "o"}, {kVK_ANSI_P, "p"},
+                                                           {kVK_ANSI_Q, "q"}, {kVK_ANSI_R, "r"}, {kVK_ANSI_S, "s"}, {kVK_ANSI_T, "t"},
+                                                           {kVK_ANSI_U, "u"}, {kVK_ANSI_V, "v"}, {kVK_ANSI_W, "w"}, {kVK_ANSI_X, "x"},
+                                                           {kVK_ANSI_Y, "y"}, {kVK_ANSI_Z, "z"},
+                                                           {kVK_ANSI_0, "0"}, {kVK_ANSI_1, "1"}, {kVK_ANSI_2, "2"}, {kVK_ANSI_3, "3"},
+                                                           {kVK_ANSI_4, "4"}, {kVK_ANSI_5, "5"}, {kVK_ANSI_6, "6"}, {kVK_ANSI_7, "7"},
+                                                           {kVK_ANSI_8, "8"}, {kVK_ANSI_9, "9"},
+                                                           {kVK_Space, "space"}, {kVK_Tab, "tab"}, {kVK_Return, "return"},
+                                                           {kVK_Delete, "delete"}, {kVK_Escape, "escape"},
+                                                           {kVK_LeftArrow, "left"}, {kVK_RightArrow, "right"},
+                                                           {kVK_UpArrow, "up"}, {kVK_DownArrow, "down"},
+                                                           {kVK_F1, "f1"}, {kVK_F2, "f2"}, {kVK_F3, "f3"}, {kVK_F4, "f4"},
+                                                           {kVK_F5, "f5"}, {kVK_F6, "f6"}, {kVK_F7, "f7"}, {kVK_F8, "f8"},
+                                                           {kVK_F9, "f9"}, {kVK_F10, "f10"}, {kVK_F11, "f11"}, {kVK_F12, "f12"},
+                                                           };
+
+    CGKeyCode keyCode = (CGKeyCode)CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
+    QString keyName = reverseKeyMap.value(keyCode, "");
+    if (keyName.isEmpty()) return nullptr; // suppress unknown keys
+
+    if (type == kCGEventKeyDown || type == kCGEventFlagsChanged) {
+        if (!self->m_heldKeys.contains((int)keyCode)) {
+            self->m_heldKeys.insert((int)keyCode);
+            if (!keyName.isEmpty() && !self->m_recordedKeys.contains(keyName)) {
+                // Put modifiers first
+                QStringList modifierOrder = {"fn", "ctrl", "option", "shift", "cmd"};
+                if (modifierOrder.contains(keyName)) {
+                    // Insert at the correct position based on priority
+                    int insertPos = 0;
+                    for (int i = 0; i < self->m_recordedKeys.size(); i++) {
+                        if (modifierOrder.contains(self->m_recordedKeys[i]) &&
+                            modifierOrder.indexOf(self->m_recordedKeys[i]) <= modifierOrder.indexOf(keyName)) {
+                            insertPos = i + 1;
+                        }
+                    }
+                    self->m_recordedKeys.insert(insertPos, keyName);
+                } else {
+                    self->m_recordedKeys.append(keyName);
+                }
+                emit self->recordedKeyChanged(self->m_recordedKeys.join("+"));
+            }
+        }
+    }
+
+    return nullptr; // suppress all keys while recording
+}
+
 void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QString& type, const QString& content) {
 #ifdef _WIN32
 #ifdef DEBUG
@@ -652,7 +857,6 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
-    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __APPLE__
 #ifdef DEBUG
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
@@ -678,7 +882,6 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
-    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __linux__
     display = XOpenDisplay(NULL);
     if (!display) return;

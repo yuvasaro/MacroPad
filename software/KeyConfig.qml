@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
+import IconExtractor 1.0
 
 Dialog {
     id: keyConfigDialog
@@ -18,15 +19,31 @@ Dialog {
     property string customImage: ""
     property string extractedIconPath: ""
     property string configMode: "select"
+    property string recordedCombo: ""
+    property string nameLabel: ""
+
+    Connections {
+        target: hotkeyHandler
+        function onRecordedKeyChanged(combo) {
+            keyConfigDialog.recordedCombo = combo;
+        }
+    }
+
+    IconExtractor {
+        id: iconExtractor
+    }
 
     Component.onCompleted: {
         console.log("Initializing KeyConfig Dialog for Key:", keyIndex);
         if (keystroke !== "" && keystroke !== undefined) {
             configMode = "keystroke";
-            keystrokeInput.text = keystroke;
+            recordedCombo = keystroke;
+            var macroData = hotkeyHandler.profileManager.getMacroData(keyIndex);
+            if (macroData.label && macroData.label !== "") {
+                nameField.text = macroData.label;
+            }
         } else if (executable !== "" && executable !== undefined) {
             configMode = "executable";
-            executablePath.text = executable;
         } else {
             configMode = "select";
         }
@@ -76,7 +93,7 @@ Dialog {
 
     Column {
         anchors.centerIn: parent
-        spacing: 10
+        spacing: 12
         visible: configMode === "keystroke"
 
         Text {
@@ -87,38 +104,59 @@ Dialog {
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Text {
-            id: keystrokeInput
-            text: "Select Keystroke Combination"
-            color: "grey"
+        // Name / label field
+        TextField {
+            id: nameField
+            width: 300
+            placeholderText: "Name this shortcut (e.g. Save File)"
+            anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Row {
-            spacing: 5
+        // Live combo display
+        Rectangle {
+            width: 300
+            height: 40
+            color: "#222"
+            radius: 6
+            border.color: hotkeyHandler.isRecording ? "#ff4444" : "#555"
             anchors.horizontalCenter: parent.horizontalCenter
 
-            ComboBox {
-                id: modifier1
-                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "Fn", "Option", "Caps Lock", "Del", "Enter", "Backspace", "Esc", "Delete", "Return"]
-                currentIndex: 0
+            Text {
+                id: comboDisplay
+                anchors.centerIn: parent
+                color: hotkeyHandler.isRecording ? "#ff8888" : "white"
+                text: {
+                    if (hotkeyHandler.isRecording) return recordedCombo !== "" ? recordedCombo : "Press keys..."
+                    return recordedCombo !== "" ? recordedCombo : "No keys recorded"
+                }
+            }
+        }
+
+        // Record / Stop buttons
+        Row {
+            spacing: 10
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Button {
+                text: "Record"
+                enabled: !hotkeyHandler.isRecording
+                onClicked: {
+                    recordedCombo = "";
+                    hotkeyHandler.startRecording();
+                }
             }
 
-            ComboBox {
-                id: modifier2
-                model: ["None", "Ctrl", "Alt", "Shift", "Win", "Tab", "Cmd", "Fn", "Option", "Caps Lock", "Del", "Enter", "Backspace", "Esc", "Delete", "Return"]
-                currentIndex: 0
-            }
-
-            ComboBox {
-                id: keySelection
-                model: ["None", "Space", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"]
-                currentIndex: 0
+            Button {
+                text: "Stop"
+                enabled: hotkeyHandler.isRecording
+                onClicked: {
+                    recordedCombo = hotkeyHandler.stopRecording();
+                }
             }
         }
 
         Row {
             spacing: 10
-            visible: modifier1.currentText !== "None" || modifier2.currentText !== "None" || keySelection.currentText !== "None"
             anchors.horizontalCenter: parent.horizontalCenter
 
             CheckBox {
@@ -151,141 +189,136 @@ Dialog {
             Button {
                 text: "Back"
                 onClicked: {
+                    if (hotkeyHandler.isRecording) hotkeyHandler.stopRecording();
+                    recordedCombo = "";
                     configMode = "select";
-                    // Reset selections
-                    modifier1.currentIndex = 0;
-                    modifier2.currentIndex = 0;
-                    keySelection.currentIndex = 0;
                 }
             }
 
             Button {
                 text: "Save"
+                enabled: recordedCombo !== ""
                 onClicked: {
-                    var keys = [];
-                    if (modifier1.currentText !== "None") keys.push(modifier1.currentText);
-                    if (modifier2.currentText !== "None") keys.push(modifier2.currentText);
-                    if (keySelection.currentText !== "None") keys.push(keySelection.currentText);
-
-                    var keystrokeValue = keys.join("+");
+                    if (hotkeyHandler.isRecording) {
+                        recordedCombo = hotkeyHandler.stopRecording();
+                    }
                     var customImagePath = "";
                     if (customImageCheckKeystroke.checked && keyImagePreviewKeystroke.source !== "") {
                         customImagePath = keyImagePreviewKeystroke.source.toString();
                     }
-
-                    console.log("Saving key", keyConfigDialog.keyIndex, "Keystroke:", keystrokeValue, "Image:", customImagePath);
-
-                    if (keystrokeValue !== "") {
-                        profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", keystrokeValue, customImagePath);
-                        mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "keystroke", keystrokeValue);
+                    if (recordedCombo !== "") {
+                        profileManager.setKeyConfig(keyConfigDialog.keyIndex, "keystroke", recordedCombo, customImagePath, nameField.text);
+                        mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "keystroke", recordedCombo);
                     }
-
                     keyConfigDialog.accept();
                 }
             }
 
             Button {
                 text: "Cancel"
-                onClicked: keyConfigDialog.reject();
+                onClicked: {
+                    if (hotkeyHandler.isRecording) hotkeyHandler.stopRecording();
+                    keyConfigDialog.reject();
+                }
             }
         }
     }
 
     Column {
-        anchors.centerIn: parent
-        spacing: 10
-        visible: configMode === "executable"
-
-        Text {
-            text: "Configure Executable"
-            font.pixelSize: 14
-            font.bold: true
-            color: "grey"
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        Button {
-            text: "Browse for Executable"
-            width: 250
-            anchors.horizontalCenter: parent.horizontalCenter
-            onClicked: fileDialog.open()
-        }
-
-        TextField {
-            id: executablePath
-            width: 300
-            placeholderText: "Selected Executable Path"
-            text: keyConfigDialog.executable
-            readOnly: true
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        Row {
+            anchors.centerIn: parent
             spacing: 10
-            visible: executablePath.text !== ""
-            anchors.horizontalCenter: parent.horizontalCenter
+            visible: configMode === "executable"
 
-            CheckBox {
-                id: customImageCheckExecutable
-                text: "Use custom image"
-                checked: keyConfigDialog.useCustomImage
-                onCheckedChanged: keyConfigDialog.useCustomImage = checked
+            Text {
+                text: "Configure Executable"
+                font.pixelSize: 14
+                font.bold: true
+                color: "grey"
+                anchors.horizontalCenter: parent.horizontalCenter
             }
 
             Button {
-                text: "Browse Image"
-                enabled: customImageCheckExecutable.checked
-                onClicked: imageDialog.open()
+                text: "Browse for Executable"
+                width: 250
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: fileDialog.open()
             }
-        }
 
-        Image {
-            id: keyImagePreviewExecutable
-            width: 50
-            height: 50
-            source: keyConfigDialog.keyImage
-            visible: source !== ""
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
+            TextField {
+                id: executablePath
+                width: 300
+                placeholderText: "Selected Executable Path"
+                text: keyConfigDialog.executable
+                readOnly: true
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
 
-        Row {
-            spacing: 10
-            anchors.horizontalCenter: parent.horizontalCenter
+            Row {
+                spacing: 10
+                visible: executablePath.text !== ""
+                anchors.horizontalCenter: parent.horizontalCenter
 
-            Button {
-                text: "Back"
-                onClicked: {
-                    configMode = "select";
-                    executablePath.text = "";
+                CheckBox {
+                    id: customImageCheckExecutable
+                    text: "Use custom image"
+                    checked: keyConfigDialog.useCustomImage
+                    onCheckedChanged: keyConfigDialog.useCustomImage = checked
+                }
+
+                Button {
+                    text: "Browse Image"
+                    enabled: customImageCheckExecutable.checked
+                    onClicked: imageDialog.open()
                 }
             }
 
-            Button {
-                text: "Save"
-                onClicked: {
-                    var executableValue = executablePath.text;
+            Image {
+                id: keyImagePreviewExecutable
+                width: 50
+                height: 50
+                source: keyConfigDialog.keyImage
+                visible: source !== ""
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
 
-                    // Use custom image if checked, otherwise use extracted icon
-                    var imageValue = customImageCheckExecutable.checked ? keyImagePreviewExecutable.source.toString() : extractedIconPath;
+            Row {
+                spacing: 10
+                anchors.horizontalCenter: parent.horizontalCenter
 
-                    console.log("Saving key", keyConfigDialog.keyIndex, "Executable:", executableValue, "Image:", imageValue);
-
-                    if (executableValue !== "") {
-                        // Pass the icon path (either extracted or custom)
-                        profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue, imageValue);
-                        mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "executable", executableValue);
+                Button {
+                    text: "Back"
+                    onClicked: {
+                        configMode = "select";
+                        executablePath.text = "";
                     }
+                }
 
-                    keyConfigDialog.accept();
+                Button {
+                    text: "Save"
+                    onClicked: {
+                        var executableValue = executablePath.text;
+
+                        // Use custom image if checked, otherwise use extracted icon
+                        var imageValue = customImageCheckExecutable.checked ? keyImagePreviewExecutable.source.toString() : extractedIconPath;
+
+                        console.log("Saving key", keyConfigDialog.keyIndex, "Executable:", executableValue, "Image:", imageValue);
+
+                        if (executableValue !== "") {
+                            // Pass the icon path (either extracted or custom)
+                            profileManager.setKeyConfig(keyConfigDialog.keyIndex, "executable", executableValue, imageValue);
+                            mainWindow.callHotkeyHandler(hotkeyHandler.profileManager, keyConfigDialog.keyIndex, "executable", executableValue);
+                        }
+
+                        keyConfigDialog.accept();
+                    }
+                }
+
+                Button {
+                    text: "Cancel"
+                    onClicked: keyConfigDialog.reject();
                 }
             }
-
-            Button {
-                text: "Cancel"
-                onClicked: keyConfigDialog.reject();
-            }
         }
-    }
 
     FileDialog {
         id: imageDialog
@@ -311,16 +344,13 @@ Dialog {
                     keyConfigDialog.executable = selectedFile.toString().replace("file://", "");
                     executablePath.text = keyConfigDialog.executable;
 
-                    // Extract icon for the selected executable
                     var iconPath = iconExtractor.extractIconForApp(keyConfigDialog.executable);
                     if (iconPath !== "") {
                         extractedIconPath = "file:///" + iconPath;
                         console.log("Extracted icon path:", extractedIconPath);
                     }
 
-                    modifier1.currentIndex = 0;
-                    modifier2.currentIndex = 0;
-                    keySelection.currentIndex = 0;
+
                 }
         }
 }

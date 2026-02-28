@@ -11,7 +11,7 @@ Item {
         id: iconExtractor
     }
 
-    function setKeyConfig(keyIndex, type, value, customImage) {
+    function setKeyConfig(keyIndex, type, value, customImage, label) {
         console.log("Updating key:", keyIndex, "Type:", type, "Value:", value, "CustomImage:", customImage);
         let image = "";
 
@@ -40,6 +40,9 @@ Item {
             hotkeyHandler.profileManager.setKeyImage(keyIndex, value);
         } else if (type === "keystroke" && value !== "") {
             hotkeyHandler.profileManager.setMacro(keyIndex, "keystroke", value);
+            if (label && label !== "") {
+                hotkeyHandler.profileManager.setMacroLabel(keyIndex, label);
+            }
             hotkeyHandler.profileManager.setKeyImage(keyIndex, image);
         } else if (type === "executable" && value !== "") {
             hotkeyHandler.profileManager.setMacro(keyIndex, "executable", value);

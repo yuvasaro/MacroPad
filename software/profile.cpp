@@ -35,18 +35,25 @@ void Profile::setApp(const QString& newApp) {
     }
 }
 
-void Profile::setMacro(int keyNum, const QString& type, const QString& content) {
+void Profile::setMacro(int keyNum, const QString& type, const QString& content, const QString& label) {
     if (macros.contains(keyNum)) {
-        // Update the existing Macro object
         auto m = macros.value(keyNum);
         m->setType(type);
         m->setContent(content);
-        // (If your Macro has an “image” field, you might clear it or leave it untouched here)
+        if (!label.isEmpty()) m->setLabel(label);
     } else {
-        // Create a brand‐new Macro when none exists
-        macros[keyNum] = QSharedPointer<Macro>::create(type, content, "");
+        auto m = QSharedPointer<Macro>::create(type, content, "");
+        if (!label.isEmpty()) m->setLabel(label);
+        macros[keyNum] = m;
     }
     emit macrosChanged();
+}
+
+void Profile::setMacroLabel(int keyNum, const QString& label) {
+    if (macros.contains(keyNum)) {
+        macros[keyNum]->setLabel(label);
+        emit macrosChanged();
+    }
 }
 
 void Profile::setKeyImage(int keyNum, const QString& imagePath) {
@@ -89,6 +96,7 @@ void Profile::saveProfile() {
             out << it.key() << ":\n";
             out << "type: " << it.value()->getType() << "\n";
             out << "content: " << it.value()->getContent() << "\n";
+            out << "label: " << it.value()->getLabel() << "\n";
             out << "image: " << it.value()->getImagePath() << "\n";
         }
 
@@ -112,6 +120,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
         QString profileApp;
         QString macroType;
         QString macroContent;
+        QString macroLabel;
         int keyNum = -3;
         int macroCount = 0;
 
@@ -164,7 +173,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
                 if (ok && numStr == QString::number(n) && n >= -2 && n <= 9) {
                     keyNum = n;
                     qDebug() << "    Detected key index =" << keyNum;
-                } else if (numStr == "image"){
+                } else if (numStr == "image" || numStr == "label" || numStr == "type" || numStr == "content"){
                     continue;
                 }else{
                     qWarning() << "    [Ignored non-numeric or out-of-range index]" << numStr;
@@ -200,6 +209,14 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
 
             }
 
+            if (line.startsWith("label: ")) {
+                macroLabel = line.mid(7).trimmed();
+                if (keyNum != -3 && !macroLabel.isEmpty()) {
+                    userProfile->setMacroLabel(keyNum, macroLabel);
+                }
+                continue;
+            }
+
             if (line.startsWith("image: ")) {
                 QString imagePath = line.mid(7);
                 if (keyNum != -3 && !imagePath.isEmpty()) {
@@ -210,6 +227,7 @@ Profile* Profile::loadProfile(const QString& nameLookUp) {
                 keyNum = -3;
                 macroType.clear();
                 macroContent.clear();
+                macroLabel.clear();
                 continue;
             }
         }
@@ -233,10 +251,12 @@ QVariantMap Profile::getMacroData(int keyNum) const {
         result["type"] = macro->getType();
         result["content"] = macro->getContent();
         result["image"] = macro->getImagePath();
+        result["label"] = macro->getLabel();
     } else {
         result["type"] = "";
         result["content"] = "";
         result["image"] = "";
+        result["label"] = "";
     }
 
     return result;

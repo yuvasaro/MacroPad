@@ -34,7 +34,8 @@ public:
     Q_INVOKABLE QString getApp() const;
     Q_INVOKABLE void setName(const QString& newName);
     Q_INVOKABLE void setApp(const QString& newApp);
-    Q_INVOKABLE void setMacro(int keyNum, const QString& type, const QString& content);
+    Q_INVOKABLE void setMacro(int keyNum, const QString& type, const QString& content, const QString& label = "");
+    Q_INVOKABLE void setMacroLabel(int keyNum, const QString& label);
     Q_INVOKABLE void setKeyImage(int keyNum, const QString& imagePath);
     Q_INVOKABLE void deleteMacro(int keyNum);
     Q_INVOKABLE QSharedPointer<Macro> getMacro(int keyNum);

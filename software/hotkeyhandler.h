@@ -2,6 +2,8 @@
 #define HOTKEYHANDLER_H
 
 #include <QString>
+#include <QSet>
+#include <QStringList>
 #include "profile.h"
 #include "knobhandler.h"
 #include <QQmlListProperty>
@@ -13,6 +15,7 @@
 #include <functional>
 #elif __APPLE__
 #include <Carbon/Carbon.h>
+#include <ApplicationServices/ApplicationServices.h>
 #elif __linux__
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -37,6 +40,11 @@ public:
     Profile* getProfileManager() { return profileManager; };
     void setProfileManager(Profile* profile);
     void setSerialHandler(SerialHandler *s) { serialHandler = s; }
+
+    Q_PROPERTY(bool isRecording READ isRecording NOTIFY isRecordingChanged)
+    Q_INVOKABLE void startRecording();
+    Q_INVOKABLE QString stopRecording();
+    bool isRecording() const { return m_isRecording; }
 \
     Q_INVOKABLE QQmlListProperty<Profile> getProfiles();
     static qsizetype profileCount(QQmlListProperty<Profile> *list);
@@ -55,10 +63,26 @@ public:
 signals:
     void profilesChanged();
     void profileManagerChanged();
+    void isRecordingChanged();
+    void recordedKeyChanged(const QString& combo);
 
 private:
     QList<Profile*> profiles;
     SerialHandler *serialHandler {nullptr};
+    bool m_isRecording = false;
+    QSet<int> m_heldKeys;
+    QStringList m_recordedKeys;
+
+#ifdef __APPLE__
+    CFMachPortRef m_eventTap = nullptr;
+    CFRunLoopSourceRef m_runLoopSource = nullptr;
+    static CGEventRef recordingEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon);
+#endif
+
+#ifdef _WIN32
+    static HHOOK m_recordingHook;
+    static LRESULT CALLBACK recordingCallback(int nCode, WPARAM wParam, LPARAM lParam);
+#endif
 
 #ifdef _WIN32
     static LRESULT CALLBACK hotkeyCallback(int nCode, WPARAM wParam, LPARAM lParam);
