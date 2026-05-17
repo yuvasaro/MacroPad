@@ -1,5 +1,7 @@
 # MacroPad Project
 UCSD HKN Project Team 2024-2025
+[MacroPad Project Documentation.pdf](https://github.com/user-attachments/files/27936859/MacroPad.Project.Documentation.pdf)
+
 ## Description
 We aim to create a physical MacroPad that will interact with the app we created. The MacroPad contains 9 keys, each key can trigger certain events, such as keystrokes or opening executables, depending on which app the user is focused on. We are developing the software using Qt Creator which allows us to give dependency on both Windows and Mac OS. 
 
