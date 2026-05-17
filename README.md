@@ -1,5 +1,6 @@
 # MacroPad Project
 UCSD HKN Project Team 2024-2025
+
 The MacroPad project is a physical macro keyboard that interacts with a companion desktop app, allowing users to trigger customized hotkeys and launch executables across different applications. From designing the PCB and firmware to building the cross-platform desktop interface, we constructed both the hardware and software aspects of this project end-to-end.
 
 [MacroPad Project Documentation.pdf](https://github.com/user-attachments/files/27936859/MacroPad.Project.Documentation.pdf)
