@@ -194,23 +194,7 @@ Rectangle {
                             });
 
                             keyConfigInstance.accepted.connect(function () {
-                                console.log("Saving key", keyConfigInstance.keyIndex,
-                                            "Keystroke:", keyConfigInstance.keystroke,
-                                            "Executable:", keyConfigInstance.executable);
-
-                                profileManager.setKeyConfig(
-                                    keyConfigInstance.keyIndex,
-                                    "keystroke",
-                                    keyConfigInstance.keystroke
-                                );
-                                profileManager.setKeyConfig(
-                                    keyConfigInstance.keyIndex,
-                                    "executable",
-                                    keyConfigInstance.executable
-                                );
-                                profileManager.setKeyConfig(
-                                    keyConfigInstance.customImage);
-
+                                refreshCounter++;
                                 keyConfigInstance.destroy();
                             });
 
@@ -224,10 +208,6 @@ Rectangle {
                 }
             }
         }
-    }
-
-    KeyConfig {
-        id: keyConfigDialog
     }
 
     ComboBox {

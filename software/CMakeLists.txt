@@ -53,6 +53,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         knobhandler.h
         knobhandler.cpp
         imagecache.h imagecache.cpp
+        keystrokerecorder.h keystrokerecorder.cpp
     )
     qt_add_resources(MacroPad "resources"
         PREFIX "/"
@@ -103,7 +104,11 @@ if(APPLE)
             $<TARGET_FILE_DIR:MacroPad>/../Resources/MPIcon.png
     )
 
-    target_link_libraries(MacroPad PRIVATE "-framework Carbon" "-framework ApplicationServices" "-framework CoreGraphics")
+    target_link_libraries(MacroPad PRIVATE
+        "-framework Carbon"
+        "-framework ApplicationServices"
+        "-framework CoreGraphics"
+    )
     set_target_properties(MacroPad PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER com.hknkappapsi.MacroPad

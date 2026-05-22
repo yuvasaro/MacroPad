@@ -8,6 +8,7 @@
 #include "knobhandler.h"
 #include "serialhandler.h"
 #include "apptracker.h"
+#include "keystrokerecorder.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>
@@ -46,6 +47,12 @@ public:
     static Profile* profileManager;
     Q_INVOKABLE void callHotkeyHandler(Profile* profile, int keyNum, const QString& type, const QString& content);
 
+    Q_INVOKABLE bool startRecording();
+    Q_INVOKABLE QString stopRecording();
+    Q_INVOKABLE bool isRecording() const;
+    Q_INVOKABLE QString browseExecutableFile();
+    Q_INVOKABLE QString browseImageFile();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 
@@ -69,6 +76,7 @@ private:
     QMenu *trayMenu;
     SerialHandler *m_serialHandler;
     SerialHandler *serialHandler;
+    KeystrokeRecorder* recorder;
 
 
 #ifdef __linux__

@@ -4,6 +4,10 @@
 #ifdef _WIN32
 #include <minwindef.h>
 #endif
+#ifdef __APPLE__
+#include <Carbon/Carbon.h>
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 
 class KnobHandler{
@@ -53,6 +57,11 @@ private:
     // Low‐level key injection
     static void sendSingleKey(WORD key);
     static void sendKeyCombo(WORD modifier, WORD key);
+#endif
+#ifdef __APPLE__
+    static void postMacKey(CGKeyCode keyCode, bool keyDown, CGEventFlags flags);
+    static void pressMacAppSwitcherKey(CGKeyCode keyCode, CGEventFlags flags);
+    static void releaseMacAppSwitcher();
 #endif
 
     // Tracks whether Task View is open

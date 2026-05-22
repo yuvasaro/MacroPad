@@ -3,6 +3,7 @@
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
+#include <QRegularExpression>
 
 
 SerialHandler::SerialHandler(QObject *parent)
@@ -72,13 +73,28 @@ void SerialHandler::readSerialData()
     qDebug() << "Received data (raw bytes):" << data;
 
     QString trimmedText = QString::fromUtf8(data).trimmed();
-    QByteArray butt = trimmedText.toUtf8();
-    qDebug() << "Number only:" << butt;
+    const QStringList tokens = trimmedText.split(QRegularExpression("[\\s,;]+"), Qt::SkipEmptyParts);
 
-    int number = trimmedText.toInt();
-    qDebug() << "Integer:" << number;
+    for (const QString& token : tokens) {
+        if (!token.startsWith("#")) {
+            qDebug() << "Ignoring unframed serial token:" << token;
+            continue;
+        }
 
-    emit dataReceived(number);
+        QString command = token;
+        command.remove(0, 1);
+
+        bool ok = false;
+        const int number = command.toInt(&ok);
+
+        if (!ok) {
+            qWarning() << "Ignoring malformed serial command token:" << token;
+            continue;
+        }
+
+        qInfo() << "Serial command parsed:" << number;
+        emit dataReceived(number);
+    }
 }
 
 void SerialHandler::sendProfile(int profileCode)

@@ -65,7 +65,10 @@ QString Profile::getMacroImagePath(int keyNum) const {
 }
 
 void Profile::deleteMacro(int keyNum) {
-    macros.remove(keyNum);
+    if (macros.remove(keyNum) > 0) {
+        emit keyImageChanged(keyNum, "");
+        emit macrosChanged();
+    }
 }
 
 QSharedPointer<Macro> Profile::getMacro(int keyNum) {
