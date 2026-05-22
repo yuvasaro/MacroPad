@@ -47,8 +47,11 @@ public:
     static Profile* profileManager;
     Q_INVOKABLE void callHotkeyHandler(Profile* profile, int keyNum, const QString& type, const QString& content);
 
-    void startRecording();
-    void stopRecording();
+    Q_INVOKABLE bool startRecording();
+    Q_INVOKABLE QString stopRecording();
+    Q_INVOKABLE bool isRecording() const;
+    Q_INVOKABLE QString browseExecutableFile();
+    Q_INVOKABLE QString browseImageFile();
 
 protected:
     void closeEvent(QCloseEvent *event) override;

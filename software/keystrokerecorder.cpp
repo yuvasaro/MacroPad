@@ -1,6 +1,7 @@
 #include "keystrokerecorder.h"
 #include <CoreGraphics/CGEventTypes.h>
 #include <CoreGraphics/CGRemoteOperation.h>
+#include <algorithm>
 #include <iostream>
 
 std::vector<CGKeyCode> KeystrokeRecorder::recordedKeys;
@@ -12,10 +13,30 @@ CGEventRef KeystrokeRecorder::EventCallback(CGEventTapProxy proxy, CGEventType t
                                             CGEventRef event, void* refcon) {
     if (!isRecording) return event;
 
+    if (type == kCGEventTapDisabledByTimeout || type == kCGEventTapDisabledByUserInput) {
+        CGEventTapEnable(eventTap, true);
+        return nullptr;
+    }
+
+    auto appendKeyIfMissing = [](CGKeyCode recordedKey) {
+        if (std::find(recordedKeys.begin(), recordedKeys.end(), recordedKey) == recordedKeys.end()) {
+            recordedKeys.push_back(recordedKey);
+        }
+    };
+
     if (type == kCGEventKeyDown || type == kCGEventFlagsChanged) {
         CGKeyCode keycode = (CGKeyCode)CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
-        recordedKeys.push_back(keycode);
-        std::cout << "Recorded keycode: " << keycode << std::endl;
+        appendKeyIfMissing(keycode);
+
+        std::cout << "Recorded keys down:";
+        for (CGKeyCode recordedKey : recordedKeys) {
+            std::cout << " " << recordedKey;
+        }
+        std::cout << std::endl;
+    }
+
+    if (type == kCGEventKeyDown || type == kCGEventKeyUp || type == kCGEventFlagsChanged) {
+        return nullptr;
     }
 
     return event;
@@ -28,11 +49,19 @@ bool KeystrokeRecorder::StartRecording() {
         std::cerr << "Not trusted for Accessibility. Grant permission to the app that launches this binary.\n";
     }
 
+    if (!CGPreflightListenEventAccess()) {
+        std::cerr << "Input Monitoring permission is required to capture and block system shortcuts while recording.\n";
+        CGRequestListenEventAccess();
+        return false;
+    }
+
     recordedKeys.clear();
 
-    CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventFlagsChanged);
+    CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown)
+                           | CGEventMaskBit(kCGEventKeyUp)
+                           | CGEventMaskBit(kCGEventFlagsChanged);
     eventTap = CGEventTapCreate(
-        kCGSessionEventTap,
+        kCGHIDEventTap,
         kCGHeadInsertEventTap,
         kCGEventTapOptionDefault,
         eventMask,
@@ -41,7 +70,7 @@ bool KeystrokeRecorder::StartRecording() {
         );
 
     if (!eventTap) {
-        std::cerr << "Failed to create event tap. Check Accessibility permissions." << std::endl;
+        std::cerr << "Failed to create event tap. Check Accessibility and Input Monitoring permissions." << std::endl;
         return false;
     }
 

@@ -18,6 +18,23 @@ bool KnobHandler::appSwitcherActive = false;
 
 // ===== MAC HELPER FUNCTIONS =====
 #ifdef __APPLE__
+void KnobHandler::postMacKey(CGKeyCode keyCode, bool keyDown, CGEventFlags flags) {
+    CGEventRef event = CGEventCreateKeyboardEvent(nullptr, keyCode, keyDown);
+    CGEventSetFlags(event, flags);
+    CGEventPost(kCGHIDEventTap, event);
+    CFRelease(event);
+}
+
+void KnobHandler::pressMacAppSwitcherKey(CGKeyCode keyCode, CGEventFlags flags) {
+    postMacKey(keyCode, true, flags);
+    postMacKey(keyCode, false, flags);
+}
+
+void KnobHandler::releaseMacAppSwitcher() {
+    postMacKey(kVK_Command, false, 0);
+    appSwitcherActive = false;
+}
+
 int KnobHandler::getSystemVolume() {
     FILE* pipe = popen("osascript -e 'output volume of (get volume settings)'", "r");
     if (!pipe) return -1;
@@ -300,14 +317,12 @@ void KnobHandler::activateAppSwitcher() {
 #ifdef __APPLE__
     if (!appSwitcherActive) {
         qDebug() << "activateAppSwitcher: opening Cmd+Tab";
-        QStringList keys = {"cmd", "tab"};
-        HotkeyHandler::pressAndReleaseKeys(keys);
+        postMacKey(kVK_Command, true, kCGEventFlagMaskCommand);
+        pressMacAppSwitcherKey(kVK_Tab, kCGEventFlagMaskCommand);
         appSwitcherActive = true;
     } else {
-        qDebug() << "activateAppSwitcher: selecting with Return";
-        QStringList keys = {"return"};
-        HotkeyHandler::pressAndReleaseKeys(keys);
-        appSwitcherActive = false;
+        qDebug() << "activateAppSwitcher: selecting current app";
+        releaseMacAppSwitcher();
     }
 #endif
 }
@@ -323,8 +338,7 @@ void KnobHandler::switchAppRight() {
 
 #ifdef __APPLE__
     if (appSwitcherActive) {
-        QStringList keys = {"cmd", "tab"};
-        HotkeyHandler::pressAndReleaseKeys(keys);
+        pressMacAppSwitcherKey(kVK_Tab, kCGEventFlagMaskCommand);
     }
 #endif
 }
@@ -340,8 +354,7 @@ void KnobHandler::switchAppLeft() {
 
 #ifdef __APPLE__
     if (appSwitcherActive) {
-        QStringList keys = {"cmd", "shift", "tab"};
-        HotkeyHandler::pressAndReleaseKeys(keys);
+        pressMacAppSwitcherKey(kVK_Tab, kCGEventFlagMaskCommand | kCGEventFlagMaskShift);
     }
 #endif
 }
