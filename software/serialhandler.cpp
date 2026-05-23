@@ -76,13 +76,15 @@ void SerialHandler::readSerialData()
     const QStringList tokens = trimmedText.split(QRegularExpression("[\\s,;]+"), Qt::SkipEmptyParts);
 
     for (const QString& token : tokens) {
-        if (!token.startsWith("#")) {
-            qDebug() << "Ignoring unframed serial token:" << token;
-            continue;
+        QString command = token;
+        if (command.startsWith("#")) {
+            command.remove(0, 1);
         }
 
-        QString command = token;
-        command.remove(0, 1);
+        if (!QRegularExpression("^\\d+$").match(command).hasMatch()) {
+            qDebug() << "Ignoring non-command serial token:" << token;
+            continue;
+        }
 
         bool ok = false;
         const int number = command.toInt(&ok);
