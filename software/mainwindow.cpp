@@ -242,18 +242,9 @@ void MainWindow::createTrayIcon() {
         return;
     }
 
-#ifdef Q_OS_MAC
-    QString iconPath = QCoreApplication::applicationDirPath() + "/../Resources/MPIcon.png";
-    QIcon icon(iconPath);
-    trayIcon->setIcon(icon);
-#endif
-
-#ifdef _WIN32
-    QString iconPath = QCoreApplication::applicationDirPath() + "/../../MPIcon.ico";
-    QIcon icon(iconPath);
+    QIcon icon(":/Macropad_icon.ico");
     trayIcon->setIcon(icon);
     this->setWindowIcon(icon);
-#endif
 
     trayIcon->setToolTip("Configuration Software Running");
 
