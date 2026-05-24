@@ -83,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent):
 
 MainWindow::~MainWindow() {}
 
+#ifdef Q_OS_MAC
 namespace {
 QString keyCodeToDisplayName(CGKeyCode code) {
     switch (code) {
@@ -165,9 +166,9 @@ QString keyCodeToDisplayName(CGKeyCode code) {
     }
 }
 
-QStringList uniqueKeyNames(const std::vector<CGKeyCode>& keycodes) {
+QStringList uniqueKeyNames(const std::vector<KeyCode>& keycodes) {
     QStringList keys;
-    for (CGKeyCode code : keycodes) {
+    for (KeyCode code : keycodes) {
         const QString key = keyCodeToDisplayName(code);
         if (!key.isEmpty() && !keys.contains(key)) {
             keys.append(key);
@@ -176,6 +177,7 @@ QStringList uniqueKeyNames(const std::vector<CGKeyCode>& keycodes) {
     return keys;
 }
 }
+#endif
 
 bool MainWindow::startRecording() {
     if (KeystrokeRecorder::StartRecording()) {
@@ -188,15 +190,18 @@ bool MainWindow::startRecording() {
 }
 
 QString MainWindow::stopRecording() {
-    std::vector<CGKeyCode> keycodes = KeystrokeRecorder::StopRecording();
-
+    std::vector<KeyCode> keycodes = KeystrokeRecorder::StopRecording();
 
     std::cout << "\n=== Recorded " << keycodes.size() << " keycodes ===" << std::endl;
     for (auto code : keycodes)
         std::cout << (int)code << " ";
     std::cout << "\n====================================" << std::endl;
 
+#ifdef Q_OS_MAC
     return uniqueKeyNames(keycodes).join("+");
+#else
+    return QString::fromStdString(KeystrokeRecorder::ToString(keycodes));
+#endif
 }
 
 bool MainWindow::isRecording() const {
