@@ -194,23 +194,7 @@ Rectangle {
                             });
 
                             keyConfigInstance.accepted.connect(function () {
-                                console.log("Saving key", keyConfigInstance.keyIndex,
-                                            "Keystroke:", keyConfigInstance.keystroke,
-                                            "Executable:", keyConfigInstance.executable);
-
-                                profileManager.setKeyConfig(
-                                    keyConfigInstance.keyIndex,
-                                    "keystroke",
-                                    keyConfigInstance.keystroke
-                                );
-                                profileManager.setKeyConfig(
-                                    keyConfigInstance.keyIndex,
-                                    "executable",
-                                    keyConfigInstance.executable
-                                );
-                                profileManager.setKeyConfig(
-                                    keyConfigInstance.customImage);
-
+                                refreshCounter++;
                                 keyConfigInstance.destroy();
                             });
 
@@ -226,10 +210,6 @@ Rectangle {
         }
     }
 
-    KeyConfig {
-        id: keyConfigDialog
-    }
-
     ComboBox {
         id: profileSelector
         anchors.top: parent.top
@@ -241,10 +221,22 @@ Rectangle {
             color: "lightgray"
             radius: 5
             border.color: "white"
+
+            Text {
+                anchors.fill: parent
+                text: profileSelector.displayText
+                color: "black"
+                font: profileSelector.font
+                elide: Text.ElideRight
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
         }
         contentItem: Text {
-            text: parent.displayText
-            color: "black"
+            text: profileSelector.displayText
+            color: "transparent"
+            font: profileSelector.font
+            elide: Text.ElideRight
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
@@ -372,12 +364,21 @@ Rectangle {
 
             Row {
                 spacing: 10
-                Text { text: "Encoder 1:"; width: 100; color: "white" }
+                height: encoder1Combo.height
+
+                Text {
+                    text: "Encoder 1:"
+                    width: 100
+                    height: parent.height
+                    color: "white"
+                    verticalAlignment: Text.AlignVCenter
+                }
 
                 ComboBox {
                     id: encoder1Combo
                     model: ["None","Scroll","Volume","Chrome Tabs","Switch Apps","Brightness","Zoom","App Volume"]
                     width: 200
+                    height: 40
 
                     property bool isUpdating: false
 
@@ -409,12 +410,21 @@ Rectangle {
 
             Row {
                 spacing: 10
-                Text { text: "Encoder 2:"; width: 100; color: "white" }
+                height: encoder2Combo.height
+
+                Text {
+                    text: "Encoder 2:"
+                    width: 100
+                    height: parent.height
+                    color: "white"
+                    verticalAlignment: Text.AlignVCenter
+                }
 
                 ComboBox {
                     id: encoder2Combo
                     model: ["None", "Scroll", "Volume", "Chrome Tabs", "Switch Apps", "Brightness", "Zoom", "App Volume"]
                     width: 200
+                    height: 40
 
                     property bool isUpdating: false
 

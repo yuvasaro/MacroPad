@@ -56,6 +56,12 @@ Item {
         console.log("[save profile to]", value);
     }
 
+    function clearKeyConfig(keyIndex) {
+        console.log("Clearing key:", keyIndex);
+        hotkeyHandler.profileManager.deleteMacro(keyIndex);
+        hotkeyHandler.profileManager.saveProfile();
+    }
+
     function setApp(app) {
         console.log("app changed");
         hotkeyHandler.profileManager.setApp(app);

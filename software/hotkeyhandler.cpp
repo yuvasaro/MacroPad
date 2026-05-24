@@ -107,28 +107,36 @@ void HotkeyHandler::switchCurrentProfile(const QString& appName) {
     qDebug() << "switchCurrentProfile now";
     qDebug() << "Current app:" << appName;
 
-    bool found = false;
-    for(int i=0;i<profiles.size();i++)
-    {
-        if (profiles[i]->getApp() == appName)
-        {
-            found = true;
-            currentProfile = profiles[i];
-            qDebug() << "Current profile set to:" << currentProfile->getName();
-            if (serialHandler)
-                serialHandler->sendProfile(i + 10);
-            return;
+    Profile* nextProfile = profiles.isEmpty() ? nullptr : profiles[0];
+    int nextProfileIndex = 0;
+
+    for (int i = 0; i < profiles.size(); i++) {
+        if (profiles[i]->getApp() == appName) {
+            nextProfile = profiles[i];
+            nextProfileIndex = i;
+            break;
         }
     }
-    if(!found)
-    {
-        currentProfile = profiles[0];
-        if (serialHandler)
-            serialHandler->sendProfile(10);
-        qDebug() << "No profile with this app. Set to General";
+
+    if (!nextProfile) {
+        qWarning() << "No profiles are initialized; cannot switch profile.";
         return;
     }
-    return;
+
+    if (currentProfile == nextProfile) {
+        qDebug() << "Profile unchanged:" << currentProfile->getName();
+        return;
+    }
+
+    currentProfile = nextProfile;
+    qDebug() << "Current profile set to:" << currentProfile->getName();
+    if (serialHandler) {
+        serialHandler->sendProfile(nextProfileIndex + 10);
+    }
+
+    if (nextProfileIndex == 0) {
+        qDebug() << "No profile with this app. Set to General";
+    }
 }
 
 void HotkeyHandler::setProfileManager(Profile* profile) {
@@ -393,52 +401,56 @@ const QMap<QString, CGKeyCode> keyMap = {
 };
 
 void HotkeyHandler::pressAndReleaseKeys(const QStringList& keys) {
-    QList<CGEventRef> keysDown;
-    QList<CGEventRef> keysUp;
     CGEventSourceRef eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
     CGEventFlags flags = 0;
+    QList<QPair<CGKeyCode, CGEventFlags>> pressedKeys;
 
-    // Iterate over the provided keys to determine modifiers and normal keys
-    for (const auto& key : keys) {
-        if (key == "cmd") {
-            flags |= kCGEventFlagMaskCommand;  // Add Command modifier
-        } else if (key == "shift") {
-            flags |= kCGEventFlagMaskShift;  // Add Shift modifier
-        } else if (key == "ctrl") {
-            flags |= kCGEventFlagMaskControl; // Add Control modifier
-        } else if (key == "alt") {
-            flags |= kCGEventFlagMaskAlternate; // Add Option (Alt) modifier
-        } else {
-            // Create keydown event for normal key
-            CGEventRef keyDown = CGEventCreateKeyboardEvent(eventSource, keyMap[key], true);
-            CGEventSetFlags(keyDown, flags); // Apply modifier flags
-            keysDown.push_back(keyDown);
+    auto modifierFlagForKey = [](const QString& key) -> CGEventFlags {
+        if (key == "cmd") return kCGEventFlagMaskCommand;
+        if (key == "shift") return kCGEventFlagMaskShift;
+        if (key == "ctrl") return kCGEventFlagMaskControl;
+        if (key == "alt" || key == "option") return kCGEventFlagMaskAlternate;
+        if (key == "fn") return kCGEventFlagMaskSecondaryFn;
+        return 0;
+    };
 
-            // Create keyup event for normal key
-            CGEventRef keyUp = CGEventCreateKeyboardEvent(eventSource, keyMap[key], false);
-            CGEventSetFlags(keyUp, flags); // Apply modifier flags
-            keysUp.push_back(keyUp);
+    for (const auto& rawKey : keys) {
+        const QString key = rawKey.trimmed().toLower();
+        if (!keyMap.contains(key)) {
+            qWarning() << "Skipping unknown key in macro:" << rawKey;
+            continue;
         }
-    }
 
-    // Post keydown events
-    for (CGEventRef keyDown : keysDown) {
+        const CGKeyCode keyCode = keyMap[key];
+        const CGEventFlags modifierFlag = modifierFlagForKey(key);
+        if (modifierFlag) {
+            flags |= modifierFlag;
+        }
+
+        CGEventRef keyDown = CGEventCreateKeyboardEvent(eventSource, keyCode, true);
+        CGEventSetFlags(keyDown, flags);
         CGEventPost(kCGHIDEventTap, keyDown);
+        CFRelease(keyDown);
+
+        pressedKeys.push_back({keyCode, flags});
     }
 
-    usleep(1000); // Sleep for 10ms to simulate key press duration
+    usleep(10000);
 
-    // Post keyup events in reverse order (release main key first, then modifier)
-    for (CGEventRef keyUp : keysUp) {
+    for (auto it = pressedKeys.crbegin(); it != pressedKeys.crend(); ++it) {
+        const CGKeyCode keyCode = it->first;
+        CGEventFlags keyUpFlags = flags;
+        const QString keyName = keyMap.key(keyCode);
+        const CGEventFlags modifierFlag = modifierFlagForKey(keyName);
+        if (modifierFlag) {
+            flags &= ~modifierFlag;
+            keyUpFlags = flags;
+        }
+
+        CGEventRef keyUp = CGEventCreateKeyboardEvent(eventSource, keyCode, false);
+        CGEventSetFlags(keyUp, keyUpFlags);
         CGEventPost(kCGHIDEventTap, keyUp);
-    }
-
-    // Release resources
-    for (CGEventRef key : keysDown) {
-        CFRelease(key);
-    }
-    for (CGEventRef key : keysUp) {
-        CFRelease(key);
+        CFRelease(keyUp);
     }
     CFRelease(eventSource);
 }
@@ -451,6 +463,27 @@ bool isAppBundle(const QString &path) {
     return !macOSDir.entryInfoList(QDir::Files | QDir::Executable).isEmpty();
 }
 
+bool launchOrActivateExecutable(const QString &path) {
+    if (path.isEmpty()) {
+        qWarning() << "No executable path configured for macro.";
+        return false;
+    }
+
+    if (isAppBundle(path)) {
+        qDebug() << "Opening app bundle:" << path;
+        return QProcess::startDetached("/usr/bin/open", {path});
+    }
+
+    QFileInfo executableInfo(path);
+    if (executableInfo.exists()) {
+        qDebug() << "Launching executable path:" << path;
+        return QProcess::startDetached(path);
+    }
+
+    qWarning() << "Configured executable does not exist:" << path;
+    return false;
+}
+
 OSStatus HotkeyHandler::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef event, void *userData) {
     EventHotKeyID hotKeyID;
     GetEventParameter(event, kEventParamDirectObject, typeEventHotKeyID, NULL, sizeof(hotKeyID), NULL, &hotKeyID);
@@ -461,23 +494,31 @@ OSStatus HotkeyHandler::hotkeyCallback(EventHandlerCallRef nextHandler, EventRef
 }
 
 void HotkeyHandler::executeHotkey(int hotKeyNum, Profile* profileInstance) {
+    if (!profileInstance) {
+        qWarning() << "Cannot execute key" << hotKeyNum << "because there is no active profile.";
+        return;
+    }
+
     QSharedPointer<Macro> macro = profileInstance->getMacro(hotKeyNum);
 
-    if (!macro.isNull()) {
-        qDebug() << hotKeyNum << "key pressed! Type:" << macro->getType() << "Content:" << macro->getContent();
+    if (macro.isNull()) {
+        qWarning() << "No macro configured for key" << hotKeyNum
+                   << "in active profile" << profileInstance->getName();
+        return;
+    }
 
-        const QString& type = macro->getType();
-        const QString& content = macro->getContent();
+    qDebug() << hotKeyNum << "key pressed in profile" << profileInstance->getName()
+             << "Type:" << macro->getType() << "Content:" << macro->getContent();
 
-        if (type == "keystroke") {
-            QStringList keys = content.toLower().split("+");
-            pressAndReleaseKeys(keys);
-        } else if (type == "executable") {
-            if (isAppBundle(content)) {
-                QProcess::startDetached("open", {"-a", content});
-            } else {
-                QProcess::startDetached(content);
-            }
+    const QString& type = macro->getType();
+    const QString& content = macro->getContent();
+
+    if (type == "keystroke") {
+        QStringList keys = content.toLower().split("+");
+        pressAndReleaseKeys(keys);
+    } else if (type == "executable") {
+        if (!launchOrActivateExecutable(content)) {
+            qWarning() << "Failed to launch macro executable for key" << hotKeyNum << ":" << content;
         }
     }
 }
@@ -652,7 +693,6 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
-    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __APPLE__
 #ifdef DEBUG
     qDebug() << "registerGlobalHotkey called with:" << keyNum << type << content;
@@ -678,7 +718,6 @@ void HotkeyHandler::registerGlobalHotkey(Profile* profile, int keyNum, const QSt
     }
 #endif
     profile->setMacro(keyNum, type, content);
-    profile->setKeyImage(keyNum, profile->getMacro(keyNum)->getImagePath());
 #elif __linux__
     display = XOpenDisplay(NULL);
     if (!display) return;
