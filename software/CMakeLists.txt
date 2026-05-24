@@ -88,16 +88,16 @@ target_link_libraries(MacroPad
 
 # Platform-Specific Configurations
 if(APPLE)
-    set(MACOSX_BUNDLE_ICON_FILE MPIcon.icns)
-    set(MACOSX_BUNDLE_ICON ${CMAKE_SOURCE_DIR}/MPIcon.icns)
+    set(MACOSX_BUNDLE_ICON_FILE Macropad_icon.icns)
+    set(MACOSX_BUNDLE_ICON ${CMAKE_SOURCE_DIR}/Macropad_icon.icns)
 
     set_source_files_properties(${MACOSX_BUNDLE_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
     add_custom_command(TARGET MacroPad POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo "Copying .icns icon..."
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_SOURCE_DIR}/MPIcon.icns
-            $<TARGET_FILE_DIR:MacroPad>/../Resources/MPIcon.icns
+            ${CMAKE_SOURCE_DIR}/Macropad_icon.icns
+            $<TARGET_FILE_DIR:MacroPad>/../Resources/Macropad_icon.icns
     )
 
     target_link_libraries(MacroPad PRIVATE
@@ -110,7 +110,7 @@ if(APPLE)
         MACOSX_BUNDLE_GUI_IDENTIFIER com.hknkappapsi.MacroPad
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-        MACOSX_BUNDLE_ICON_FILE MPIcon.icns
+        MACOSX_BUNDLE_ICON_FILE Macropad_icon.icns
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Info.plist"
     )
 

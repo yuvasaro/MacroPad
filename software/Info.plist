@@ -31,7 +31,7 @@
 
     <!-- Icon file (without extension) -->
     <key>CFBundleIconFile</key>
-    <string>MPIcon</string>
+    <string>Macropad_icon</string>
 
     <!-- For using Apple Events / Accessibility API -->
     <key>NSAppleEventsUsageDescription</key>
