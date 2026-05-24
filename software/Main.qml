@@ -7,7 +7,18 @@ Rectangle {
     id: root
     width: 940
     height: 850
-    color: "black"
+
+    // Adapt to system dark / light mode automatically
+    readonly property bool isDark: Qt.styleHints.colorScheme === Qt.ColorScheme.Dark
+    readonly property color bgColor:      isDark ? "#1a1a1a" : "#f0f0f0"
+    readonly property color surfaceColor: isDark ? "#2d2d2d" : "#dcdcdc"
+    readonly property color cardColor:    isDark ? "#3a3a3a" : "#c8c8c8"
+    readonly property color textColor:    isDark ? "#ffffff" : "#111111"
+    readonly property color dimTextColor: isDark ? "#aaaaaa" : "#555555"
+    readonly property color borderColor:  isDark ? "#666666" : "#aaaaaa"
+
+    color: bgColor
+
     property string exeIconPath: ""
     property int refreshCounter: 0
 
@@ -144,8 +155,8 @@ Rectangle {
             Rectangle {
                 width: 100
                 height: 100
-                color: "lightgray"
-                border.color: "white"
+                color: root.cardColor
+                border.color: root.borderColor
                 radius: 10
 
                 Item {
@@ -169,7 +180,7 @@ Rectangle {
                     Text {
                         text: "Key " + (index + 1)
                         anchors.centerIn: parent
-                        color: "black"
+                        color: root.textColor
                         visible: !keyImage.visible
                     }
                 }
@@ -218,27 +229,76 @@ Rectangle {
         model: hotkeyHandler ? hotkeyHandler.profiles : []
         textRole: "name"
         background: Rectangle {
-            color: "lightgray"
+            color: root.surfaceColor
             radius: 5
-            border.color: "white"
-
-            Text {
-                anchors.fill: parent
-                text: profileSelector.displayText
-                color: "black"
-                font: profileSelector.font
-                elide: Text.ElideRight
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
+            border.color: root.borderColor
+            border.width: 1
         }
+
         contentItem: Text {
+            leftPadding: 10
+            rightPadding: profileSelector.indicator.width + 8
             text: profileSelector.displayText
-            color: "transparent"
+            color: root.textColor
             font: profileSelector.font
             elide: Text.ElideRight
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
+        }
+
+        indicator: Canvas {
+            id: profileSelectorIndicator
+            x: profileSelector.width - width - 8
+            y: (profileSelector.height - height) / 2
+            width: 10
+            height: 6
+            contextType: "2d"
+            onPaint: {
+                var ctx = getContext("2d");
+                ctx.reset();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(width, 0);
+                ctx.lineTo(width / 2, height);
+                ctx.closePath();
+                ctx.fillStyle = root.textColor;
+                ctx.fill();
+            }
+            Connections {
+                target: root
+                function onTextColorChanged() { profileSelectorIndicator.requestPaint(); }
+            }
+        }
+
+        delegate: ItemDelegate {
+            width: profileSelector.popup.width
+            contentItem: Text {
+                text: modelData.name !== undefined ? modelData.name : modelData
+                color: root.textColor
+                font: profileSelector.font
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+            }
+            background: Rectangle {
+                color: profileSelector.highlightedIndex === index ? root.borderColor : root.surfaceColor
+            }
+        }
+
+        popup: Popup {
+            y: profileSelector.height
+            width: profileSelector.width
+            padding: 1
+            contentItem: ListView {
+                clip: true
+                implicitHeight: contentHeight
+                model: profileSelector.delegateModel
+                currentIndex: profileSelector.highlightedIndex
+            }
+            background: Rectangle {
+                color: root.surfaceColor
+                border.color: root.borderColor
+                border.width: 1
+                radius: 4
+            }
         }
         onCurrentIndexChanged: {
             hotkeyHandler.profileManager = hotkeyHandler.profiles[currentIndex];
@@ -352,7 +412,10 @@ Rectangle {
     //two encoder knobs
     GroupBox {
         id: encoderConfigBox
-        title: "Rotary Encoder Actions"
+        label: Label {
+            text: "Rotary Encoder Actions"
+            color: root.textColor
+        }
         anchors.top: profileSelector.bottom
         anchors.topMargin: 20
         anchors.horizontalCenter: parent.horizontalCenter
@@ -370,7 +433,7 @@ Rectangle {
                     text: "Encoder 1:"
                     width: 100
                     height: parent.height
-                    color: "white"
+                    color: root.textColor
                     verticalAlignment: Text.AlignVCenter
                 }
 
@@ -416,7 +479,7 @@ Rectangle {
                     text: "Encoder 2:"
                     width: 100
                     height: parent.height
-                    color: "white"
+                    color: root.textColor
                     verticalAlignment: Text.AlignVCenter
                 }
 

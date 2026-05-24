@@ -3,6 +3,9 @@ import QtQuick.Controls
 
 Dialog {
     id: keyConfigDialog
+
+    SystemPalette { id: sysPal; colorGroup: SystemPalette.Active }
+    readonly property color labelColor: sysPal.windowText
     width: 450
     height: 350
     modal: true
@@ -66,7 +69,7 @@ Dialog {
             text: "What would you like to configure?"
             font.pixelSize: 16
             font.bold: true
-            color: "grey"
+            color: keyConfigDialog.labelColor
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
@@ -108,14 +111,14 @@ Dialog {
             text: "Configure Keystroke Combination"
             font.pixelSize: 14
             font.bold: true
-            color: "grey"
+            color: keyConfigDialog.labelColor
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
         Text {
             id: keystrokeInput
             text: "Select Keystroke Combination"
-            color: "grey"
+            color: keyConfigDialog.labelColor
         }
 
         Button {
@@ -277,7 +280,7 @@ Dialog {
             text: "Configure Executable"
             font.pixelSize: 14
             font.bold: true
-            color: "grey"
+            color: keyConfigDialog.labelColor
             anchors.horizontalCenter: parent.horizontalCenter
         }
 

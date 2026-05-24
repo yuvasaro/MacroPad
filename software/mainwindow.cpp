@@ -7,6 +7,7 @@
 #include "serialhandler.h"
 #include "apptracker.h"
 #include "iconextractor.h"
+#include "keystrokerecorder.h"
 
 #include <QApplication>
 #include <QQmlEngine>
@@ -82,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent):
 
 MainWindow::~MainWindow() {}
 
+#ifdef Q_OS_MAC
 namespace {
 QString keyCodeToDisplayName(CGKeyCode code) {
     switch (code) {
@@ -164,9 +166,9 @@ QString keyCodeToDisplayName(CGKeyCode code) {
     }
 }
 
-QStringList uniqueKeyNames(const std::vector<CGKeyCode>& keycodes) {
+QStringList uniqueKeyNames(const std::vector<KeyCode>& keycodes) {
     QStringList keys;
-    for (CGKeyCode code : keycodes) {
+    for (KeyCode code : keycodes) {
         const QString key = keyCodeToDisplayName(code);
         if (!key.isEmpty() && !keys.contains(key)) {
             keys.append(key);
@@ -175,6 +177,7 @@ QStringList uniqueKeyNames(const std::vector<CGKeyCode>& keycodes) {
     return keys;
 }
 }
+#endif
 
 bool MainWindow::startRecording() {
     if (KeystrokeRecorder::StartRecording()) {
@@ -187,15 +190,18 @@ bool MainWindow::startRecording() {
 }
 
 QString MainWindow::stopRecording() {
-    std::vector<CGKeyCode> keycodes = KeystrokeRecorder::StopRecording();
+    std::vector<KeyCode> keycodes = KeystrokeRecorder::StopRecording();
 
     std::cout << "\n=== Recorded " << keycodes.size() << " keycodes ===" << std::endl;
-    for (CGKeyCode code : keycodes) {
+    for (auto code : keycodes)
         std::cout << (int)code << " ";
-    }
     std::cout << "\n====================================" << std::endl;
 
+#ifdef Q_OS_MAC
     return uniqueKeyNames(keycodes).join("+");
+#else
+    return QString::fromStdString(KeystrokeRecorder::ToString(keycodes));
+#endif
 }
 
 bool MainWindow::isRecording() const {
@@ -224,6 +230,7 @@ QString MainWindow::browseImageFile() {
         QDir::homePath(),
         "Image Files (*.png *.jpg *.jpeg);;All Files (*)"
     );
+
 }
 
 /*
@@ -235,18 +242,9 @@ void MainWindow::createTrayIcon() {
         return;
     }
 
-#ifdef Q_OS_MAC
-    QString iconPath = QCoreApplication::applicationDirPath() + "/../Resources/MPIcon.png";
-    QIcon icon(iconPath);
-    trayIcon->setIcon(icon);
-#endif
-
-#ifdef _WIN32
-    QString iconPath = QCoreApplication::applicationDirPath() + "/../../MPIcon.ico";
-    QIcon icon(iconPath);
+    QIcon icon(":/Macropad_icon.ico");
     trayIcon->setIcon(icon);
     this->setWindowIcon(icon);
-#endif
 
     trayIcon->setToolTip("Configuration Software Running");
 
